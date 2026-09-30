@@ -48,7 +48,6 @@ export class MineScene extends WorldScene {
     this.load.image('vault-door', 'assets/objects/vault-door.png');
     this.load.spritesheet('npc-brom', 'assets/npcs/brom.png', { frameWidth: 68, frameHeight: 68 });
     this.load.image('koloss', 'assets/objects/koloss.png');
-    this.load.image('splitter', 'assets/objects/splitter.png');
   }
 
   protected buildWorld(entry?: string): Cell {

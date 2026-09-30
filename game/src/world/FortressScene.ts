@@ -45,7 +45,6 @@ export class FortressScene extends WorldScene {
     this.load.json('tiles-fortress-data', 'assets/tiles/fortress.json');
     this.load.image('kubus', 'assets/objects/kubus.png');
     this.load.image('paint-bench', 'assets/objects/paint-bench.png');
-    this.load.image('splitter', 'assets/objects/splitter.png');
     this.load.spritesheet('npc-quadro', 'assets/npcs/quadro.png', { frameWidth: 68, frameHeight: 68 });
   }
 

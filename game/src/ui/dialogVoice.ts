@@ -1,5 +1,6 @@
 import { playClip, stopClip } from './audio';
 import { canSpeak, speak, stopSpeaking } from './speech';
+import { loadPrefs } from '../save';
 
 // Vertonte Dialoge. Alle festen Dialogzeilen im Code werden vorab mit Piper
 // aufgenommen (tools/tts/make_dialog_audio.py), eine Stimme pro Figur.
@@ -29,6 +30,10 @@ export function setRecordedLines(hashes: string[] | undefined): void {
 }
 
 export function speakLine(speaker: string, text: string): void {
+  if (!loadPrefs().voice) {
+    stopLine();
+    return;
+  }
   const h = lineHash(speaker, text);
   if (recorded.has(h)) {
     stopSpeaking();

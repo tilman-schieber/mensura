@@ -37,6 +37,7 @@ VOICES = {
     "Hüterin Lumen": ("Achernar", "eine sanfte, geheimnisvolle Tempelhüterin; schwebend und ruhig", True),
     "Riesin Hanna": ("Leda", "ein fröhliches, lebhaftes elfjähriges Mädchen", False),
     "Baumeister Quadro": ("Puck", "ein pingeliger, eifriger Baumeister; schnell und etwas aufgeregt", False),
+    "Erzählerin": ("Sulafat", "eine warme Erzählerin, die ein Märchen vorliest; ruhig und ein wenig geheimnisvoll", False),
     "Vagor": ("Enceladus", "ein einsamer Mann, der aus dem Nebel spricht; leise, bitter und traurig, nicht brüllend", True),
 }
 DEFAULT = ("Kore", "freundlich und klar", False)

@@ -2,15 +2,16 @@ import Phaser from 'phaser';
 import { getStat, levelCap } from '../learn/progress';
 import { SKILLS, type SkillId } from '../learn/skills';
 import { TOPICS } from '../learn/topics';
-import { loadSave, writeSave } from '../save';
+import { activeSlot, loadSave, writeSave } from '../save';
 import { COLORS, GAME_HEIGHT, GAME_WIDTH, button, text } from '../ui/theme';
+import { goToTitle } from './flow';
 
 type Page = 'lernstand' | 'schule';
 
 /**
- * Menü über der Welt: weiterspielen, Figur ändern, Zeitdruck im Kampf,
- * Lernstand (welche Skills sitzen) und Schulthemen (Schulmodus).
- * Die Welt ist solange pausiert.
+ * Menü über der Welt: weiterspielen, Lernstand (welche Skills sitzen), Schulthemen
+ * (Schulmodus), Figur ändern, speichern, laden, Einstellungen, zurück zum Titelbild.
+ * Die Welt ist solange pausiert. Esc öffnet und schließt es.
  */
 export class MenuScene extends Phaser.Scene {
   private worldKey = '';
@@ -30,24 +31,36 @@ export class MenuScene extends Phaser.Scene {
     g.fillStyle(COLORS.panel, 1).fillRoundedRect(30, 24, GAME_WIDTH - 60, GAME_HEIGHT - 48, 14);
     g.lineStyle(3, COLORS.gold, 1).strokeRoundedRect(30, 24, GAME_WIDTH - 60, GAME_HEIGHT - 48, 14);
 
-    text(this, GAME_WIDTH / 2, 52, 'Menü', 28, COLORS.goldText);
+    text(this, GAME_WIDTH / 2, 50, 'Menü', 26, COLORS.goldText);
+    text(this, GAME_WIDTH - 60, 50, `Platz ${activeSlot() ?? '–'} · ${loadSave().avatar?.name ?? ''}`, 15, COLORS.muted).setOrigin(1, 0.5);
 
     const bx = 150;
-    button(this, bx, 110, 'Weiterspielen', () => this.close(), { width: 210, height: 50, size: 20 });
-    button(this, bx, 172, 'Lernstand', () => this.show('lernstand'), { width: 210, height: 50, size: 20 });
-    button(this, bx, 234, 'Schulthemen', () => this.show('schule'), { width: 210, height: 50, size: 20 });
-    button(this, bx, 296, 'Figur ändern', () => this.editAvatar(), { width: 210, height: 50, size: 20 });
-
-    const label = () => `Zeitdruck im Kampf: ${loadSave().settings.battleTimer ? 'an' : 'aus'}`;
-    const timerBtn = button(this, bx, 358, label(), () => {
-      const save = loadSave();
-      save.settings.battleTimer = !save.settings.battleTimer;
-      writeSave(save);
-      (timerBtn.list[1] as Phaser.GameObjects.Text).setText(label());
-    }, { width: 210, height: 50, size: 15 });
+    const opts = { width: 210, height: 46, size: 19 };
+    const items: [string, () => void][] = [
+      ['Weiterspielen', () => this.close()],
+      ['Lernstand', () => this.show('lernstand')],
+      ['Schulthemen', () => this.show('schule')],
+      ['Figur ändern', () => this.editAvatar()],
+      ['Speichern', () => this.overlay('Slots', { mode: 'save', from: 'Menu' })],
+      ['Laden', () => this.overlay('Slots', { mode: 'load', from: 'Menu' })],
+      ['Einstellungen', () => this.overlay('Settings', { from: 'Menu' })],
+      ['Zum Titelbild', () => goToTitle(this)],
+    ];
+    items.forEach(([label, action], i) => button(this, bx, 96 + i * 54, label, action, opts));
 
     this.page = this.add.container(0, 0);
     this.show('lernstand');
+
+    this.input.keyboard?.on('keydown-ESC', () => {
+      // Esc gehört dem obersten Fenster
+      if (!this.scene.isActive('Slots') && !this.scene.isActive('Settings')) this.close();
+    });
+  }
+
+  /** Spielstände oder Einstellungen über dem Menü öffnen */
+  private overlay(key: string, data: object): void {
+    this.scene.launch(key, data);
+    this.scene.bringToTop(key);
   }
 
   private show(page: Page): void {

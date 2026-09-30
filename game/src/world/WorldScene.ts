@@ -81,7 +81,11 @@ export abstract class WorldScene extends Phaser.Scene {
     this.player = this.add.sprite(0, 0, PLAYER_KEY, 'south-0').setOrigin(0.5, 0.78);
     this.placePlayer(start);
     this.rememberPlace();
-    this.time.addEvent({ delay: 3000, loop: true, callback: () => this.rememberPlace() });
+    // Laufend speichern; die Zeitgeber stehen, solange das Menü offen ist, also zählt nur echte Spielzeit
+    this.time.addEvent({ delay: 3000, loop: true, callback: () => this.rememberPlace(3) });
+    const saveNow = () => this.rememberPlace();
+    this.game.events.on('save-now', saveNow);
+    this.events.once('shutdown', () => this.game.events.off('save-now', saveNow));
 
     const cam = this.cameras.main;
     cam.setBounds(0, 0, this.terrain.cols * TILE, this.terrain.rows * TILE);
@@ -359,11 +363,12 @@ export abstract class WorldScene extends Phaser.Scene {
     return this.cellOf(this.player.x, this.player.y);
   }
 
-  /** Merkt sich den Ort für den nächsten Spielstart. */
-  protected rememberPlace(): void {
+  /** Merkt sich den Ort für den nächsten Spielstart und zählt die Spielzeit. */
+  protected rememberPlace(seconds = 0): void {
     const save = loadSave();
     const c = this.cellOf(this.player.x, this.player.y);
     save.place = { scene: this.scene.key, x: c.x, y: c.y };
+    save.playtime += seconds;
     writeSave(save);
   }
 }

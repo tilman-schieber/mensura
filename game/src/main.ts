@@ -1,10 +1,13 @@
 import Phaser from 'phaser';
 import { preloadAvatarSheets } from './avatar/avatar';
-import { loadSave } from './save';
 import { setRecordedLines } from './ui/dialogVoice';
 import { AvatarScene } from './scenes/AvatarScene';
 import { HudScene } from './scenes/HudScene';
 import { MenuScene } from './scenes/MenuScene';
+import { PrologueScene } from './scenes/PrologueScene';
+import { SettingsScene } from './scenes/SettingsScene';
+import { SlotScene } from './scenes/SlotScene';
+import { TitleScene } from './scenes/TitleScene';
 import { MineScene } from './world/MineScene';
 import { VillageScene } from './world/VillageScene';
 import { TempleScene } from './world/TempleScene';
@@ -45,6 +48,7 @@ class BootScene extends Phaser.Scene {
     preloadAvatarSheets(this);
     // von mehreren Szenen und Rätseln genutzt
     this.load.image('mine-cart', 'assets/objects/mine-cart.png');
+    this.load.image('splitter', 'assets/objects/splitter.png');
     this.load.json('dialog-voice-index', 'assets/audio/dialog/index.json');
   }
 
@@ -56,9 +60,7 @@ class BootScene extends Phaser.Scene {
       this.scene.start(puzzle, { rounds: 99 });
       return;
     }
-    const save = loadSave();
-    if (!save.avatar) this.scene.start('Avatar');
-    else this.scene.start(save.place?.scene ?? 'Village');
+    this.scene.start('Title');
   }
 }
 
@@ -86,7 +88,7 @@ async function start() {
     // unsichtbaren Browser-Tab weiterläuft (requestAnimationFrame pausiert dort).
     // smoothStep aus: die echte verstrichene Zeit zählt, auch wenn der Tab gedrosselt wird.
     fps: TEST_MODE ? { forceSetTimeOut: true, smoothStep: false } : {},
-    scene: [BootScene, AvatarScene, VillageScene, MineScene, TempleScene, ValleyScene, FortressScene, HudScene, MenuScene, OreCartPuzzle, RailPuzzle, RoundingPuzzle, VaultPuzzle, ColossusScene, RomanPuzzle, BinaryPuzzle, FogBattleScene,
+    scene: [BootScene, TitleScene, SlotScene, SettingsScene, PrologueScene, AvatarScene, VillageScene, MineScene, TempleScene, ValleyScene, FortressScene, HudScene, MenuScene, OreCartPuzzle, RailPuzzle, RoundingPuzzle, VaultPuzzle, ColossusScene, RomanPuzzle, BinaryPuzzle, FogBattleScene,
       MirrorWallPuzzle, SymmetryPuzzle, QuadPuzzle, CoordinatePuzzle, DoppelgangerScene,
       LengthPuzzle, ScalePuzzle, EstimatePuzzle, FerryPuzzle, BeetleScene,
       TilePuzzle, NetPuzzle, VolumePuzzle, PaintPuzzle, KubusScene],

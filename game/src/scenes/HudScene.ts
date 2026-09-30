@@ -30,6 +30,7 @@ export class HudScene extends Phaser.Scene {
         .setOrigin(0.5, 0),
     );
     button(this, GAME_WIDTH - 62, 34, 'Menü', () => this.openMenu(), { width: 96, height: 44, size: 18 });
+    this.input.keyboard?.on('keydown-ESC', () => this.openMenu());
     if (this.pendingGoal !== null) this.setGoal(this.pendingGoal);
     const queued = this.pendingDialogs;
     this.pendingDialogs = [];

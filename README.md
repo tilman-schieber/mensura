@@ -27,11 +27,14 @@ npm run preview  # den Build lokal ansehen
 
 `game/dist/` ist eine rein statische Seite und lässt sich auf jeden Webspace kopieren.
 
-**Spielstand:** liegt im Browser (`localStorage`, Schlüssel `mensura.save.v1`). Neu anfangen: in den
-Entwicklerwerkzeugen des Browsers den Eintrag löschen oder ein privates Fenster benutzen.
+**Spielstände:** drei Speicherplätze im Browser (`localStorage`, Schlüssel `mensura.slot.1` bis `.3`).
+Das Spiel speichert automatisch; im Menü kann man zusätzlich in einen anderen Platz speichern, laden
+und zum Titelbild zurück. Unter „Spiel laden“ lässt sich jeder Spielstand als Datei sichern und wieder
+einlesen, etwa für ein anderes Gerät. Ein Spielstand aus der Zeit vor den Speicherplätzen
+(`mensura.save.v1`) wird beim ersten Start zu Platz 1.
 
 **Bedienung:** Tippen oder Klicken, wohin die Figur laufen soll; Figuren und Dinge antippen. Pfeiltasten
-gehen auch. Das Menü oben rechts zeigt den Lernstand und die **Schulthemen**: Dort hakt man ab, was
+gehen auch. Das Menü oben rechts (oder Esc) zeigt den Lernstand und die **Schulthemen**: Dort hakt man ab, was
 im Unterricht schon dran war. Erst dann öffnen sich die passenden Regionen.
 
 ## Inhalt des Repos

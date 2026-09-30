@@ -44,7 +44,6 @@ export class TempleScene extends WorldScene {
     this.load.json('tiles-temple-data', 'assets/tiles/temple.json');
     this.load.image('mirror', 'assets/objects/mirror.png');
     this.load.image('temple-gate', 'assets/objects/temple-gate.png');
-    this.load.image('splitter', 'assets/objects/splitter.png');
     this.load.spritesheet('npc-lumen', 'assets/npcs/lumen.png', { frameWidth: 68, frameHeight: 68 });
   }
 

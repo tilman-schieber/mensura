@@ -23,6 +23,9 @@ Entwickler-Einstiege (nur im Entwicklungsmodus):
 Erster spielbarer Ausschnitt für Klasse 5, Herbst (Bildungsplan 3.1.1: Dezimalsystem, große Zahlen,
 Zahlenstrahl, Runden):
 
+0. **Titelbild** (`TitleScene`): Weiterspielen, neues Spiel, Spiel laden, Einstellungen. Die sieben
+   Splitter kreisen um den Titel; geborgene leuchten. Vor dem ersten Spiel ein **Vorspann**
+   (`PrologueScene`, gesprochen von der Erzählerin, überspringbar).
 1. **Avatar-Editor**: Frisur, Haarfarbe, Kleidung, Kleidungsfarbe, Name
 2. **Eichstadt**: Meisterin Elle schickt die Spielfigur zur Mine
 3. **Stellenstollen, äußere Ebene**: Vorarbeiter Brom und drei Stationen
@@ -88,7 +91,17 @@ Das Ziffernfeld kann Kommazahlen (`createNumpad(…, { decimal: true, unit: 'cm'
 Nicht abgehakte Themen sind nur auf Einstiegsniveau spielbar (`levelCap` in `progress.ts`), Regionen
 öffnen sich erst mit ihrem Thema.
 
-**Menü** (oben rechts): Lernstand pro Skill, Schulthemen, Figur ändern, Zeitdruck im Kampf an/aus (`src/scenes/MenuScene.ts`).
+**Menü** (oben rechts oder Esc, `src/scenes/MenuScene.ts`): Lernstand pro Skill, Schulthemen, Figur ändern,
+Speichern, Laden, Einstellungen, zurück zum Titelbild.
+
+**Spielstände** (`src/save.ts`, `SlotScene`): drei Plätze in `localStorage`, einer ist aktiv. Die Welt
+speichert alle drei Sekunden (Ort und Spielzeit), jede Story-Merker- und Lernstand-Änderung sofort.
+Pro Platz: laden, speichern (auch in einen anderen Platz), löschen, als JSON-Datei sichern und
+einlesen. `loadSave()`/`writeSave()` arbeiten immer auf dem aktiven Platz.
+
+**Einstellungen** (`SettingsScene`): Dialoge vorlesen an/aus, Lautstärke, Vollbild; im laufenden Spiel
+auch Zeitdruck im Kampf (gehört zum Spielstand). Stimme und Lautstärke gelten für alle Spielstände
+(`mensura.prefs`).
 
 Jede Station besteht aus 3 Aufgaben mit zufälligen Zahlen. Die Schwierigkeit richtet sich nach dem
 gespeicherten Können pro Skill (`src/learn/progress.ts`). Stationen lassen sich jederzeit wiederholen.
@@ -98,6 +111,8 @@ gespeicherten Können pro Skill (`src/learn/progress.ts`). Stationen lassen sich
 | Pfad | Inhalt |
 |---|---|
 | `src/main.ts` | Phaser-Konfiguration, Boot-Szene (lädt gemeinsame Assets, wählt Startszene) |
+| `src/scenes/TitleScene.ts`, `SlotScene.ts`, `SettingsScene.ts`, `PrologueScene.ts` | Titelbild, Spielstände, Einstellungen, Vorspann |
+| `src/scenes/flow.ts` | Übergänge zwischen Titelbild und Welt |
 | `src/scenes/AvatarScene.ts` | Avatar-Editor |
 | `src/scenes/HudScene.ts` | Ziel-Anzeige und Dialoge über der Welt (ohne Kamera-Zoom) |
 | `src/world/WorldScene.ts` | Grundlage aller Orte: Laufen per Tippen mit Wegsuche oder Pfeiltasten, Figuren/Objekte antippen, Ausgänge, Rätsel starten |
@@ -112,7 +127,9 @@ gespeicherten Können pro Skill (`src/learn/progress.ts`). Stationen lassen sich
 | `src/learn/` | Skill-Katalog, Könnensstand, Zahl-Hilfen (Zahlwörter, Runden, Formatierung) |
 | `src/avatar/` | Avatar-Varianten, Palettentausch |
 | `src/ui/` | Schrift/Farben/Knöpfe, Dialogbox, Ziffernfeld, Sprachausgabe |
-| `src/save.ts` | Spielstand im Browser (Avatar, Lernstand, Story-Merker, Ort) |
+| `src/save.ts` | Spielstände im Browser: drei Plätze, Export/Import, Einstellungen |
+| `src/story.ts` | Urmaße, Splitter-Zählung, Ortsnamen (für Titelbild und Spielstände) |
+| `src/ui/screens.ts` | Nebel-Hintergrund, Rückfrage-Fenster, kurze Meldungen |
 | `tools/build_avatar_sheets.py` + `avatar_characters.json` | Avatar-Spritesheets aus PixelLab bauen |
 | `tools/fetch_assets.py` + `assets.json` | Kachelsets, Objekte und NPCs von PixelLab holen |
 

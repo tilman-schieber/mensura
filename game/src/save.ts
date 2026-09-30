@@ -1,11 +1,20 @@
 import type { AvatarLook } from './avatar/avatar';
 import type { SkillStat } from './learn/progress';
 
-// Spielstand im Browser. Später IndexedDB plus Export/Import als Datei,
-// für den Anfang reicht localStorage. Zugriffe können in privaten Fenstern
-// scheitern, deshalb alles in try/catch.
+// Spielstände im Browser (localStorage): drei Plätze, einer davon ist aktiv.
+// Das Spiel speichert laufend in den aktiven Platz; `loadSave`/`writeSave` arbeiten
+// immer auf ihm. Einstellungen, die für alle Spielstände gelten (Lautstärke …),
+// liegen getrennt. Zugriffe können in privaten Fenstern scheitern, deshalb alles
+// in try/catch; ohne Speicher läuft das Spiel trotzdem, nur ohne Fortschritt.
 
-const KEY = 'mensura.save.v1';
+export const SLOTS = [1, 2, 3] as const;
+export type Slot = (typeof SLOTS)[number];
+
+const SLOT_KEY = (n: Slot) => `mensura.slot.${n}`;
+const ACTIVE_KEY = 'mensura.active';
+const PREFS_KEY = 'mensura.prefs';
+/** Spielstand aus der Zeit vor den Speicherplätzen; wird zu Platz 1. */
+const LEGACY_KEY = 'mensura.save.v1';
 
 export interface SaveGame {
   version: 1;
@@ -22,27 +31,92 @@ export interface SaveGame {
     /** Schulmodus: Themen, die im Unterricht schon dran waren (Topic-IDs) */
     topics: Record<string, boolean>;
   };
+  /** Gespielte Zeit in Sekunden (nur Zeit in der Welt) */
+  playtime: number;
+  /** Zeitpunkt der letzten Speicherung (ms seit 1970) */
+  savedAt: number;
 }
 
-const empty = (): SaveGame => ({ version: 1, avatar: null, progress: {}, flags: {}, place: null, settings: { battleTimer: true, topics: {} } });
+/** Einstellungen für alle Spielstände */
+export interface Prefs {
+  /** Dialoge vorlesen */
+  voice: boolean;
+  /** Lautstärke 0–1 */
+  volume: number;
+}
+
+const empty = (): SaveGame => ({
+  version: 1,
+  avatar: null,
+  progress: {},
+  flags: {},
+  place: null,
+  settings: { battleTimer: true, topics: {} },
+  playtime: 0,
+  savedAt: 0,
+});
+
+function read(key: string): string | null {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function write(key: string, value: string | null): void {
+  try {
+    if (value === null) localStorage.removeItem(key);
+    else localStorage.setItem(key, value);
+  } catch {
+    // kein Speicher verfügbar
+  }
+}
+
+/** Prüft und ergänzt einen gelesenen Spielstand; null, wenn er unbrauchbar ist. */
+function parse(raw: string | null): SaveGame | null {
+  if (!raw) return null;
+  try {
+    const data = JSON.parse(raw) as Partial<SaveGame>;
+    if (data?.version !== 1 || typeof data.flags !== 'object') return null;
+    return { ...empty(), ...data, settings: { ...empty().settings, ...data.settings } };
+  } catch {
+    return null;
+  }
+}
+
+function migrate(): void {
+  const legacy = read(LEGACY_KEY);
+  if (legacy === null) return;
+  if (read(SLOT_KEY(1)) === null && parse(legacy)) {
+    write(SLOT_KEY(1), legacy);
+    write(ACTIVE_KEY, '1');
+  }
+  write(LEGACY_KEY, null);
+}
+migrate();
+
+// ---------- aktiver Spielstand ----------
+
+export function activeSlot(): Slot | null {
+  const n = Number(read(ACTIVE_KEY));
+  return (SLOTS as readonly number[]).includes(n) ? (n as Slot) : null;
+}
+
+export function setActiveSlot(n: Slot): void {
+  write(ACTIVE_KEY, String(n));
+}
 
 export function loadSave(): SaveGame {
-  try {
-    const raw = localStorage.getItem(KEY);
-    if (!raw) return empty();
-    const data = JSON.parse(raw) as Partial<SaveGame>;
-    return data.version === 1 ? { ...empty(), ...data, settings: { ...empty().settings, ...data.settings } } : empty();
-  } catch {
-    return empty();
-  }
+  const n = activeSlot();
+  return (n && parse(read(SLOT_KEY(n)))) || empty();
 }
 
 export function writeSave(save: SaveGame): void {
-  try {
-    localStorage.setItem(KEY, JSON.stringify(save));
-  } catch {
-    // Ohne Speicher läuft das Spiel trotzdem, nur ohne Fortschritt.
-  }
+  const n = activeSlot();
+  if (!n) return;
+  save.savedAt = Date.now();
+  write(SLOT_KEY(n), JSON.stringify(save));
 }
 
 export function getFlag(name: string): boolean {
@@ -58,4 +132,59 @@ export function setFlag(name: string, value = true): void {
   const save = loadSave();
   save.flags[name] = value;
   writeSave(save);
+}
+
+// ---------- Speicherplätze ----------
+
+export function readSlot(n: Slot): SaveGame | null {
+  return parse(read(SLOT_KEY(n)));
+}
+
+/** Legt in Platz n ein neues Spiel an und macht ihn zum aktiven. */
+export function newGame(n: Slot): void {
+  const save = empty();
+  save.savedAt = Date.now();
+  write(SLOT_KEY(n), JSON.stringify(save));
+  setActiveSlot(n);
+}
+
+export function deleteSlot(n: Slot): void {
+  write(SLOT_KEY(n), null);
+  if (activeSlot() === n) write(ACTIVE_KEY, null);
+}
+
+/** Speichert den aktiven Spielstand zusätzlich in Platz n und spielt dort weiter. */
+export function saveAs(n: Slot): void {
+  const save = loadSave();
+  setActiveSlot(n);
+  writeSave(save);
+}
+
+/** Spielstand als Datei-Inhalt (zum Sichern auf dem Gerät) */
+export function exportSlot(n: Slot): string | null {
+  const save = readSlot(n);
+  return save ? JSON.stringify({ game: 'mensura', ...save }, null, 1) : null;
+}
+
+/** Liest eine gesicherte Datei in Platz n ein. Gibt false zurück, wenn die Datei nicht passt. */
+export function importSlot(n: Slot, content: string): boolean {
+  const save = parse(content);
+  if (!save || !save.avatar) return false;
+  write(SLOT_KEY(n), JSON.stringify(save));
+  return true;
+}
+
+// ---------- Einstellungen für alle Spielstände ----------
+
+export function loadPrefs(): Prefs {
+  const defaults: Prefs = { voice: true, volume: 0.8 };
+  try {
+    return { ...defaults, ...(JSON.parse(read(PREFS_KEY) ?? '{}') as Partial<Prefs>) };
+  } catch {
+    return defaults;
+  }
+}
+
+export function writePrefs(prefs: Prefs): void {
+  write(PREFS_KEY, JSON.stringify(prefs));
 }

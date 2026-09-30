@@ -48,7 +48,6 @@ export class ValleyScene extends WorldScene {
     this.load.image('ferry-dock', 'assets/objects/ferry-dock.png');
     this.load.image('kaefer', 'assets/objects/kaefer.png');
     this.load.image('boat', 'assets/objects/boat.png');
-    this.load.image('splitter', 'assets/objects/splitter.png');
     this.load.spritesheet('npc-hanna', 'assets/npcs/hanna.png', { frameWidth: 68, frameHeight: 68 });
   }
 
