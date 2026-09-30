@@ -71,6 +71,16 @@ dem Schulthema „Umfang, Flächen, Netze, Volumen“. Baumeister Quadro, vier S
 - **Endgegner Kubus-Wächter** (`KubusScene`): Schild-Fläche/Umfang, Schwachstelle gegenüber im Netz, Volumen
 - Belohnung: Splitter des Raums. Damit ist der Stoff von Klasse 5 vollständig.
 
+**Nebel des Ungefähren** (`fogDensity()` / `clearFog()` in `WorldScene`): Jede Region ist grau
+(Farbfilter der Kamera), bis ihr Splitter geborgen ist; dann kehrt die Farbe langsam zurück.
+Eichstadt wird mit jedem abgegebenen Splitter farbiger.
+
+**Die Geschichte der Brücke** (siehe [kritik.md](../konzept/kritik.md)): Nach jedem Endgegner spricht
+Vagor aus dem Nebel (`vagorSays()`, die Welt verdunkelt sich). Durin gesteht, dass er den Splitter
+gehortet hat; die Spiegel zeigen Vagor und Elle an der Großen Brücke; der Riesenkäfer ist Hannas
+Marienkäfer Tupfi; Quadro hat Vagors Zitadelle gebaut. Am Ende von Klasse 5 gesteht Elle, dass sie
+die Probe weggelassen hat.
+
 Endgegner mit Phasen erben von `BossScene` (Herzen, Lebensbalken, Treffer, Sieg).
 Das Ziffernfeld kann Kommazahlen (`createNumpad(…, { decimal: true, unit: 'cm' })`).
 

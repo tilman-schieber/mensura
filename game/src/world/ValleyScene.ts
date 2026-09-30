@@ -35,6 +35,10 @@ export class ValleyScene extends WorldScene {
     super('Valley');
   }
 
+  protected fogDensity(): number {
+    return getFlag('valley_done') ? 0 : 1;
+  }
+
   preload(): void {
     this.load.image('tiles-valley', 'assets/tiles/valley.png');
     this.load.json('tiles-valley-data', 'assets/tiles/valley.json');
@@ -113,6 +117,7 @@ export class ValleyScene extends WorldScene {
     this.addInteractable({ target: this.hanna, stand: { x: 15, y: 9 }, onInteract: () => this.talkToHanna() });
 
     if (this.stationsDone() === 4 && !getFlag('valley_boss')) this.spawnBeetle(false);
+    if (getFlag('valley_boss')) this.addLadybug();
 
     this.updateGoal();
     if (!getFlag('valley_intro')) this.time.delayedCall(600, () => this.talkToHanna());
@@ -123,7 +128,7 @@ export class ValleyScene extends WorldScene {
     if (!topicDone('flaechen')) {
       this.say([
         { speaker: 'Riesin Hanna', text: 'Mit dem Boot kommst du zur Würfelfestung. Doch über dem Fluss hängt noch zu dichter Nebel.' },
-        { speaker: 'Riesin Hanna', text: 'Wenn ihr in der Schule Flächen und Körper durchnehmt, hakt das Thema im Menü ab. Dann setze ich dich über.' },
+        { speaker: 'Riesin Hanna', text: 'Frag Meisterin Elle, wann er sich lichtet. Sie weiß so etwas. Dann setze ich dich über.' },
       ]);
       return;
     }
@@ -139,7 +144,8 @@ export class ValleyScene extends WorldScene {
       this.say(
         [
           { speaker: 'Riesin Hanna', text: 'Hallo, Kleines! Pass auf, wo du hintrittst, sonst übersehe ich dich noch.' },
-          { speaker: 'Riesin Hanna', text: 'Ich bin Hanna. Seit Vagors Nebel im Tal liegt, stimmt hier kein Maß mehr. Meine Stiefel sind mal riesig, mal winzig!' },
+          { speaker: 'Riesin Hanna', text: 'Ich bin Hanna, und ich bin erst elf. Bei uns Riesen bin ich noch ganz klein, stell dir vor!' },
+          { speaker: 'Riesin Hanna', text: 'Seit der Nebel im Tal liegt, stimmt hier kein Maß mehr. Meine Stiefel sind mal riesig, mal winzig!' },
           { speaker: 'Riesin Hanna', text: 'Hilf mir: Miss meinen Stiefel, gleich die Waage aus, schätze vom Aussichtspilz aus und bring die Fährenuhr am Fluss in Ordnung.' },
           { speaker: 'Riesin Hanna', text: 'Dafür leihe ich dir meine Skalenkappe. Damit wirst du so klein oder so groß, wie du willst.' },
         ],
@@ -151,13 +157,13 @@ export class ValleyScene extends WorldScene {
       return;
     }
     if (this.stationsDone() < 4) {
-      this.say([{ speaker: 'Riesin Hanna', text: 'Schau nach den Stellen, über denen noch kein goldener Stern schwebt.' }]);
+      this.say([{ speaker: 'Riesin Hanna', text: 'Da fehlen noch Sterne! Von da unten siehst du Dinge, die ich glatt übersehe. Schau, wo noch keiner leuchtet.' }]);
     } else if (!getFlag('valley_boss')) {
-      this.say([{ speaker: 'Riesin Hanna', text: 'Der Käfer! Setz die Skalenkappe auf und zeig ihm, dass du jedes Maß kennst!' }]);
+      this.say([{ speaker: 'Riesin Hanna', text: 'Das ist Tupfi! Setz die Skalenkappe auf und hol ihn aus dem Nebel!' }]);
     } else if (!getFlag('valley_done')) {
       this.say([{ speaker: 'Riesin Hanna', text: 'Da, wo der Käfer saß, glitzert etwas! Heb es auf.' }]);
     } else {
-      this.say([{ speaker: 'Riesin Hanna', text: 'Komm jederzeit wieder, Kleines. Im Riesental gibt es immer etwas zu messen.' }]);
+      this.say([{ speaker: 'Riesin Hanna', text: 'Komm jederzeit wieder, Kleines. Tupfi und ich messen inzwischen alles zweimal nach.' }]);
     }
   }
 
@@ -173,7 +179,7 @@ export class ValleyScene extends WorldScene {
       this.stars[s.flag]?.setVisible(true);
       this.updateGoal();
       if (first && this.stationsDone() === 4) this.beetleAppears();
-      else if (first) this.say([{ speaker: 'Riesin Hanna', text: 'Wunderbar! Endlich stimmt hier wieder etwas.' }]);
+      else if (first) this.say([{ speaker: 'Riesin Hanna', text: 'Wunderbar! Meine Mama sagt immer, ich soll nicht so ungefähr sein. Jetzt kann ich es ihr zeigen.' }]);
     });
   }
 
@@ -194,8 +200,9 @@ export class ValleyScene extends WorldScene {
     this.spawnBeetle(true);
     this.updateGoal();
     this.say([
-      { speaker: 'Riesin Hanna', text: 'Iiih! Der Riesenkäfer! Er frisst die Maße auf, deshalb stimmt hier nichts!' },
-      { speaker: 'Riesin Hanna', text: 'Er rechnet in großen Einheiten, du misst in kleinen. Zeig ihm, dass du beides kannst!' },
+      { speaker: 'Riesin Hanna', text: 'Iiih! Ein Riesenkäfer! Der Nebel hat sich um irgendetwas zusammengeballt.' },
+      { speaker: 'Riesin Hanna', text: 'Moment … unter dem Grau schimmern sieben Punkte. Das ist Tupfi, mein Marienkäfer! Er muss etwas Glänzendes verschluckt haben.' },
+      { speaker: 'Riesin Hanna', text: 'Er rechnet in großen Einheiten, du misst in kleinen. Hol ihn aus dem Nebel, aber tu ihm nicht weh!' },
     ]);
   }
 
@@ -208,12 +215,37 @@ export class ValleyScene extends WorldScene {
       this.unblock(14, 3, 16, 4);
       this.showSplitter();
       setFlag('valley_done');
+      this.clearFog();
+      this.addLadybug();
       this.updateGoal();
-      this.say([
-        { speaker: 'Riesin Hanna', text: 'Er ist weg! Und schau, was er zurückgelassen hat: ein Splitter, der in allen Größen gleichzeitig glänzt!' },
-        { speaker: 'Riesin Hanna', text: 'Das ist das Urmaß der Größe. Bring ihn deiner Meisterin, Kleines!' },
-      ]);
+      this.say(
+        [
+          { speaker: 'Riesin Hanna', text: 'Tupfi! Da bist du ja wieder, so winzig wie immer.' },
+          { speaker: 'Riesin Hanna', text: 'Und schau, was er ausgespuckt hat: einen Splitter, der in allen Größen gleichzeitig glänzt! Der hat den Nebel angelockt.' },
+          { speaker: 'Riesin Hanna', text: 'Das ist das Urmaß der Größe. Bring ihn deiner Meisterin, Kleines!' },
+        ],
+        () =>
+          this.vagorSays([
+            { speaker: 'Vagor', text: 'Ein Maß für alles. Und ein einziger Fehler, und das ganze Land lacht über dich.' },
+            { speaker: 'Vagor', text: 'Ohne Maße lacht niemand. Denk darüber nach, Lehrling.' },
+            { speaker: 'Riesin Hanna', text: 'Wer war das? Das klang gar nicht böse. Eher … traurig.' },
+          ]),
+      );
     });
+  }
+
+  /** Tupfi, Hannas Marienkäfer, krabbelt wieder winzig neben ihr (im Code gezeichnet). */
+  private addLadybug(): void {
+    const g = this.add.graphics();
+    g.fillStyle(0x1a1a1a, 1).fillCircle(0, -4, 2.5);
+    g.fillStyle(0xd8322a, 1).fillEllipse(0, 1, 8, 9);
+    g.lineStyle(1, 0x1a1a1a, 1).lineBetween(0, -3, 0, 5.5);
+    g.fillStyle(0x1a1a1a, 1);
+    for (const [x, y] of [[-2, -1], [2, -1], [-2.3, 3], [2.3, 3], [0, 4.6]]) g.fillCircle(x, y, 0.9);
+    const x0 = 16.9 * TILE;
+    const y0 = 8.3 * TILE;
+    g.setPosition(x0, y0).setDepth(y0);
+    this.tweens.add({ targets: g, x: x0 + 14, duration: 2600, yoyo: true, repeat: -1, ease: 'sine.inout', hold: 600 });
   }
 
   private showSplitter(): void {

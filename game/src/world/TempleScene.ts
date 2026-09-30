@@ -35,6 +35,10 @@ export class TempleScene extends WorldScene {
     super('Temple');
   }
 
+  protected fogDensity(): number {
+    return getFlag('temple_done') ? 0 : 1;
+  }
+
   preload(): void {
     this.load.image('tiles-temple', 'assets/tiles/temple.png');
     this.load.json('tiles-temple-data', 'assets/tiles/temple.json');
@@ -94,7 +98,7 @@ export class TempleScene extends WorldScene {
       this.say(
         [
           { speaker: 'Hüterin Lumen', text: 'Willkommen im Spiegeltempel, Lehrling. Ich bin Lumen, die Hüterin der Formen.' },
-          { speaker: 'Hüterin Lumen', text: 'Vagors Nebel hat die Spiegel getrübt. Sie zeigen keine wahren Bilder mehr.' },
+          { speaker: 'Hüterin Lumen', text: 'Seit der Nebel des Ungefähren hier liegt, zeigen die Spiegel nur noch ungefähre Bilder. Und ein ungefähres Bild ist kein Bild.' },
           { speaker: 'Hüterin Lumen', text: 'Bring die vier Spiegel wieder zum Leuchten: die Spiegelwand, die Siegel, das Haus der Vierecke und die Sternenkarte.' },
           { speaker: 'Hüterin Lumen', text: 'Dann öffnet sich das Heiligtum. Dort ruht der zweite Splitter, das Urmaß der Form.' },
         ],
@@ -106,7 +110,7 @@ export class TempleScene extends WorldScene {
       return;
     }
     if (this.mirrorsDone() < 4) {
-      this.say([{ speaker: 'Hüterin Lumen', text: 'Schau nach den Spiegeln, über denen noch kein goldener Stern schwebt.' }]);
+      this.say([{ speaker: 'Hüterin Lumen', text: 'Ein Spiegel ohne Stern ist ein Spiegel ohne Licht. Such die Spiegel, über denen noch keiner leuchtet.' }]);
     } else if (!getFlag('temple_boss')) {
       this.say([{ speaker: 'Hüterin Lumen', text: 'Im Heiligtum wartet dein Spiegelbild aus Nebel. Sieh voraus, wo es erscheint!' }]);
     } else {
@@ -126,7 +130,7 @@ export class TempleScene extends WorldScene {
       this.stars[m.flag]?.setVisible(true);
       this.updateGoal();
       if (first && this.mirrorsDone() === 4) this.shadowAppears();
-      else if (first) this.say([{ speaker: 'Hüterin Lumen', text: 'Der Spiegel leuchtet wieder! Sein Bild ist klar und wahr.' }]);
+      else if (first) this.say([{ speaker: 'Hüterin Lumen', text: 'Der Spiegel leuchtet wieder. Was wahr ist, ist klar, und was klar ist, ist wahr.' }]);
     });
   }
 
@@ -148,7 +152,8 @@ export class TempleScene extends WorldScene {
     this.updateGoal();
     this.say([
       { speaker: 'Hüterin Lumen', text: 'Alle vier Spiegel leuchten! Doch sieh … vor dem Heiligtum steht jemand.' },
-      { speaker: 'Hüterin Lumen', text: 'Es sieht aus wie du! Ein Spiegelbild aus Vagors Nebel. Es tut alles gespiegelt. Sieh voraus, wo es auftaucht!' },
+      { speaker: 'Hüterin Lumen', text: 'Es sieht aus wie du! Der Splitter im Heiligtum zieht den Nebel an, und der Nebel hat sich dein Gesicht geliehen.' },
+      { speaker: 'Hüterin Lumen', text: 'Es tut alles gespiegelt. Sieh voraus, wo es auftaucht!' },
     ]);
   }
 
@@ -160,11 +165,33 @@ export class TempleScene extends WorldScene {
       this.shadow = undefined;
       this.unblock(12, 5, 12, 5);
       this.updateGoal();
-      this.say([
-        { speaker: 'Hüterin Lumen', text: 'Das Spiegelbild ist zersprungen. Es war nur Nebel, du aber bist echt.' },
-        { speaker: 'Hüterin Lumen', text: 'Geh ins Heiligtum und nimm, was dort auf dich wartet.' },
-      ]);
+      this.say(
+        [{ speaker: 'Hüterin Lumen', text: 'Das Spiegelbild ist zersprungen. Es war nur Nebel, du aber bist echt.' }],
+        () => this.bridgeVision(),
+      );
     });
+  }
+
+  /** Vagor meldet sich, dann zeigen die Spiegel zum ersten Mal die Große Brücke. */
+  private bridgeVision(): void {
+    this.vagorSays(
+      [
+        { speaker: 'Vagor', text: 'Du bist schneller als dein Spiegelbild, Lehrling. Aber Spiegel zeigen nicht nur, was ist.' },
+        { speaker: 'Vagor', text: 'Frag deine Meisterin, was sie gesehen hat. Damals, an der Brücke.' },
+      ],
+      () => {
+        this.cameras.main.flash(900, 200, 190, 255);
+        this.say(
+          [
+            { speaker: 'Hüterin Lumen', text: 'Sieh nur, die Spiegel! Sie zeigen ein Bild aus der Vergangenheit.' },
+            { speaker: 'Hüterin Lumen', text: 'Eine große Brücke über einem Fluss. Darauf zwei Vermesser: ein Mann im dunklen Mantel und eine junge Frau mit einem Messstab.' },
+            { speaker: 'Hüterin Lumen', text: 'Die Frau … das ist Meisterin Elle. Und der Mann ist Vagor. Sie lachen zusammen. Sie waren einmal Freunde.' },
+            { speaker: 'Hüterin Lumen', text: 'Das Bild verblasst. Geh ins Heiligtum, Lehrling. Dort wartet der Splitter.' },
+          ],
+          () => setFlag('vision_bridge'),
+        );
+      },
+    );
   }
 
   private sanctum(): void {
@@ -183,12 +210,13 @@ export class TempleScene extends WorldScene {
     setFlag('temple_done');
     this.updateGoal();
     this.cameras.main.flash(700, 255, 250, 220);
+    this.clearFog();
     const s = this.add.image(this.player.x, this.player.y - 60, 'splitter').setDepth(20_000).setScale(0.2).setTint(0xbfe6ff);
     this.tweens.add({ targets: s, scale: 1, y: s.y - 20, duration: 900, ease: 'back.out' });
     this.tweens.add({ targets: s, alpha: 0, scale: 0.3, y: this.player.y - 20, delay: 3200, duration: 700, onComplete: () => s.destroy() });
     this.say([
       { speaker: 'Hüterin Lumen', text: 'Der Splitter der Form! Mit ihm haben Linien wieder ihre Richtung und Figuren ihre Gestalt.' },
-      { speaker: 'Hüterin Lumen', text: 'Bring ihn zu Meisterin Elle. Und vergiss nicht: Symmetrie ist Ordnung, die man sehen kann.' },
+      { speaker: 'Hüterin Lumen', text: 'Bring ihn zu Meisterin Elle. Symmetrie ist Ordnung, die man sieht, und was man sieht, ist Ordnung.' },
     ]);
   }
 

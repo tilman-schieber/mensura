@@ -31,6 +31,7 @@ VOICES = {
     "Hüterin Lumen": ("de_DE-ramona-low", 1.05, 1.0, True),
     "Riesin Hanna": ("de_DE-ramona-low", 1.0, 0.82, False),
     "Baumeister Quadro": ("de_DE-karlsson-low", 0.95, 1.12, False),
+    "Vagor": ("de_DE-pavoque-low", 1.1, 0.9, True),
 }
 DEFAULT = ("de_DE-thorsten-high", 1.0, 1.0, False)
 

@@ -46,9 +46,18 @@ export abstract class WorldScene extends Phaser.Scene {
   private frozen = false;
   private keys!: Phaser.Types.Input.Keyboard.CursorKeys;
   private lastCell = { x: -1, y: -1 };
+  private fog?: Phaser.Filters.ColorMatrix;
 
   /** Szene bauen: Gelände, Objekte, Figuren. Gibt die Startposition (Zelle) zurück. */
   protected abstract buildWorld(entry?: string): Cell;
+
+  /**
+   * Wie dicht der Nebel des Ungefähren über dem Ort liegt: 1 = grau, 0 = volle Farbe.
+   * Regionen werden farbig, sobald ihr Splitter geborgen ist.
+   */
+  protected fogDensity(): number {
+    return 0;
+  }
 
   create(data: { entry?: string } = {}): void {
     this.blocked.clear();
@@ -80,6 +89,8 @@ export abstract class WorldScene extends Phaser.Scene {
     cam.startFollow(this.player, true, 0.15, 0.15);
     cam.setRoundPixels(true);
     cam.fadeIn(300);
+    this.fog = undefined;
+    this.setFog(this.fogDensity());
 
     this.input.on('pointerup', (p: Phaser.Input.Pointer) => this.onTap(p));
     this.keys = this.input.keyboard!.createCursorKeys();
@@ -96,6 +107,37 @@ export abstract class WorldScene extends Phaser.Scene {
     this.frozen = true;
     this.path = [];
     this.hud().dialog(lines, () => this.thaw(onDone));
+  }
+
+  /** Nebel sofort setzen (Szenenaufbau) */
+  private setFog(density: number): void {
+    if (density <= 0 && !this.fog) return;
+    if (!this.fog) {
+      this.fog = this.cameras.main.filters.internal.addColorMatrix();
+      this.fog.colorMatrix.saturate(-0.85).brightness(0.9, true);
+    }
+    this.fog.colorMatrix.alpha = density;
+  }
+
+  /** Nebel langsam auf eine neue Dichte bringen, z. B. wenn ein Splitter geborgen ist. */
+  protected clearFog(density = this.fogDensity(), duration = 2500): void {
+    if (!this.fog) return;
+    const cm = this.fog.colorMatrix;
+    this.tweens.addCounter({ from: cm.alpha, to: density, duration, ease: 'sine.inout', onUpdate: (t) => (cm.alpha = t.getValue() ?? density) });
+  }
+
+  /** Vagor spricht aus dem Nebel: Die Welt verdunkelt sich, solange er redet. */
+  protected vagorSays(lines: DialogLine[], onDone?: () => void): void {
+    const veil = this.add
+      .rectangle(0, 0, this.terrain.cols * TILE, this.terrain.rows * TILE, 0x241e3a, 0)
+      .setOrigin(0)
+      .setDepth(30_000);
+    this.cameras.main.shake(500, 0.004);
+    this.tweens.add({ targets: veil, fillAlpha: 0.6, duration: 700 });
+    this.say(lines, () => {
+      this.tweens.add({ targets: veil, fillAlpha: 0, duration: 900, onComplete: () => veil.destroy() });
+      onDone?.();
+    });
   }
 
   protected setGoal(message: string): void {

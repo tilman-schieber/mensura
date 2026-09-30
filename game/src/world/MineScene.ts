@@ -38,6 +38,10 @@ export class MineScene extends WorldScene {
     super('Mine');
   }
 
+  protected fogDensity(): number {
+    return getFlag('mine_outer_done') ? 0 : 1;
+  }
+
   preload(): void {
     this.load.image('tiles-mine', 'assets/tiles/mine.png');
     this.load.json('tiles-mine-data', 'assets/tiles/mine.json');
@@ -177,7 +181,7 @@ export class MineScene extends WorldScene {
       this.say(
         [
           { speaker: 'Vorarbeiter Brom', text: 'Halt! Wer da? Ein Lehrling von Meisterin Elle? Dann bist du willkommen.' },
-          { speaker: 'Vorarbeiter Brom', text: 'Seit der Nebel in die Stollen kriecht, zählen meine Leute falsch. Nichts stimmt mehr!' },
+          { speaker: 'Vorarbeiter Brom', text: 'Seit der Nebel in die Stollen kriecht, zählen meine Leute falsch. Ich zähle alles zweimal, und trotzdem stimmt nichts mehr!' },
           { speaker: 'Vorarbeiter Brom', text: 'Hilf uns an drei Stellen: bei den Erzloren links, an der Lorenbahn in der Mitte und bei den Haltestellen rechts.' },
           { speaker: 'Vorarbeiter Brom', text: 'Schaffst du das, öffnet König Durin vielleicht seinen Tresor für dich. Tipp einfach auf die Dinge, die du untersuchen willst.' },
         ],
@@ -189,13 +193,13 @@ export class MineScene extends WorldScene {
       return;
     }
     if (this.stationsDone() < 3) {
-      this.say([{ speaker: 'Vorarbeiter Brom', text: 'Es gibt noch zu tun! Schau nach den Stationen, über denen noch kein goldener Stern schwebt.' }]);
+      this.say([{ speaker: 'Vorarbeiter Brom', text: 'Drei Sterne will ich über den Stationen sehen, ich zähle jeden Abend nach. Wo noch keiner leuchtet, gibt es zu tun.' }]);
     } else if (!getFlag('koloss_done')) {
       this.say([{ speaker: 'Vorarbeiter Brom', text: 'Der Koloss! Geh hin und zeig ihm, was du über Zahlen weißt!' }]);
     } else if (!getFlag('mine_outer_done')) {
       this.say([{ speaker: 'Vorarbeiter Brom', text: 'Alles läuft wieder! Geh zum Tresor oben. König Durin erwartet dich.' }]);
     } else {
-      this.say([{ speaker: 'Vorarbeiter Brom', text: 'Du kannst jederzeit wiederkommen und mithelfen. Übung macht den Meister, sagen wir Zwerge.' }]);
+      this.say([{ speaker: 'Vorarbeiter Brom', text: 'Vierzehn Stufen zum Tresor, drei Stationen, drei Sterne. Alles stimmt, wie gestern. Komm jederzeit wieder und hilf mit.' }]);
     }
   }
 
@@ -246,7 +250,9 @@ export class MineScene extends WorldScene {
       this.updateGoal();
       this.say([
         { speaker: 'Vorarbeiter Brom', text: 'Was ist das? Der Boden bebt!' },
-        { speaker: 'König Durin', text: 'Vagors Nebel ist in die Erzader gekrochen. Ein Erzkoloss steht vor meinem Tresor!' },
+        { speaker: 'König Durin', text: 'Der Nebel ballt sich zusammen, ausgerechnet vor meinem Tresor! Ein Erzkoloss!' },
+        { speaker: 'Vorarbeiter Brom', text: 'Warum gerade dort, mein König? Was liegt in diesem Tresor?' },
+        { speaker: 'König Durin', text: 'Das … geht dich nichts an, Brom. Erst muss das Ungetüm weg.' },
         { speaker: 'Vorarbeiter Brom', text: 'Du kennst dich jetzt mit Zahlen aus wie ein Zwerg. Zeig dem Ungetüm, was du gelernt hast!' },
       ]);
     });
@@ -263,7 +269,7 @@ export class MineScene extends WorldScene {
         this.say([
           { speaker: 'König Durin', text: 'Er ist fort! Nie hat ein Lehrling so mutig gerechnet.' },
           { speaker: 'König Durin', text: 'Komm zum Tresor. Ich öffne ihn für dich.' },
-        ]);
+        ], () => this.vagorSpeaks());
     });
   }
 
@@ -292,11 +298,27 @@ export class MineScene extends WorldScene {
           this.updateGoal();
           this.cameras.main.flash(600, 255, 240, 200);
           this.showSplitter();
+          this.clearFog();
           this.say([
-            { speaker: 'König Durin', text: 'Der Tresor ist offen. Darin lag, was Vagor uns nicht nehmen konnte: ein Splitter des Urmaßes der Zahl.' },
-            { speaker: 'König Durin', text: 'Nimm ihn, Lehrling. Bring ihn zu Meisterin Elle.' },
+            { speaker: 'König Durin', text: 'Der Tresor ist offen. Ich muss dir etwas gestehen, Lehrling.' },
+            { speaker: 'König Durin', text: 'Als die Urmaße zerbrachen, fiel ein Splitter in meinen Stollen. Ich habe ihn weggeschlossen. Was glänzt, gibt ein Zwerg nicht her.' },
+            { speaker: 'König Durin', text: 'Aber Splitter ziehen den Nebel an. Darum zählten meine Leute falsch, und darum stand der Koloss vor meinem Tresor.' },
+            { speaker: 'König Durin', text: 'Nimm ihn. Bring ihn zu Meisterin Elle, dort gehört er hin.' },
           ]);
         }),
+    );
+  }
+
+  /** Vagors Stimme aus dem Nebel, zum ersten Mal */
+  private vagorSpeaks(): void {
+    if (getFlag('vagor_mine')) return;
+    this.vagorSays(
+      [
+        { speaker: 'Vagor', text: 'Sieh an. Elles neuer Lehrling.' },
+        { speaker: 'Vagor', text: 'Wozu so genau, Kind? Genau heißt: Man kann sich irren. Im Nebel irrt sich niemand.' },
+        { speaker: 'Vorarbeiter Brom', text: 'Diese Stimme … Das war Vagor. Er hat noch nie zu jemandem gesprochen.' },
+      ],
+      () => setFlag('vagor_mine'),
     );
   }
 

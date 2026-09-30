@@ -36,6 +36,10 @@ export class FortressScene extends WorldScene {
     super('Fortress');
   }
 
+  protected fogDensity(): number {
+    return getFlag('fort_done') ? 0 : 1;
+  }
+
   preload(): void {
     this.load.image('tiles-fortress', 'assets/tiles/fortress.png');
     this.load.json('tiles-fortress-data', 'assets/tiles/fortress.json');
@@ -118,7 +122,7 @@ export class FortressScene extends WorldScene {
       this.say(
         [
           { speaker: 'Baumeister Quadro', text: 'Ein Besucher! Willkommen in der Würfelfestung. Ich bin Quadro, der Baumeister.' },
-          { speaker: 'Baumeister Quadro', text: 'Hier wurde alles genau vermessen: jede Fliese, jede Kiste, jeder Stein. Doch der Nebel hat meine Pläne verwischt.' },
+          { speaker: 'Baumeister Quadro', text: 'Hier ist alles genau vermessen: jede Fliese, jede Kiste, jeder Stein. Doch der Nebel hat meine Pläne verwischt, und nun ist alles nur noch ungefähr. Ungefähr! Ich kann das Wort nicht hören.' },
           { speaker: 'Baumeister Quadro', text: 'Hilf mir beim Fliesenfeld, beim Würfelnetz, im Würfellager und in der Malerwerkstatt.' },
           { speaker: 'Baumeister Quadro', text: 'Dann zeige ich dir, was in der Mitte der Festung verborgen liegt.' },
         ],
@@ -130,11 +134,11 @@ export class FortressScene extends WorldScene {
       return;
     }
     if (this.stationsDone() < 4) {
-      this.say([{ speaker: 'Baumeister Quadro', text: 'Schau nach den Stellen, über denen noch kein goldener Stern schwebt.' }]);
+      this.say([{ speaker: 'Baumeister Quadro', text: 'Es fehlen noch Sterne. Eine Festung mit Lücken ist keine Festung, das stört mich mehr als ein schiefes Bild.' }]);
     } else if (!getFlag('fort_boss')) {
       this.say([{ speaker: 'Baumeister Quadro', text: 'Der Kubus-Wächter ist erwacht! Nur wer Flächen und Körper versteht, kann ihn bezwingen.' }]);
     } else {
-      this.say([{ speaker: 'Baumeister Quadro', text: 'Meine Festung steht wieder gerade. Komm jederzeit zum Üben vorbei!' }]);
+      this.say([{ speaker: 'Baumeister Quadro', text: 'Meine Festung steht wieder gerade. Bis auf die Fackel dort drüben, die rücke ich gleich zurecht. Komm jederzeit zum Üben vorbei!' }]);
     }
   }
 
@@ -150,7 +154,7 @@ export class FortressScene extends WorldScene {
       this.stars[s.flag]?.setVisible(true);
       this.updateGoal();
       if (first && this.stationsDone() === 4) this.kubusAppears();
-      else if (first) this.say([{ speaker: 'Baumeister Quadro', text: 'Hervorragend gemessen! Wie ein echter Baumeister.' }]);
+      else if (first) this.say([{ speaker: 'Baumeister Quadro', text: 'Genau so! Auf den Millimeter. Ah, das tut gut, wenn etwas wieder stimmt.' }]);
     });
   }
 
@@ -172,7 +176,7 @@ export class FortressScene extends WorldScene {
     this.updateGoal();
     this.say([
       { speaker: 'Baumeister Quadro', text: 'Alle Pläne stimmen wieder! Aber hörst du das Summen? Der Kubus-Wächter erwacht!' },
-      { speaker: 'Baumeister Quadro', text: 'Vagors Nebel hat ihn verzaubert. Zeig ihm, dass du Flächen, Netze und Volumen verstehst!' },
+      { speaker: 'Baumeister Quadro', text: 'Der Nebel hat sich um etwas in seinem Inneren gesammelt. Zeig ihm, dass du Flächen, Netze und Volumen verstehst!' },
     ]);
   }
 
@@ -184,15 +188,39 @@ export class FortressScene extends WorldScene {
       this.kubus = undefined;
       this.unblock(12, 7, 13, 8);
       setFlag('fort_done');
+      this.clearFog();
       this.updateGoal();
       const s = this.add.image(this.player.x, this.player.y - 60, 'splitter').setDepth(20_000).setScale(0.2).setTint(0xb8c8ff);
       this.tweens.add({ targets: s, scale: 1, y: s.y - 20, duration: 900, ease: 'back.out' });
       this.tweens.add({ targets: s, alpha: 0, scale: 0.3, y: this.player.y - 20, delay: 3200, duration: 700, onComplete: () => s.destroy() });
-      this.say([
-        { speaker: 'Baumeister Quadro', text: 'Der Wächter ist frei! Und sieh: In seinem Inneren lag ein Splitter, das Urmaß des Raums.' },
-        { speaker: 'Baumeister Quadro', text: 'Mit ihm hat alles wieder Länge, Breite und Höhe. Bring ihn zu Meisterin Elle!' },
-      ]);
+      this.say(
+        [
+          { speaker: 'Baumeister Quadro', text: 'Der Wächter ist frei! Und sieh: In seinem Inneren lag ein Splitter, das Urmaß des Raums.' },
+          { speaker: 'Baumeister Quadro', text: 'Mit ihm hat alles wieder Länge, Breite und Höhe.' },
+        ],
+        () => this.citadelReveal(),
+      );
     });
+  }
+
+  /** Vagor dankt Quadro, und Quadro begreift, was er gebaut hat. */
+  private citadelReveal(): void {
+    this.vagorSays(
+      [
+        { speaker: 'Vagor', text: 'Quadro, mein treuer Baumeister. Deine beste Arbeit steht längst. Du weißt nur nicht, wo.' },
+        { speaker: 'Vagor', text: 'Komm nur, Lehrling. Ich warte dort, wo alles angefangen hat.' },
+      ],
+      () =>
+        this.say(
+          [
+            { speaker: 'Baumeister Quadro', text: 'Vagor? Das war … Oh nein.' },
+            { speaker: 'Baumeister Quadro', text: 'Vor Jahren bestellte ein Fremder im dunklen Mantel eine Zitadelle bei mir. Er zahlte in Gold, und ich habe gebaut, ohne zu fragen.' },
+            { speaker: 'Baumeister Quadro', text: 'Hier, der Grundriss. Die Zitadelle steht am großen Fluss, genau dort, wo früher die Große Brücke war.' },
+            { speaker: 'Baumeister Quadro', text: 'Bring den Splitter zu Meisterin Elle. Und zeig ihr diesen Plan. Sie wird wissen, was er bedeutet.' },
+          ],
+          () => setFlag('citadel_plan'),
+        ),
+    );
   }
 
   private updateGoal(): void {

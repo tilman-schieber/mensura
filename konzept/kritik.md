@@ -208,7 +208,16 @@ Nach Wirkung pro Aufwand sortiert:
 7. **Pi-mal-Daumen** als wiederkehrende Nebenfigur mit einem Schummel-Rätsel pro Region.
 8. **Ein Werkzeug in der Oberwelt:** Die Skalenkappe öffnet im Riesental ein Mauseloch zu einem geheimen Ort mit der Messbuch-Seite. Erster Schritt weg von „Station antippen“.
 
-**Hinweis zu den Sprachaufnahmen:** Jede geänderte Dialogzeile verliert ihre Aufnahme, bis
-`make_dialog_audio.py` neu läuft. In dieser Umgebung war huggingface.co (Stimmenmodelle) nicht
-erreichbar; deshalb sind die Texte im Spiel noch unverändert. Die Vorschläge oben sind so formuliert,
-dass man sie direkt übernehmen kann.
+### Umgesetzt (30.09.2026)
+
+- **1 · Nebel sichtbar:** Regionen sind grau, bis ihr Splitter geborgen ist; Eichstadt wird mit jedem
+  Splitter farbiger.
+- **2 · Texte:** Widersprüche aus Befund 7 behoben (Stimme der Alten, Durins Hortung, „von vierzehn
+  Splittern“, Hanna erklärt keine Menüs mehr). Die „goldener Stern“-Sätze haben jetzt Eigenart
+  (Brom zählt, Lumen spricht in Spiegelsätzen, Hanna ist elf, Quadro ist Perfektionist). Regel für
+  alle Endgegner: Splitter ziehen Nebel an. Hannas Marienkäfer heißt Tupfi.
+- **3 · Vagor zeigen:** Nach jedem Endgegner spricht er aus dem Nebel. Dazu die Brücken-Vision im
+  Spiegeltempel, Quadros Grundriss der Zitadelle und Elles Geständnis am Ende von Klasse 5.
+
+**Offen:** Die geänderten Zeilen haben noch keine Aufnahme (die Browser-Stimme springt ein), bis
+`make_dialog_audio.py` neu läuft. Für Vagor ist die Stimme `de_DE-pavoque-low` vorgesehen.

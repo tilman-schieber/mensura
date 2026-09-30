@@ -32,8 +32,8 @@ const REGIONS: Region[] = [
     goGoal: 'Geh zur Mine im Osten',
     lockedGoal: '',
     thanks: [
-      { speaker: 'Meisterin Elle', text: 'Das ist er! Der Splitter der Zahl. Spürst du, wie der Nebel zurückweicht?' },
-      { speaker: 'Meisterin Elle', text: 'Tief unten in den Stollen schläft noch mehr. Dorthin gehen wir, wenn du in der Schule weitergekommen bist.' },
+      { speaker: 'Meisterin Elle', text: 'Das ist er! Ein Splitter des Urmaßes der Zahl. Sieh nur, wie die Farben ins Dorf zurückkehren.' },
+      { speaker: 'Meisterin Elle', text: 'Jedes Urmaß ist in zwei Hälften zerbrochen. Die andere Hälfte schläft tief unten in den Stollen. Dorthin gehen wir, wenn du in der Schule weitergekommen bist.' },
       { speaker: 'Meisterin Elle', text: 'Die nächste Spur führt nach Süden, zum Spiegeltempel. Dort ruht das Urmaß der Form.' },
       { speaker: 'Meisterin Elle', text: 'Ruh dich aus, Lehrling. Deine Reise hat gerade erst begonnen.' },
     ],
@@ -45,7 +45,9 @@ const REGIONS: Region[] = [
     goGoal: 'Folge dem Weg nach Süden zum Spiegeltempel',
     lockedGoal: 'Südweg öffnet sich mit dem Schulthema „Symmetrie“',
     thanks: [
-      { speaker: 'Meisterin Elle', text: 'Der Splitter der Form! Zwei von sieben Urmaßen sind wieder vereint.' },
+      { speaker: 'Meisterin Elle', text: 'Der Splitter der Form! Zwei von vierzehn Splittern sind geborgen.' },
+      { speaker: 'Meisterin Elle', text: 'Du siehst mich so seltsam an. Hat Lumen dir etwas in ihren Spiegeln gezeigt?' },
+      { speaker: 'Meisterin Elle', text: 'Die Große Brücke. Ja, Vagor und ich waren einmal Freunde. Mehr will ich dazu jetzt nicht sagen.' },
       { speaker: 'Meisterin Elle', text: 'Im Norden liegt das Riesental. Dort hütet eine Riesin das Urmaß der Größe.' },
     ],
   },
@@ -56,7 +58,8 @@ const REGIONS: Region[] = [
     goGoal: 'Folge dem Weg nach Norden ins Riesental',
     lockedGoal: 'Nordweg öffnet sich mit dem Schulthema „Größen“',
     thanks: [
-      { speaker: 'Meisterin Elle', text: 'Der Splitter der Größe! Drei von sieben. Ich spüre, wie Vagor unruhig wird.' },
+      { speaker: 'Meisterin Elle', text: 'Der Splitter der Größe! Drei von vierzehn.' },
+      { speaker: 'Meisterin Elle', text: 'Vagor hat wieder mit dir gesprochen? Hanna hat recht, er klingt traurig. Er war nicht immer so.' },
       { speaker: 'Meisterin Elle', text: 'Hinter dem Fluss im Riesental steht die Würfelfestung. Dort ruht das Urmaß des Raums.' },
     ],
   },
@@ -67,8 +70,14 @@ const REGIONS: Region[] = [
     goGoal: 'Fahr im Riesental mit dem Boot zur Würfelfestung',
     lockedGoal: 'Die Festung öffnet sich mit dem Schulthema „Flächen“',
     thanks: [
-      { speaker: 'Meisterin Elle', text: 'Der Splitter des Raums! Vier von sieben Urmaßen. Das ganze erste Jahr hast du gemeistert.' },
-      { speaker: 'Meisterin Elle', text: 'Die letzten drei Urmaße liegen weiter weg. Die Wege dorthin öffnen sich im nächsten Schuljahr.' },
+      { speaker: 'Meisterin Elle', text: 'Der Splitter des Raums! Vier von vierzehn. Das ganze erste Jahr hast du gemeistert.' },
+      { speaker: 'Meisterin Elle', text: 'Und was ist das? Ein Grundriss von Quadro … Die Zitadelle steht dort, wo die Brücke war.' },
+      { speaker: 'Meisterin Elle', text: 'Setz dich, Lehrling. Es ist Zeit, dass du die Wahrheit erfährst.' },
+      { speaker: 'Meisterin Elle', text: 'Vagor und ich haben die Große Brücke zusammen geplant. Er hat gerechnet, und ich sollte die Probe machen.' },
+      { speaker: 'Meisterin Elle', text: 'Ich habe ihm vertraut und die Probe weggelassen. Bei der Einweihung brach die Brücke. Alle fielen in den Fluss, und das ganze Land lachte über Vagor.' },
+      { speaker: 'Meisterin Elle', text: 'Seitdem gehe ich am Stock. Und seitdem glaubt Vagor, die Urmaße hätten ihn belogen.' },
+      { speaker: 'Meisterin Elle', text: 'Aber die Wahrheit ist: Ich hätte den Fehler finden können. Ich habe es nur nicht versucht.' },
+      { speaker: 'Meisterin Elle', text: 'Die letzten drei Urmaße liegen weiter weg. Die Wege dorthin öffnen sich im nächsten Schuljahr. Dann finden wir heraus, was an der Brücke wirklich geschah.' },
     ],
   },
 ];
@@ -79,6 +88,12 @@ export class VillageScene extends WorldScene {
 
   constructor() {
     super('Village');
+  }
+
+  /** Das Dorf wird mit jedem abgegebenen Splitter farbiger. */
+  protected fogDensity(): number {
+    const back = REGIONS.filter((r) => getFlag(r.reported)).length;
+    return 0.8 * (1 - back / REGIONS.length);
   }
 
   preload(): void {
@@ -297,7 +312,7 @@ export class VillageScene extends WorldScene {
         { speaker: 'Stimme der Alten', text: 'Wanderer. Du hast gelesen, wie wir einst zählten.' },
         { speaker: 'Stimme der Alten', text: 'Mit Zeichen, die überall gleich viel galten. Mit Steinen, die wir immer zu zweit bündelten.' },
         { speaker: 'Stimme der Alten', text: 'Dann schmiedeten wir das Urmaß der Zahl: zehn Ziffern, und jede Stelle zehnmal so viel wert wie ihre rechte Nachbarin.' },
-        { speaker: 'Stimme der Alten', text: 'Vagor war einer von uns. Er wollte, dass nur er die Zahlen versteht. Darum zerbrach er, was allen gehörte.' },
+        { speaker: 'Stimme der Alten', text: 'Vagor war der Einzige, der unsere Zeichen noch lesen konnte. Er hat sie gelesen und trotzdem zerbrochen, was allen gehörte.' },
       ],
       () => setFlag('ruin_open'),
     );
@@ -322,10 +337,9 @@ export class VillageScene extends WorldScene {
     // Splitter abgeben, falls einer im Gepäck ist
     const carried = REGIONS.find((r) => getFlag(r.done) && !getFlag(r.reported));
     if (carried) {
-      this.say(carried.thanks, () => {
-        setFlag(carried.reported);
-        this.updateGoal();
-      });
+      setFlag(carried.reported);
+      this.clearFog();
+      this.say(carried.thanks, () => this.updateGoal());
       return;
     }
     if (getFlag('elle_splitter')) {
