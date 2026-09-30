@@ -1,6 +1,7 @@
 # Spielkonzept: „Mensura – Die sieben Urmaße" (Arbeitstitel)
 
-← [Lernziele-Übersicht](README.md) · [Abdeckungsmatrix: jeder Skill → Mechanik](spiel-abdeckung.md)
+← [Lernziele-Übersicht](README.md) · [Abdeckungsmatrix: jeder Skill → Mechanik](spiel-abdeckung.md) ·
+[Kritischer Pass](kritik.md)
 
 Ein Zelda-artiges 2D-Abenteuer (Draufsicht, Stil wie *A Link to the Past* oder *Minish Cap*), in dem
 Mathe **das Werkzeug** ist, mit dem man die Welt verändert, und nicht die Prüfung, die vor der Tür steht.
@@ -10,17 +11,74 @@ Mathe **das Werkzeug** ist, mit dem man die Welt verändert, und nicht die Prüf
 ## 1 · Die Idee
 
 Vor langer Zeit schmiedeten die Alten die sieben **Urmaße**: Zahl, Zeichen, Teil, Größe, Form, Raum
-und Takt. Solange sie in der Zitadelle ruhten, hatte alles in Mensura sein Maß: Flüsse, Wege, Brücken
+und Takt. Solange sie in der Halle der Alten ruhten, hatte alles in Mensura sein Maß: Flüsse, Wege, Brücken
 und Versprechen.
 
-**Vagor**, einst der begabteste Vermesser des Landes, wollte die Welt nicht mehr messen, sondern
-beherrschen. Er zerbrach die Urmaße und verstreute die Splitter. Seither kriecht der **Nebel des
-Ungefähren** über das Land: Karten lügen, Brücken enden im Nichts, und aus dem Nebel steigen
-**Trugwesen**, Gestalten ohne festes Maß.
+**Vagor**, einst der begabteste Vermesser des Landes, hat die Urmaße zerbrochen. Jedes zerbrach in
+zwei Hälften, die Splitter flogen über das ganze Land. Seither kriecht der **Nebel des Ungefähren**
+über Mensura: Karten lügen, Brücken enden im Nichts, und aus dem Nebel steigen **Nebelwesen**,
+Dinge und Tiere, die ihr Maß verloren haben.
 
 Die Spielfigur ist der letzte Lehrling der alten Kartographin **Meisterin Elle**, Vagors früherer
 Weggefährtin. Sie zieht aus, um die Splitter zurückzuholen und das Land neu zu **vermessen**. Jede
 Region, die man vermisst, berechnet und kartiert, tritt aus dem grauen Nebel wieder in Farbe hervor.
+
+### Die Brücke (das Geheimnis hinter allem)
+
+Warum tut Vagor das? Das erfährt man erst nach und nach, und es ist der Kern der Geschichte
+(ausführlich in [kritik.md](kritik.md#vorschlag-die-brücke-eine-geschichte-über-fehler)):
+
+Vagor und Elle planten gemeinsam die **Große Brücke** zwischen dem Land der Menschen und dem Elfenwald.
+Vagor rechnete, Elle sollte die Probe machen, ließ sie aber weg, weil sie ihm vertraute. Bei der
+Einweihung brach die Brücke. Alle fielen in den Fluss, niemand wurde verletzt, aber das ganze Land
+lachte über Vagor. Er war sicher, dass die Urmaße gelogen hatten, und zerbrach sie:
+**„Wo nichts genau ist, kann sich niemand irren.“**
+
+Vagor hält sich also nicht für böse, sondern für einen Befreier von der Angst, sich zu irren. Genau
+diese Angst soll das Spiel dem Kind nehmen. Der wirkliche Fehler war klein: Vagor rechnete die
+Balkendicke in Zentimetern aus und schrieb Millimeter dahinter. Im Finale findet das Kind diesen
+Fehler selbst, beweist ihn, und Vagor gibt auf. Die letzte Aufgabe ist, die Brücke gemeinsam neu zu
+bauen: Vagor rechnet, das Kind macht die Probe.
+
+Die Vorgeschichte liegt verstreut in **Vagors Messbuch**: eine versteckte Seite pro Region, jede mit
+einer Rechnung aus der Brückenzeit, manche mit einem Fehler zum Finden.
+
+### Regeln der Welt
+
+- **Der Nebel macht alles ungefähr.** Schilder zeigen „≈ ein paar Meter“, Ziffern flackern, die Farben
+  sind blass. Mit jedem Splitter kehrt in einer Region die Farbe zurück.
+- **Splitter ziehen Nebel an.** Wo ein Splitter lange liegt, verdichtet sich der Nebel zu einem Wächter.
+  Deshalb wartet an jedem Splitter ein Endgegner.
+- **Nebelwesen werden erlöst, nicht getötet.** Wer sie mit dem richtigen Maß trifft, gibt ihnen ihre
+  Gestalt zurück: Übrig bleibt ein Fuchs, eine Laterne, ein Schaf.
+
+### Die sieben Urmaße und wo sie liegen
+
+| Urmaß | Region | Endgegner (äußere / tiefe Ebene) |
+|---|---|---|
+| **Zahl** | ① Stellenstollen | Erzkoloss / Primgolem |
+| **Zeichen** (Vorzeichen) | ② Frostfeuerturm | Thermodrache |
+| **Teil** | ③ Bruchwald | Hydra |
+| **Größe** | ④ Riesental | Riesenkäfer |
+| **Form** | ⑤ Spiegeltempel | Spiegel-Doppelgänger |
+| **Raum** | ⑥ Würfelfestung | Kubus-Wächter |
+| **Takt** | ⑦ Uhrwerk-Kloster | Chronowächter |
+
+Das Finale in der **Nebelzitadelle** hat kein eigenes Urmaß: Dort geht es um die Wahrheit (Daten und
+Diagramme), und die Zitadelle steht auf den Trümmern der Brücke.
+
+### Die Figuren
+
+- **Meisterin Elle**: geht am Stock, seit sie von der Brücke fiel, und spricht nie darüber. Am Ende von
+  Klasse 5 gesteht sie, dass sie die Probe weggelassen hat (Cliffhanger in die Sommerferien).
+- **Vagor**: tritt ab Klasse 6 als Nebelgestalt auf, spricht mit dem Kind, versucht es zu überzeugen
+  („Wozu so genau, Lehrling? Genau heißt: Man kann sich irren.“).
+- **Pi-mal-Daumen**: Vagors Laufbursche, ein kleiner Nebelkobold, der alles rundet und schummelt. Taucht
+  in jeder Region auf, klebt Vagors Plakate, wird beim Schummeln erwischt, wechselt im Finale die Seite.
+- **Eule Pünktchen**: Elles Eule, bringt die Hinweise (Abschnitt 6), etwas besserwisserisch.
+- Jede Region hat eine Hauptfigur mit eigener Verbindung zur Geschichte (König Durin hortet einen
+  Splitter, Hannas Marienkäfer wurde zum Riesenkäfer, Quadro hat die Zitadelle gebaut …), siehe
+  [kritik.md](kritik.md#jede-region-bekommt-eine-eigene-frage).
 
 Das Thema „Maß gegen Nebel" hält alles zusammen: **Genauigkeit ist die Macht der Heldin oder des
 Helden, das Ungefähre und die Täuschung sind die Macht des Feindes.** So passen Messen, Rechnen,
@@ -32,8 +90,9 @@ Geometrie, Karten und Maßstab genauso ins Spiel wie das Entlarven gefälschter 
 weite Landschaften, Ruinen alter Vermesser, getragene Musik, wenig Klamauk. Humor darf es in
 Nebenfiguren geben, zum Beispiel bei Händlern oder Zwergen.
 
-**Kein Blut:** Trugwesen bestehen aus Nebel. Wer sie mit dem richtigen Maß trifft, lässt sie in Licht
-und Schwaden zerfallen. Übrig bleiben Nebelsplitter als Ressource.
+**Kein Blut:** Nebelwesen bestehen aus Nebel. Wer sie mit dem richtigen Maß trifft, erlöst sie: Der
+Nebel zerfällt in Licht, zurück bleibt das Tier oder Ding, das darin gefangen war, und ein paar
+Nebelsplitter als Ressource.
 
 ---
 
@@ -60,8 +119,10 @@ und Schwaden zerfallen. Übrig bleiben Nebelsplitter als Ressource.
 
 ### Eichstadt (das Heimatdorf)
 
-Hier wohnt Meisterin Elle. Das Dorf ist halb zerfallen und wird im Laufe des Spiels **aufgebaut**.
-Es ist der Ort für die „handwerklichen" Skills:
+Hier wohnt Meisterin Elle. Das Dorf ist halb zerfallen, die meisten Bewohner sind vor dem Nebel
+geflohen. **Jeder Splitter bringt jemanden zurück** und mit ihm einen neuen Ort (erst die Händlerin mit
+dem Markt, dann der Bürgermeister mit dem Rathaus …). Vagors Plakate mit gefälschten Statistiken hängen
+von Anfang an im Dorf. Eichstadt ist der Ort für die „handwerklichen" Skills:
 
 | Ort in Eichstadt | Was man dort tut | Mathe |
 |---|---|---|
@@ -72,7 +133,7 @@ Es ist der Ort für die „handwerklichen" Skills:
 | **Zwergen-Rechenwerk** (später) | Große Beute oder Ladungen berechnen und gerecht aufteilen | schriftliche Rechenverfahren, Kommaverschiebung |
 | **Elles Kartentisch** | Die selbst vermessene Karte zeichnen | Koordinaten, Maßstab, maßstäbliche Zeichnung |
 
-### Drei Völker, drei Schreibweisen
+### Die Völker und ihre Schreibweisen
 
 Die Völker von Mensura schreiben Zahlen unterschiedlich. Dadurch wird das **Umwandeln** zu einer
 **Übersetzungsaufgabe** innerhalb der Spielwelt:
@@ -80,7 +141,9 @@ Die Völker von Mensura schreiben Zahlen unterschiedlich. Dadurch wird das **Umw
 - **Zwerge** rechnen mit Dezimalzahlen und Zehnerpotenzen („Bringt mir 3,5 · 10³ Erz!")
 - **Elfen** denken in Brüchen („Der Trank braucht drei Achtel vom Mondwasser.")
 - **Die Händlergilde** spricht in Prozent („Heute 25 % mehr Salz!")
-- Dazu **uralte Goblin-Ruinen** mit Inschriften im Fünfersystem und in römischen Zahlen
+- **Riesen** rechnen in großen Einheiten (km, t), alles andere ist ihnen „zu fitzelig"
+- Dazu die **Ruinen der Alten**, die die Urmaße geschmiedet haben, mit Inschriften in römischen Zahlen,
+  im Zweier- und im Fünfersystem
 
 ### Die sieben Regionen (Dungeons)
 
@@ -192,9 +255,10 @@ Dazu kommt die Fähigkeit, **Einheitswürfel** zu erschaffen und zu stapeln.
 **Thema:** Daten und Diagramme, dazu alles gemischt
 **Werkzeug: Lupe der Wahrheit.** Man bekommt sie früh, in einer Questreihe im Rathaus. Durch die Lupe
 sieht man, was ein Diagramm verschweigt: abgeschnittene Achsen, verzerrte Bilder, falsche Prozentsummen.
-- Vagor herrscht mit **gefälschten Statistiken**. Seine Plakate hängen überall
-- Im Finale ist jeder Raum eine Mischung aus allen Werkzeugen
+- Vagor herrscht mit **gefälschten Statistiken** („Seit es Maße gibt: 100 % mehr Streit!“). Seine Plakate hängen überall
+- Die Zitadelle steht auf den Trümmern der Großen Brücke; im Finale ist jeder Raum eine Mischung aus allen Werkzeugen
 - **Endkampf** in drei Phasen: Werkzeug-Kombination, dann Entlarvung seiner Lügen-Diagramme, dann die letzte Phase, in der er alles nur „ungefähr" macht und man ihn mit exakten Werten schlägt
+- **Auflösung statt Vernichtung:** Mit den Messbuch-Seiten beweist man, dass die Brücke an einem einzigen Einheitenfehler scheiterte, nicht an den Urmaßen. Vagor gibt auf. Letzte Aufgabe: die Brücke gemeinsam neu bauen, Vagor rechnet, das Kind macht die Probe
 
 ---
 
@@ -207,9 +271,9 @@ Was richtig kartiert ist, verliert den Nebel. Die Karte ist Belohnung und Werkze
 Schatzkarten, Teleportsteine und Quests arbeiten mit Koordinaten und Maßstab.
 
 ### Kampf = Automatisieren
-Kurz, schnell, optional abschwächbar. **Kein Blut:** Trugwesen zerfallen in Licht und Nebel.
+Kurz, schnell, optional abschwächbar. **Kein Blut:** Nebelwesen werden erlöst (siehe oben).
 Der Kampf soll mit **Touch genauso gut funktionieren wie mit Maus**. Deshalb kommt es nicht auf
-Fingerfertigkeit an, sondern auf die richtige Wahl im richtigen Moment: Das Trugwesen zeigt seine Zahl,
+Fingerfertigkeit an, sondern auf die richtige Wahl im richtigen Moment: Das Nebelwesen zeigt seine Zahl,
 man tippt den passenden Wert in einem Werkzeugring an und dann das Ziel.
 Gegner tragen Zahlen, die Waffen rechnen:
 - **Zahlenschleime** (zusammengesetzte Zahl) → Spalthammer, sie zerfallen in ihre Faktoren
@@ -238,9 +302,6 @@ Zu Spielbeginn gestaltet das Kind seine Figur selbst und gibt ihr einen Namen. A
 Technisch: Für jede Kombination aus Haartyp und Kleidungstyp gibt es ein eigenes Sprite mit allen
 Laufrichtungen. Die **Farben werden im Spiel per Palettentausch** gesetzt, dafür muss man also keine
 weiteren Sprites erzeugen.
-
-Was sich nur in der echten Welt üben lässt (echter Zirkel, echtes Messen, echte Umfragen), wird
-**bewusst weggelassen**. Es gibt kein Feldbuch.
 
 ### Der Lehrling (Erklären und Begründen)
 Später im Spiel bekommt man selbst einen **Lehrling** (ein junges Waisenkind aus Eichstadt), der Fragen stellt:
@@ -273,7 +334,7 @@ falsche Aussagen.
 
 ## 6 · Hilfesystem: die Hinweis-Leiter
 
-Wer steckt, bekommt Hilfe in Stufen, jede Stufe fragt Meisterin Elle über eine Eule an:
+Wer steckt, bekommt Hilfe in Stufen, jede Stufe bringt **Eule Pünktchen** von Meisterin Elle:
 1. **Strategie-Hinweis:** „Versuch mal, rückwärts zu denken." oder „Kannst du die Figur zerlegen?"
 2. **Veranschaulichung:** Raster über der Fläche, Bruchstreifen, Zahlengerade einblenden
 3. **Erster Schritt vorgemacht**, den Rest macht man selbst
@@ -335,10 +396,10 @@ steckenbleiben.
    - Erzloren bündeln (Dezimalsystem), Tresor-Diktat mit großen Zahlen
    - **Die Lorenbahn ist ein Zahlenstrahl:** Die Schiene hat Markierungen (0, 1 000, 2 000 …). Man hält die Lore genau bei 3 400 an oder liest ab, wo sie steht
    - **Runden an den Haltestellen:** Loren halten nur an vollen Hundertern oder Tausendern. Wo hält die Lore bei 3 460? Die nächste Station ist die gerundete Zahl
-   - Goblin-Ruine mit **römischen Zahlen** oder dem **Zweiersystem**
+   - Ruine der Alten mit **römischen Zahlen** und dem **Zweiersystem**
    - **Boss: Der Erzkoloss.** Seine Panzerplatten tragen Tausender, Hunderter und Zehner; man muss sie entbündeln, um exakt seinen Wert zu treffen. Der Primgolem wartet in der tiefen Ebene auf Klasse 6.
 3. **Lern-Engine, einfach:** Skill-IDs, Rätsel-Baupläne mit Parametern, Speichern des Könnens
-4. **Ein Stück Oberwelt** mit Kartierung und Kampf gegen Trugwesen (Kopfrechnen)
+4. **Ein Stück Oberwelt** mit Kartierung und Kampf gegen Nebelwesen (Kopfrechnen)
 
 Daran sieht man schnell, ob das Kind Spaß hat und ob das Lernen funktioniert, bevor man in die Breite geht.
 
@@ -368,5 +429,5 @@ sechs Themenfelder zu tragen. Die Abdeckungsmatrix zeigt es Skill für Skill:
 - **Ton episch**
 
 - **Spielfigur:** frei gestaltbar per Avatar-Generator (6 Frisuren, 9 Haarfarben, Robe oder Tunika & Hose, 9 Kleidungsfarben), genderneutral, alles Pixelart
-- **Nur Digitales:** Aufgaben für die echte Welt entfallen
+- **Nur Digitales:** Aufgaben für die echte Welt (echter Zirkel, echtes Messen, echte Umfragen) entfallen, es gibt kein Feldbuch
 - **Start:** in der Reihenfolge des Bildungsplans, also mit Dezimalsystem, großen Zahlen, Zahlenstrahl und Runden

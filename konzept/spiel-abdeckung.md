@@ -12,7 +12,7 @@ Stärke: ●●● Kernmechanik · ●● regelmäßig · ● gelegentlich, bzw.
 
 | ID | Skill | Wo und wie im Spiel | Stärke |
 |----|-------|---------------------|--------|
-| Z1 | Stellenwertsystem, Vergleich mit anderem System | ① Erzloren bündeln je 10 · O Goblin-Ruinen im Fünfersystem und mit römischen Zahlen übersetzen | ●●● |
+| Z1 | Stellenwertsystem, Vergleich mit anderem System | ① Erzloren bündeln je 10 · E Ruine der Alten: römische Zahlen und Zweiersystem, später Fünfersystem | ●●● |
 | Z2 | Zahlen bis Billion lesen und nach Diktat schreiben | ① Tresorschlösser, der Zwergenkönig diktiert (Sprachausgabe) · Zwergen-Aufträge | ●● |
 | Z3 | Primzahlen, Primfaktoren, Teilbarkeitsregeln | ① Spalthammer, Siebtüren, Primgolem · O Zahlenschleime im Kampf | ●●● |
 | Z4 | Negative Zahlen als Skala und Änderung | ② Stockwerke und Temperaturen, Aufzüge ± · E Kontostand am Markt | ●●● |
@@ -121,7 +121,7 @@ Stärke: ●●● Kernmechanik · ●● regelmäßig · ● gelegentlich, bzw.
 | Muster nutzen | Uhrwerk-Kloster, Glockenschlösser |
 | Darstellung wechseln | Hinweis-Leiter Stufe 2 (Raster, Bruchstreifen, Zahlengerade) |
 | Plausibilität prüfen | Schummelhändler, Schätzauge, Vagors Lügen |
-| Fehler nutzen | Die Welt zeigt, um wie viel es daneben war (Brücke zu kurz) |
+| Fehler nutzen | Die Welt zeigt, um wie viel es daneben war (Brücke zu kurz) · Vagors Messbuch: Fehler in seinen Rechnungen finden, im Finale den Einheitenfehler der Großen Brücke |
 | Gegenbeispiel finden | Sphinx |
 | Wenn-dann, Umkehrung | Haus der Vierecke (Schlüssel passt nur in eine Richtung) |
 | Begründen | Lehrling-Quests |
