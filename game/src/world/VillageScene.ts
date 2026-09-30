@@ -184,27 +184,27 @@ const VILLAGERS: Villager[] = [
 ];
 
 /** Nebelwesen im Dorf und was aus ihnen wird, wenn man sie erlöst */
-const WISPS: { cell: Cell; count: number; becomes: string; freed: DialogLine[]; play: DialogLine[] }[] = [
+const WISPS: { cell: Cell; count: number; becomes: string; freed: DialogLine[]; greet: DialogLine[] }[] = [
   {
     cell: { x: 17, y: 13 },
     count: 2,
     becomes: 'sheep',
     freed: [{ speaker: 'Eule Pünktchen', text: 'Sieh nur! Aus dem Nebelwesen ist ein Schaf geworden. Es hatte nur sein Maß verloren.' }],
-    play: [{ speaker: 'Eule Pünktchen', text: 'Das Schaf möchte eine Runde Kopfrechnen üben. Mäh!' }],
+    greet: [{ speaker: 'Eule Pünktchen', text: 'Das Schaf grast zufrieden. Seit es sein Maß wiederhat, ist es nie mehr grau geworden.' }],
   },
   {
     cell: { x: 22, y: 12 },
     count: 3,
     becomes: 'fox',
     freed: [{ speaker: 'Eule Pünktchen', text: 'Ein Fuchs! Er hatte vergessen, wie groß er ist. Jetzt weiß er es wieder.' }],
-    play: [{ speaker: 'Eule Pünktchen', text: 'Der Fuchs will wissen, ob du immer noch so schnell rechnest wie im Nebel.' }],
+    greet: [{ speaker: 'Eule Pünktchen', text: 'Der Fuchs blinzelt dich an. Er weiß jetzt genau, wie groß er ist, und ist mächtig stolz darauf.' }],
   },
   {
     cell: { x: 26, y: 8 },
     count: 3,
     becomes: 'lantern',
     freed: [{ speaker: 'Eule Pünktchen', text: 'Eine Laterne! Sie leuchtet wieder genau so hell, wie sie soll.' }],
-    play: [{ speaker: 'Eule Pünktchen', text: 'Die Laterne flackert auffordernd. Noch eine Runde Kopfrechnen?' }],
+    greet: [{ speaker: 'Eule Pünktchen', text: 'Die Laterne leuchtet warm und gleichmäßig. Kein Flackern mehr.' }],
   },
 ];
 
@@ -399,7 +399,7 @@ export class VillageScene extends WorldScene {
     });
   }
 
-  /** Das erlöste Wesen bleibt im Dorf; antippen = noch eine Runde Kopfrechnen */
+  /** Das erlöste Wesen bleibt im Dorf; antippen = ein freundlicher Satz, kein Kampf mehr */
   private placeFreed(index: number, appear = false): void {
     const w = WISPS[index];
     const img = this.placeObject(w.becomes, w.cell.x + 0.5, w.cell.y + 1, w.becomes === 'lantern' ? 0.75 : 0.7);
@@ -411,7 +411,7 @@ export class VillageScene extends WorldScene {
     this.addInteractable({
       target: img,
       stand: { x: w.cell.x - 1, y: w.cell.y },
-      onInteract: () => this.say(w.play, () => this.startPuzzle('FogBattleScene', () => {}, w.count)),
+      onInteract: () => this.say(w.greet),
     });
   }
 
@@ -430,6 +430,8 @@ export class VillageScene extends WorldScene {
         // Erlöst: Das Nebelwesen bekommt seine Gestalt zurück und bleibt im Dorf
         this.tweens.killTweensOf(w.sprite);
         this.removeInteractable(w.sprite);
+        // sofort aus der Liste, damit das verblassende Wesen keinen neuen Kampf auslöst
+        this.wisps = this.wisps.filter((it) => it !== w);
         this.cameras.main.flash(400, 240, 240, 220);
         this.tweens.add({ targets: w.sprite, alpha: 0, scale: 1.8, duration: 700, onComplete: () => w.sprite.destroy() });
         setFlag(`wisp_freed_${w.index}`);
