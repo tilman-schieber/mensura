@@ -60,6 +60,7 @@ export class MineScene extends WorldScene {
     this.load.spritesheet('npc-brom', 'assets/npcs/brom.png', { frameWidth: 68, frameHeight: 68 });
     this.load.image('koloss', 'assets/objects/koloss.png');
     this.load.image('elevator', 'assets/objects/elevator.png');
+    this.load.spritesheet('npc-olaf', 'assets/npcs/olaf.png', { frameWidth: 68, frameHeight: 68 });
   }
 
   protected buildWorld(entry?: string): Cell {
@@ -119,6 +120,23 @@ export class MineScene extends WorldScene {
     this.addGoblin(GOBLIN, { x: 21, y: 6 }, 'west');
     this.addPage('page_mine', 4, 5);
     this.addPlaque(6.5, 3.95, 'Stellenstollen');
+
+    // --- Bergmann Olaf, ein alter Zwerg mit ein, zwei Sätzen
+    const olaf = this.addNpc('npc-olaf', { x: 9, y: 8 }, 'south');
+    this.addInteractable({
+      target: olaf,
+      stand: { x: 9, y: 9 },
+      marker: () => (getFlag('met_olaf') ? null : '!'),
+      onInteract: () => {
+        this.faceToPlayer(olaf);
+        this.say(
+          getFlag('met_olaf')
+            ? [{ speaker: 'Bergmann Olaf', text: 'Grete unten am Rechenwerk ist meine Nichte. Die schraubt, bis die Zahnräder singen.' }]
+            : [{ speaker: 'Bergmann Olaf', text: 'Ich bin Olaf. Zweiundvierzig Jahre unter Tage, und nie hat eine Lore falsch gezählt. Bis der Nebel kam.' }],
+          () => setFlag('met_olaf'),
+        );
+      },
+    });
 
     // --- Vorarbeiter Brom am Eingang
     this.brom = this.addNpc('npc-brom', { x: 15, y: 13 }, 'west');

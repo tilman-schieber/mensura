@@ -90,6 +90,8 @@ wieder jedes Maß stimmt. Baumeister Quadro, vier Stationen:
 **Eichstadt, Aufgaben im Dorf:**
 - **Dorfumfrage** bei Bürgermeister Rudolf (`SurveyPuzzle`, D1/D3/D4/D5): Strichliste aus der Urliste,
   Häufigkeitstabelle, Säulendiagramm zeichnen, Diagramme lesen (auch Maximum/Minimum, Mittelwert).
+  Die Strichliste führt man nur beim ersten Mal von Hand, danach füllt sie sich animiert und man trägt
+  nur die Tabelle ein. Zwei Aufgaben pro Besuch.
   Danach hängt eine ehrliche Umfrage neben Vagors Plakaten.
 - **Miras Marktstand** (`MarketPuzzle`, Z11/M5G): Reicht das Geld (Überschlag), Wechselgeld,
   Stückpreise, Euro und Cent. Immer mit Cent, erst halbe Euro, dann 10-, dann 5-Cent-Schritte;

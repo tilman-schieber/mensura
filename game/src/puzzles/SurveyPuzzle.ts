@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { randInt } from '../learn/numbers';
 import { getLevel } from '../learn/progress';
 import type { SkillId } from '../learn/skills';
+import { getFlag, setFlag } from '../save';
 import { createNumpad } from '../ui/numpad';
 import { COLORS, GAME_WIDTH, button, text } from '../ui/theme';
 import { PuzzleScene } from './PuzzleScene';
@@ -105,27 +106,54 @@ export class SurveyPuzzle extends PuzzleScene {
       }
     };
 
+    // Nur beim ersten Mal von Hand: danach läuft die Strichliste von selbst durch,
+    // und man füllt nur noch die Tabelle aus (das ist der eigentliche Denkschritt).
+    const manual = !getFlag('survey_tally_manual');
+    const rowButtons: Phaser.GameObjects.Container[] = [];
+    const finish = () => {
+      label.setText('');
+      if (manual) setFlag('survey_tally_manual');
+      this.startTable(current, progress);
+    };
+    if (!manual) {
+      label.setText('Rudolf liest vor, die Strichliste füllt sich:');
+      const step = () => {
+        if (!this.sys.isActive()) return;
+        if (k >= answers.length) {
+          finish();
+          return;
+        }
+        show();
+        const i = answers[k];
+        this.tweens.killTweensOf(rowButtons[i]);
+        rowButtons[i].setScale(1);
+        this.tweens.add({ targets: rowButtons[i], scale: 1.08, duration: 110, yoyo: true });
+        tallies[i] += 1;
+        k += 1;
+        drawTally();
+        this.time.delayedCall(420, step);
+      };
+      this.time.delayedCall(500, step);
+    }
+
     cats.forEach((c, i) => {
-      r.add(
-        button(this, 150, rowY(i), c, () => {
-          if (k >= answers.length) return;
-          if (i !== answers[k]) {
-            this.wrong(`${names[k % names.length]} hat „${cats[answers[k]]}“ gesagt, nicht „${c}“.`);
-            return;
-          }
-          this.showOwl('');
-          tallies[i] += 1;
-          k += 1;
-          drawTally();
-          if (k < answers.length) show();
-          else {
-            label.setText('');
-            this.startTable(current, progress);
-          }
-        }, { width: 170, height: 48, size: 18 }),
-      );
+      const b = button(this, 150, rowY(i), c, () => {
+        if (!manual || k >= answers.length) return;
+        if (i !== answers[k]) {
+          this.wrong(`${names[k % names.length]} hat „${cats[answers[k]]}“ gesagt, nicht „${c}“.`);
+          return;
+        }
+        this.showOwl('');
+        tallies[i] += 1;
+        k += 1;
+        drawTally();
+        if (k < answers.length) show();
+        else finish();
+      }, { width: 170, height: 48, size: 18 });
+      rowButtons.push(b);
+      r.add(b);
     });
-    show();
+    if (manual) show();
     this.hints = [
       'Tipp für jede Antwort auf die passende Zeile. Jeder Strich ist eine Stimme.',
       'Der fünfte Strich geht quer über die vier davor. So zählt man später in Fünferbündeln.',

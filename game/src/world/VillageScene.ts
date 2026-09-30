@@ -113,7 +113,7 @@ interface Villager {
   first: DialogLine[];
   again: DialogLine[];
   /** Aufgabe, die die Figur stellt (Markt, Umfrage); danach jederzeit zum Üben */
-  quest?: { puzzle: string; flag: string; intro: DialogLine[]; done: DialogLine[] };
+  quest?: { puzzle: string; flag: string; intro: DialogLine[]; done: DialogLine[]; rounds?: number };
 }
 
 const VILLAGERS: Villager[] = [
@@ -151,6 +151,7 @@ const VILLAGERS: Villager[] = [
     quest: {
       puzzle: 'SurveyPuzzle',
       flag: 'survey_done',
+      rounds: 2,
       intro: [{ speaker: 'Bürgermeister Rudolf', text: 'Ich will wissen, was die Leute wirklich wollen. Mit einer echten Umfrage, nicht mit Vagors Fantasiezahlen. Hilfst du mir beim Zählen?' }],
       done: [{ speaker: 'Bürgermeister Rudolf', text: 'Das ist eine ehrliche Umfrage! Ich hänge sie gleich neben Vagors Plakate. Mal sehen, wem die Leute glauben.' }],
     },
@@ -480,7 +481,7 @@ export class VillageScene extends WorldScene {
             setFlag(q.flag);
             if (q.flag === 'survey_done') this.drawSurveyPoster();
             this.say(q.done);
-          });
+          }, q.rounds ?? 3);
         });
       },
     });

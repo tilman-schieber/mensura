@@ -63,6 +63,7 @@ VOICES = {
     "Plakat": ("Schedar", "ein Marktschreier, der eine Werbeanzeige vorliest; übertrieben begeistert", False, 14.5),
     "Wegweiser": ("Iapetus", "ein ruhiger Erzähler", False, 13.5),
     "Tüftlerin Grete": ("Aoede", "eine fröhliche, handfeste Zwergen-Ingenieurin, die ihre Maschinen liebt", False, 15.0),
+    "Bergmann Olaf": ("Algieba", "ein alter, gemütlicher Zwergen-Bergmann mit rauer Stimme", False, 13.5),
     "Vagor": ("Enceladus", "ein einsamer Mann, der aus dem Nebel spricht; leise, bitter und traurig, nicht brüllend", True, 12.5),
 }
 DEFAULT = ("Kore", "freundlich und klar", False, 14.0)
