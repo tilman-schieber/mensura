@@ -1,6 +1,6 @@
 # Abdeckungsmatrix: Jeder Skill → Spielmechanik
 
-← [Spielkonzept](spielkonzept.md) · [Lernziele-Übersicht](index.md)
+← [Spielkonzept](spielkonzept.md) · [Lernziele-Übersicht](README.md)
 
 Prüfliste, dass das Konzept **alle** Skills aus Klasse 5/6 trainiert.
 Regionen: ① Stellenstollen · ② Frostfeuerturm · ③ Bruchwald · ④ Riesental · ⑤ Spiegeltempel ·

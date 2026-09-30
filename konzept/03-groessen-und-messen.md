@@ -1,6 +1,6 @@
 # 3 · Größen & Messen
 
-← [Übersicht](index.md) · Bildungsplan 3.1.2 „Messen"
+← [Übersicht](README.md) · Bildungsplan 3.1.2 „Messen"
 
 Grundidee: **Messen = mit Einheiten auslegen und zählen.** Fläche = wie viele Einheitsquadrate passen hinein,
 Volumen = wie viele Einheitswürfel passen hinein.

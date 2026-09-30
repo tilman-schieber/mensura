@@ -1,6 +1,6 @@
 # 2 · Rechnen & Terme
 
-← [Übersicht](index.md) · Bildungsplan 3.1.1 „Zahl – Variable – Operation", Teile „Mit Zahlen rechnen" und „Mit Zahltermen arbeiten"
+← [Übersicht](README.md) · Bildungsplan 3.1.1 „Zahl – Variable – Operation", Teile „Mit Zahlen rechnen" und „Mit Zahltermen arbeiten"
 
 ## Kopfrechnen & Überschlag
 

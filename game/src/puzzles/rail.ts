@@ -23,7 +23,7 @@ export class Rail {
   readonly y: number;
 
   constructor(
-    private scene: Phaser.Scene,
+    scene: Phaser.Scene,
     parent: Phaser.GameObjects.Container,
     readonly spec: RailSpec,
     x0 = 90,

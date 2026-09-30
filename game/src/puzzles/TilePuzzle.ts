@@ -1,4 +1,3 @@
-import Phaser from 'phaser';
 import { randInt } from '../learn/numbers';
 import { getLevel, pickByLevel } from '../learn/progress';
 import type { SkillId } from '../learn/skills';
@@ -117,7 +116,7 @@ export class TilePuzzle extends PuzzleScene {
 
     // Maße an die Außenkanten schreiben (ohne Raster)
     if (!room.grid) {
-      const [x0, y0, w0, h0] = room.rects[0];
+      const [x0, , w0, h0] = room.rects[0];
       r.add(text(this, ox + (x0 + w0 / 2) * cell, oy - 14, `${w0} ${room.unit}`, 16, COLORS.goldText));
       if (room.rects.length === 1) {
         r.add(text(this, ox + w0 * cell + 30, oy + (h0 / 2) * cell, `${h0} ${room.unit}`, 16, COLORS.goldText));

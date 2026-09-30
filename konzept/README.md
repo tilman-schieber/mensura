@@ -1,6 +1,6 @@
 # Mathe Klasse 5/6 – Was die Kinder können müssen
 
-Quelle: Bildungsplan 2016 Baden-Württemberg, Gymnasium, Mathematik (`BP2016BW_ALLG_GYM_M.pdf`),
+Quelle: Bildungsplan 2016 Baden-Württemberg, Gymnasium, Mathematik (online unter [bildungsplaene-bw.de](https://www.bildungsplaene-bw.de/,Lde/LS/BP2016BW/ALLG/GYM/M)),
 Abschnitt 3.1 „Klassen 5/6". Pädagogisches Beiwerk gestrichen, übrig bleibt die reine Mathematik.
 Die Kürzel in Klammern verweisen auf die Standards im Bildungsplan: Z = Zahl/Operation (3.1.1),
 M = Messen (3.1.2), R = Raum und Form (3.1.3), F = Funktionaler Zusammenhang (3.1.4),

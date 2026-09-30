@@ -1,5 +1,5 @@
 // Schulthemen für den Schulmodus, in der Reihenfolge des Bildungsplans
-// (siehe ../../spielkonzept.md, „Das Spiel wächst mit dem Schuljahr“).
+// (siehe ../../../konzept/spielkonzept.md, „Das Spiel wächst mit dem Schuljahr“).
 //
 // Ein Elternteil oder das Kind hakt im Menü ab, was im Unterricht schon dran war.
 // Nicht abgehakte Themen bleiben spielbar, aber nur auf Einstiegsniveau

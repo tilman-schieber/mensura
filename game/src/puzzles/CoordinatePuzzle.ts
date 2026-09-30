@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { randInt } from '../learn/numbers';
 import { getLevel, pickByLevel } from '../learn/progress';
 import type { SkillId } from '../learn/skills';
-import { COLORS, GAME_WIDTH, button, text } from '../ui/theme';
+import { COLORS, button, text } from '../ui/theme';
 import { PuzzleScene } from './PuzzleScene';
 
 // Rätsel „Die Sternenkarte“ (Koordinatensystem, R12 / F3).

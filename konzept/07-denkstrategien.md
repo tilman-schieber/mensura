@@ -1,6 +1,6 @@
 # + · Denkstrategien (themenübergreifend)
 
-← [Übersicht](index.md) · Bildungsplan Kap. 2 „Prozessbezogene Kompetenzen", auf das für 5/6 Relevante gekürzt
+← [Übersicht](README.md) · Bildungsplan Kap. 2 „Prozessbezogene Kompetenzen", auf das für 5/6 Relevante gekürzt
 
 Keine eigenen Inhalte, sondern **wie** man an Aufgaben herangeht. Für ein Rätselspiel ist das der
 eigentliche Kern, weil gute Rätsel genau diese Strategien erzwingen.

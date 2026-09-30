@@ -1,8 +1,10 @@
 # Mensura – Die sieben Urmaße (Spiel)
 
-Web-Spiel zum [Spielkonzept](../spielkonzept.md). TypeScript + Phaser 4 + Vite.
+Web-Spiel zum [Spielkonzept](../konzept/spielkonzept.md). TypeScript + Phaser 4 + Vite.
 
 ## Starten
+
+Voraussetzung: Node.js 20.19 oder neuer (getestet mit Node 22).
 
 ```sh
 npm install
@@ -91,9 +93,10 @@ gespeicherten Können pro Skill (`src/learn/progress.ts`). Stationen lassen sich
 | `src/world/WorldScene.ts` | Grundlage aller Orte: Laufen per Tippen mit Wegsuche oder Pfeiltasten, Figuren/Objekte antippen, Ausgänge, Rätsel starten |
 | `src/world/terrain.ts` | Gelände aus PixelLab-Wang-Kachelsets (auch Felswände mit Vorderseite) |
 | `src/world/pathfind.ts` | A*-Wegsuche |
-| `src/world/VillageScene.ts`, `MineScene.ts` | Eichstadt und Stellenstollen mit Handlung |
+| `src/world/VillageScene.ts`, `MineScene.ts`, `TempleScene.ts`, `ValleyScene.ts`, `FortressScene.ts` | die Orte mit ihrer Handlung: Eichstadt, Stellenstollen, Spiegeltempel, Riesental, Würfelfestung |
 | `src/puzzles/PuzzleScene.ts` | Grundgerüst der Rätsel: Runden, Hinweis-Leiter, Lernfortschritt |
-| `src/puzzles/*Puzzle.ts` | die vier Rätsel |
+| `src/puzzles/*Puzzle.ts` | die Rätsel-Stationen |
+| `src/puzzles/BossScene.ts`, `*Scene.ts` | Endgegner (Erzkoloss, Doppelgänger, Riesenkäfer, Kubus-Wächter) und Nebelwesen-Kampf |
 | `src/puzzles/blocks.ts` | Stellenwert-Blöcke (im Code gezeichnet, damit jedes Kästchen stimmt) |
 | `src/puzzles/rail.ts` | Lorenschiene als Zahlenstrahl |
 | `src/learn/` | Skill-Katalog, Könnensstand, Zahl-Hilfen (Zahlwörter, Runden, Formatierung) |

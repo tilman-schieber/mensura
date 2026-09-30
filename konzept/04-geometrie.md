@@ -1,6 +1,6 @@
 # 4 · Geometrie (Raum & Form)
 
-← [Übersicht](index.md) · Bildungsplan 3.1.3 „Raum und Form"
+← [Übersicht](README.md) · Bildungsplan 3.1.3 „Raum und Form"
 
 ## Grundbegriffe erkennen und beschreiben
 

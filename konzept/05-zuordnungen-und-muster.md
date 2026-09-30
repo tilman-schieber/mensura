@@ -1,6 +1,6 @@
 # 5 · Zuordnungen & Muster
 
-← [Übersicht](index.md) · Bildungsplan 3.1.4 „Funktionaler Zusammenhang"
+← [Übersicht](README.md) · Bildungsplan 3.1.4 „Funktionaler Zusammenhang"
 
 Vorstufe zu Funktionen: Wie hängt eine Größe von einer anderen ab?
 

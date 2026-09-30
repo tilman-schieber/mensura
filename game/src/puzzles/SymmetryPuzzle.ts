@@ -130,8 +130,8 @@ export class SymmetryPuzzle extends PuzzleScene {
     const ok = right.size === this.selected.size && [...right].every((i) => this.selected.has(i));
     if (ok) this.solved('Genau! Die goldenen Linien sind ihre Symmetrieachsen.');
     else {
-      const missed = this.choices.filter((c, i) => right.has(i) && !this.selected.has(i)).map((c) => c.name);
-      const extra = this.choices.filter((c, i) => !right.has(i) && this.selected.has(i)).map((c) => c.name);
+      const missed = this.choices.filter((_c, i) => right.has(i) && !this.selected.has(i)).map((c) => c.name);
+      const extra = this.choices.filter((_c, i) => !right.has(i) && this.selected.has(i)).map((c) => c.name);
       const parts = [];
       if (missed.length) parts.push(`übersehen: ${missed.join(', ')}`);
       if (extra.length) parts.push(`ohne Achse: ${extra.join(', ')}`);

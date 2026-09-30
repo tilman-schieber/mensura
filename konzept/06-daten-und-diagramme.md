@@ -1,6 +1,6 @@
 # 6 · Daten & Diagramme
 
-← [Übersicht](index.md) · Bildungsplan 3.1.5 „Daten und Zufall"
+← [Übersicht](README.md) · Bildungsplan 3.1.5 „Daten und Zufall"
 
 Klasse 5/6 behandelt nur **Daten**. Zufall und Wahrscheinlichkeit kommen erst in Klasse 7/8.
 

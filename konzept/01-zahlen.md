@@ -1,6 +1,6 @@
 # 1 · Zahlen verstehen
 
-← [Übersicht](index.md) · Bildungsplan 3.1.1 „Zahl – Variable – Operation", Teil „Zahlbereiche erkunden"
+← [Übersicht](README.md) · Bildungsplan 3.1.1 „Zahl – Variable – Operation", Teil „Zahlbereiche erkunden"
 
 Zahlbereiche am Ende von Klasse 6: **ℕ ⊂ ℤ ⊂ ℚ** (natürliche, ganze, rationale Zahlen).
 Die Kinder sollen jede Zahl einem Bereich zuordnen können und wissen, warum man erweitern musste

@@ -1,6 +1,6 @@
 # Spielkonzept: „Mensura – Die sieben Urmaße" (Arbeitstitel)
 
-← [Lernziele-Übersicht](index.md) · [Abdeckungsmatrix: jeder Skill → Mechanik](spiel-abdeckung.md)
+← [Lernziele-Übersicht](README.md) · [Abdeckungsmatrix: jeder Skill → Mechanik](spiel-abdeckung.md)
 
 Ein Zelda-artiges 2D-Abenteuer (Draufsicht, Stil wie *A Link to the Past* oder *Minish Cap*), in dem
 Mathe **das Werkzeug** ist, mit dem man die Welt verändert, und nicht die Prüfung, die vor der Tür steht.

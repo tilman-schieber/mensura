@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { makeBlockTextures, blockKey } from '../puzzles/blocks';
 import { getFlag, setFlag } from '../save';
 import type { DialogLine } from '../ui/dialog';
-import { COLORS, FONT, smooth } from '../ui/theme';
+import { FONT, smooth } from '../ui/theme';
 import { TILE, WorldScene } from './WorldScene';
 import type { Cell } from './pathfind';
 import { Terrain, vertexGrid, type TilesetData } from './terrain';
@@ -141,7 +141,7 @@ export class MineScene extends WorldScene {
     const c = this.add.container(cellX * TILE, cellY * TILE);
     const g = this.add.graphics();
     const labels = ['3 400', '3 500'];
-    labels.forEach((l, i) => {
+    labels.forEach((_l, i) => {
       const x = i * 64;
       g.fillStyle(0x4a3018, 1).fillRect(x + 14, 10, 4, 34);
       g.fillStyle(0x2a1a0c, 1).fillRoundedRect(x - 4, 0, 40, 18, 3);
