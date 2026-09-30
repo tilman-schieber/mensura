@@ -38,6 +38,19 @@ Zahlenstrahl, Runden):
 5. **Tresor von König Durin** (Z2): Zahlen-Diktat mit eigenen Sprachaufnahmen, bis in die Billionen
 6. Zurück zu Elle mit dem ersten Splitter, „Fortsetzung folgt“
 
+**Stellenstollen, tiefe Ebene: das Rechenwerk** (Klasse 5, Winter; Aufzug rechts im Stollen,
+`MineDeepScene`): öffnet sich nach dem Tresor mit dem Schulthema „Schriftlich rechnen“.
+Tüftlerin Grete, vier Stationen:
+- **Das Rechenwerk** (`ColumnPuzzle`, Z12): schriftlich addieren (Übertrag selbst schieben) und
+  subtrahieren (selbst entbündeln), Spalte für Spalte
+- **Die Frachtwaage** (`MultiplyPuzzle`, Z12): schriftlich multiplizieren, bei zweistelligem Faktor
+  Zeile für Zeile wie im Heft
+- **Die Beute teilen** (`DividePuzzle`, Z12, Z21): schriftlich dividieren, danach die Probe
+- **Die Runentafel** (`TermPuzzle`, Z22–Z25): Fachbegriffe, Punkt vor Strich, Klammern setzen,
+  Sachaufgabe als Term, geschickt rechnen
+- **Finale: Der Zahlenautomat** am alten Tor (`AutomatonPuzzle`, Z27): Rückwärtsrechnen. Dahinter
+  schläft der Primgolem (Klasse 6).
+
 **Nebenaufgabe Ruine der Alten** (Eichstadt, Westweg; Z1: anderes Zahlsystem):
 - **Tafel der Alten** (`RomanPuzzle`): römische Zahlen lesen und meißeln, bis 20 → 100 → 3 999
 - **Leuchtsteine** (`BinaryPuzzle`): Zweiersystem mit Steinen 1, 2, 4, 8 …, erst mit, dann ohne Wertangabe
@@ -72,7 +85,11 @@ dem Schulthema „Umfang, Flächen, Netze, Volumen“. Baumeister Quadro, vier S
 - **Würfellager** (`VolumePuzzle`, M15): Einheitswürfel zählen, a · b · c, Liter
 - **Malerwerkstatt** (`PaintPuzzle`, M15): Oberfläche von Würfel und Quader, auch ohne Deckel; Netz als Hinweis
 - **Endgegner Kubus-Wächter** (`KubusScene`): Schild-Fläche/Umfang, Schwachstelle gegenüber im Netz, Volumen
-- Belohnung: Splitter des Raums. Damit ist der Stoff von Klasse 5 vollständig.
+- Belohnung: Splitter des Raums. Damit ist die Geschichte von Klasse 5 abgeschlossen.
+
+**Noch nicht im Spiel, obwohl Stoff von Klasse 5** (laut Spielkonzept, Abschnitt „Das Spiel wächst mit
+dem Schuljahr“): Umfragen im Rathaus mit Strichlisten und Diagrammen (Herbst), der Markt mit Geld und
+Überschlag, parallel und senkrecht im Spiegeltempel (Frühjahr), Kartieren der Oberwelt.
 
 **Nebel des Ungefähren** (`fogDensity()` / `clearFog()` in `WorldScene`): Jede Region ist grau
 (Farbfilter der Kamera), bis ihr Splitter geborgen ist; dann kehrt die Farbe langsam zurück.

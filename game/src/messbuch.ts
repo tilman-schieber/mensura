@@ -40,6 +40,15 @@ export const PAGES: MessbuchPage[] = [
     note: { speaker: 'Vagor', text: 'Durin wollte die Steine nachzählen. Ich habe ihn weggeschickt.' },
   },
   {
+    id: 'page_deep',
+    place: 'Rechenwerk',
+    title: 'Die Kosten der Seile',
+    lines: ['38 Seile zu je 27 Talern', '38 · 27 = 926 Taler', 'Elle holt das Geld beim König'],
+    error: 1,
+    explain: '38 · 27 = 1 026. Beim schriftlichen Multiplizieren ist ein Übertrag verloren gegangen: 38 · 7 = 266, nicht 166.',
+    note: { speaker: 'Vagor', text: 'Ich rechne schnell. Wer schnell rechnet, braucht keine Probe.' },
+  },
+  {
     id: 'page_temple',
     place: 'Spiegeltempel',
     title: 'Die Bögen',

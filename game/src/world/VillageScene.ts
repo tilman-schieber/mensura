@@ -36,8 +36,20 @@ const REGIONS: Region[] = [
       { speaker: 'Meisterin Elle', text: 'Das ist er! Ein Splitter des Urmaßes der Zahl. Sieh nur, wie die Farben ins Dorf zurückkehren.' },
       { speaker: 'Meisterin Elle', text: 'Jedes Urmaß ist in zwei Hälften zerbrochen. Die andere Hälfte schläft tief unten in den Stollen. Dorthin gehen wir, wenn du in der Schule weitergekommen bist.' },
       { speaker: 'Meisterin Elle', text: 'Und hörst du das? Unten auf dem Markt ruft wieder jemand. Mira ist zurück!' },
-      { speaker: 'Meisterin Elle', text: 'Die nächste Spur führt nach Süden, zum Spiegeltempel. Dort ruht das Urmaß der Form.' },
+      { speaker: 'Meisterin Elle', text: 'Brom schreibt, das große Rechenwerk tief im Stollen steht still. Wenn ihr in der Schule schriftlich rechnet, fährst du mit dem Aufzug hinunter.' },
       { speaker: 'Meisterin Elle', text: 'Ruh dich aus, Lehrling. Deine Reise hat gerade erst begonnen.' },
+    ],
+  },
+  {
+    topics: ['schriftlich'],
+    done: 'deep_done',
+    reported: 'elle_deep',
+    goGoal: 'Fahr im Stellenstollen mit dem Aufzug zum Rechenwerk',
+    lockedGoal: 'Der Aufzug zum Rechenwerk fährt mit dem Schulthema „Schriftlich rechnen“',
+    thanks: [
+      { speaker: 'Meisterin Elle', text: 'Das Rechenwerk läuft wieder? Brom hat mir schon einen Brief geschickt. Zwölf Seiten, alles doppelt nachgezählt.' },
+      { speaker: 'Meisterin Elle', text: 'Und unter dem Tor schläft ein Wächter aus Zahlen, die sich nicht teilen lassen? Das ist Vagors Werk. Dorthin gehen wir im nächsten Schuljahr.' },
+      { speaker: 'Meisterin Elle', text: 'Die nächste Spur führt nach Süden, zum Spiegeltempel. Dort ruht das Urmaß der Form.' },
     ],
   },
   {
@@ -613,7 +625,7 @@ export class VillageScene extends WorldScene {
     }
     const carried = REGIONS.find((r) => getFlag(r.done) && !getFlag(r.reported));
     if (carried) {
-      this.setGoal('Bring den Splitter zu Meisterin Elle');
+      this.setGoal(carried.done === 'deep_done' ? 'Erzähl Meisterin Elle vom Rechenwerk' : 'Bring den Splitter zu Meisterin Elle');
       return;
     }
     const open = REGIONS.find((r) => !getFlag(r.done) && r.topics.every((t) => topicDone(t)));

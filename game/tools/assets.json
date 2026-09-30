@@ -37,7 +37,13 @@
     "mouse-hole": "c6d95930-2d07-4739-b99d-6ee823690308",
     "anvil": "89cc5449-dca4-453b-941d-836931fd1ab7",
     "alchemy-table": "a36920fb-0ee3-4119-821f-2298582fd797",
-    "messbuch-page": "59719b8d-ecd6-4d8a-ae05-7e7cecd6ae27"
+    "messbuch-page": "59719b8d-ecd6-4d8a-ae05-7e7cecd6ae27",
+    "rechenwerk": "078e0c18-41cc-4b53-99be-9cdad8cea8e8",
+    "treasure": "4e788829-719b-42fc-922e-5a334508cb61",
+    "number-gate": "647f1208-d98f-4056-85a7-073bffa55c4b",
+    "elevator": "1d2f0c1c-0887-41fa-b68d-7ff1b432268c",
+    "rune-tablet": "b404c007-d78f-41f7-a5cd-4a6ebc573e43",
+    "freight-scale": "eb34d007-ff49-4006-961d-9b08488b6e89"
   },
   "npcs": {
     "elle": "24b889ec-93c4-47d5-961b-62567fc0f1f5",
@@ -49,6 +55,7 @@
     "mira": "b02ff8e8-00b9-4a02-97a1-136f7ad538a3",
     "rudolf": "073ff02d-6842-4c41-abb7-d2f389f1fe9f",
     "flora": "f60727e2-b0e4-419f-b867-173c6ffda83a",
-    "harald": "2f9274aa-fcf6-4cb4-9899-421bb2c8f7c9"
+    "harald": "2f9274aa-fcf6-4cb4-9899-421bb2c8f7c9",
+    "grete": "b70234e1-597b-420f-870c-412d9cbfa141"
   }
 }

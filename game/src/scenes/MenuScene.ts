@@ -107,7 +107,7 @@ export class MenuScene extends Phaser.Scene {
       text(this, x, y + 28, 'Nicht abgehakte Themen gibt es im Spiel nur zum Reinschnuppern.', 14, COLORS.muted).setOrigin(0, 0.5),
     );
     TOPICS.forEach((t, i) => {
-      const row = y + 64 + i * 36;
+      const row = y + 60 + i * 31;
       const box = this.add.graphics();
       const draw = (checked: boolean) => {
         box.clear();

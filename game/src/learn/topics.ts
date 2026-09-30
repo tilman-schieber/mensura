@@ -24,6 +24,19 @@ export const TOPICS: Topic[] = [
   { id: 'zahlsysteme', name: 'Römische Zahlen, Zweiersystem', term: 'Klasse 5, Herbst', skills: ['Z1S'] },
   { id: 'kopfrechnen', name: 'Kopfrechnen und Überschlag', term: 'Klasse 5, Winter', skills: ['Z11'] },
   {
+    id: 'schriftlich',
+    name: 'Schriftlich rechnen (+ − · :), Probe',
+    term: 'Klasse 5, Winter',
+    skills: ['Z12', 'Z21'],
+    region: 'Rechenwerk',
+  },
+  {
+    id: 'terme',
+    name: 'Terme, Klammern, Rechengesetze',
+    term: 'Klasse 5, Winter',
+    skills: ['Z22', 'Z23', 'Z24', 'Z25', 'Z27'],
+  },
+  {
     id: 'geometrie',
     name: 'Figuren, Symmetrie, Koordinaten',
     term: 'Klasse 5, Frühjahr',

@@ -46,6 +46,7 @@ VOICES = {
     "Schmied Harald": ("Orus", "ein kräftiger, ruhiger Schmied mit tiefer Stimme", False),
     "Plakat": ("Schedar", "ein Marktschreier, der eine Werbeanzeige vorliest; übertrieben begeistert", False),
     "Wegweiser": ("Iapetus", "ein ruhiger Erzähler", False),
+    "Tüftlerin Grete": ("Aoede", "eine fröhliche, handfeste Zwergen-Ingenieurin, die ihre Maschinen liebt; lebhaft und genau", False),
     "Vagor": ("Enceladus", "ein einsamer Mann, der aus dem Nebel spricht; leise, bitter und traurig, nicht brüllend", True),
 }
 DEFAULT = ("Kore", "freundlich und klar", False)

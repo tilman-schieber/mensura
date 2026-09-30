@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { makeBlockTextures, blockKey } from '../puzzles/blocks';
-import { getFlag, setFlag } from '../save';
+import { getFlag, setFlag, topicDone } from '../save';
 import type { DialogLine } from '../ui/dialog';
 import { FONT, smooth } from '../ui/theme';
 import { TILE, WorldScene, type GoblinVisit } from './WorldScene';
@@ -58,6 +58,7 @@ export class MineScene extends WorldScene {
     this.load.image('vault-door', 'assets/objects/vault-door.png');
     this.load.spritesheet('npc-brom', 'assets/npcs/brom.png', { frameWidth: 68, frameHeight: 68 });
     this.load.image('koloss', 'assets/objects/koloss.png');
+    this.load.image('elevator', 'assets/objects/elevator.png');
   }
 
   protected buildWorld(entry?: string): Cell {
@@ -108,6 +109,11 @@ export class MineScene extends WorldScene {
     // --- Der Erzkoloss bewacht den Tresor, sobald die Stationen geschafft sind
     if (this.stationsDone() === 3 && !getFlag('koloss_done')) this.spawnKoloss(false);
 
+    // --- Aufzug hinunter zum Rechenwerk (tiefe Ebene, Klasse 5 Winter)
+    const lift = this.placeObject('elevator', 21, 15.2, 0.85);
+    this.block(20, 13, 21, 14);
+    this.addInteractable({ target: lift, stand: { x: 19, y: 14 }, onInteract: () => this.lift() });
+
     // --- Nebenbei: Pi-mal-Daumen, eine Messbuch-Seite, ein Schild am Eingang
     this.addGoblin(GOBLIN, { x: 21, y: 6 }, 'west');
     this.addPage('page_mine', 4, 5);
@@ -119,7 +125,7 @@ export class MineScene extends WorldScene {
 
     this.updateGoal();
     if (!getFlag('brom_intro')) this.time.delayedCall(600, () => { this.faceToPlayer(this.brom); this.talkToBrom(); });
-    return entry === 'village' || !entry ? { x: 12, y: 15 } : { x: 12, y: 15 };
+    return entry === 'deep' ? { x: 19, y: 14 } : { x: 12, y: 15 };
   }
 
   // ---------- Dekoration ----------
@@ -214,7 +220,12 @@ export class MineScene extends WorldScene {
     } else if (!getFlag('mine_outer_done')) {
       this.say([{ speaker: 'Vorarbeiter Brom', text: 'Alles läuft wieder! Geh zum Tresor oben. König Durin erwartet dich.' }]);
     } else {
-      this.say([{ speaker: 'Vorarbeiter Brom', text: 'Vierzehn Stufen zum Tresor, drei Stationen, drei Sterne. Alles stimmt, wie gestern. Komm jederzeit wieder und hilf mit.' }]);
+      this.say([
+        { speaker: 'Vorarbeiter Brom', text: 'Vierzehn Stufen zum Tresor, drei Stationen, drei Sterne. Alles stimmt, wie gestern. Komm jederzeit wieder und hilf mit.' },
+        ...(getFlag('deep_done')
+          ? []
+          : [{ speaker: 'Vorarbeiter Brom', text: 'Der Aufzug rechts fährt hinunter zum großen Rechenwerk. Grete wartet dort schon lange auf Hilfe.' }]),
+      ]);
     }
   }
 
@@ -322,6 +333,22 @@ export class MineScene extends WorldScene {
           ]);
         }),
     );
+  }
+
+  /** Aufzug zur tiefen Ebene: erst nach dem Tresor und mit dem Schulthema „Schriftlich rechnen“ */
+  private lift(): void {
+    if (!getFlag('mine_outer_done')) {
+      this.say([{ speaker: 'Vorarbeiter Brom', text: 'Der Aufzug fährt hinunter zum Rechenwerk. Aber erst bringen wir hier oben alles in Ordnung.' }]);
+      return;
+    }
+    if (!topicDone('schriftlich')) {
+      this.say([
+        { speaker: 'Vorarbeiter Brom', text: 'Da unten steht das große Rechenwerk. Aber der Aufzug steckt im Nebel fest.' },
+        { speaker: 'Vorarbeiter Brom', text: 'Frag Meisterin Elle, wann er sich lichtet. Sie weiß so etwas.' },
+      ]);
+      return;
+    }
+    this.goTo('MineDeep', 'mine');
   }
 
   /** Vagors Stimme aus dem Nebel, zum ersten Mal */

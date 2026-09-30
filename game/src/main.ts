@@ -37,6 +37,12 @@ import { VolumePuzzle } from './puzzles/VolumePuzzle';
 import { PaintPuzzle } from './puzzles/PaintPuzzle';
 import { KubusScene } from './puzzles/KubusScene';
 import { CheatPuzzle } from './puzzles/CheatPuzzle';
+import { ColumnPuzzle } from './puzzles/ColumnPuzzle';
+import { MultiplyPuzzle } from './puzzles/MultiplyPuzzle';
+import { DividePuzzle } from './puzzles/DividePuzzle';
+import { TermPuzzle } from './puzzles/TermPuzzle';
+import { AutomatonPuzzle } from './puzzles/AutomatonPuzzle';
+import { MineDeepScene } from './world/MineDeepScene';
 import { COLORS, GAME_HEIGHT, GAME_WIDTH, text } from './ui/theme';
 
 class BootScene extends Phaser.Scene {
@@ -52,6 +58,7 @@ class BootScene extends Phaser.Scene {
     this.load.image('splitter', 'assets/objects/splitter.png');
     this.load.image('owl', 'assets/objects/owl.png');
     this.load.image('messbuch-page', 'assets/objects/messbuch-page.png');
+    this.load.image('treasure', 'assets/objects/treasure.png');
     this.load.spritesheet('npc-pimal', 'assets/npcs/pimal.png', { frameWidth: 68, frameHeight: 68 });
     this.load.json('dialog-voice-index', 'assets/audio/dialog/index.json');
   }
@@ -92,10 +99,11 @@ async function start() {
     // unsichtbaren Browser-Tab weiterläuft (requestAnimationFrame pausiert dort).
     // smoothStep aus: die echte verstrichene Zeit zählt, auch wenn der Tab gedrosselt wird.
     fps: TEST_MODE ? { forceSetTimeOut: true, smoothStep: false } : {},
-    scene: [BootScene, TitleScene, SlotScene, SettingsScene, PrologueScene, AvatarScene, VillageScene, MineScene, TempleScene, ValleyScene, FortressScene, HudScene, MenuScene, OreCartPuzzle, RailPuzzle, RoundingPuzzle, VaultPuzzle, ColossusScene, RomanPuzzle, BinaryPuzzle, FogBattleScene,
+    scene: [BootScene, TitleScene, SlotScene, SettingsScene, PrologueScene, AvatarScene, VillageScene, MineScene, MineDeepScene, TempleScene, ValleyScene, FortressScene, HudScene, MenuScene, OreCartPuzzle, RailPuzzle, RoundingPuzzle, VaultPuzzle, ColossusScene, RomanPuzzle, BinaryPuzzle, FogBattleScene,
       MirrorWallPuzzle, SymmetryPuzzle, QuadPuzzle, CoordinatePuzzle, DoppelgangerScene,
       LengthPuzzle, ScalePuzzle, EstimatePuzzle, FerryPuzzle, BeetleScene,
-      TilePuzzle, NetPuzzle, VolumePuzzle, PaintPuzzle, KubusScene, CheatPuzzle],
+      TilePuzzle, NetPuzzle, VolumePuzzle, PaintPuzzle, KubusScene, CheatPuzzle,
+      ColumnPuzzle, MultiplyPuzzle, DividePuzzle, TermPuzzle, AutomatonPuzzle],
   });
   // Zum Debuggen im Browser-Terminal erreichbar (nur im Entwicklungsmodus)
   if (import.meta.env.DEV) (window as unknown as { game: Phaser.Game }).game = game;

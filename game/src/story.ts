@@ -23,6 +23,7 @@ export function splinters(save: SaveGame): number {
 export const PLACE_NAMES: Record<string, string> = {
   Village: 'Eichstadt',
   Mine: 'Stellenstollen',
+  MineDeep: 'Rechenwerk',
   Temple: 'Spiegeltempel',
   Valley: 'Riesental',
   Fortress: 'Würfelfestung',
