@@ -48,14 +48,14 @@ export function button(
   y: number,
   label: string,
   onTap: () => void,
-  opts: { width?: number; height?: number; size?: number } = {},
+  opts: { width?: number; height?: number; size?: number; /** Deckkraft der Fläche (Titelbild: durchscheinend) */ alpha?: number } = {},
 ): Phaser.GameObjects.Container {
   const w = opts.width ?? Math.max(56, label.length * 14 + 40);
   const h = Math.max(44, opts.height ?? 52);
   const bg = scene.add.graphics();
   const draw = (fill: number) => {
     bg.clear();
-    bg.fillStyle(fill, 1).fillRoundedRect(-w / 2, -h / 2, w, h, 10);
+    bg.fillStyle(fill, opts.alpha ?? 1).fillRoundedRect(-w / 2, -h / 2, w, h, 10);
     bg.lineStyle(3, COLORS.gold, 1).strokeRoundedRect(-w / 2, -h / 2, w, h, 10);
   };
   draw(COLORS.panel);
