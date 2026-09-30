@@ -6,3 +6,6 @@ dist/
 game/tools/tts/models/
 __pycache__/
 *.pyc
+# Gemini-Schlüssel und Hörproben für die Dialog-Aufnahmen
+game/tools/tts/.env
+game/tools/tts/probe/

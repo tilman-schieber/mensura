@@ -163,13 +163,18 @@ tools/tts/.venv/bin/python tools/tts/make_number_audio.py        # optional: Cod
 
 ### Dialoge
 
-Alle festen Dialogzeilen (`{ speaker: '…', text: '…' }` im Code) sind vertont, eine Stimme pro Figur
-(`tools/tts/make_dialog_audio.py`, Stimmen in `VOICES`): Elle „kerstin“, Brom „karlsson“ (etwas tiefer),
-Durin und die Alten „thorsten“ tiefer, die Alten mit Hall. Nach Textänderungen einfach neu ausführen;
-es werden nur neue Zeilen aufgenommen, veraltete gelöscht. Zeilen mit eingesetzten Werten haben keine
-Aufnahme; dafür springt die Browser-Stimme ein. Zusätzliche Stimmen laden wie oben (`kerstin/low`,
-`karlsson/low` statt `thorsten/high`).
+Alle festen Dialogzeilen (`{ speaker: '…', text: '…' }` im Code) sind mit **Gemini-TTS** vertont
+(`tools/tts/make_dialog_audio.py`). Jede Figur hat eine eigene Stimme und eine Regieanweisung
+(`VOICES`: Elle warm und müde, Vagor leise und traurig mit Hall …). Nach Textänderungen einfach neu
+ausführen; es werden nur neue Zeilen aufgenommen, veraltete gelöscht. Zeilen mit eingesetzten Werten
+haben keine Aufnahme; dafür springt die Browser-Stimme ein.
+
+Schlüssel: `GEMINI_API_KEY=…` in `tools/tts/.env` (nicht im Git). Braucht nur Python 3 und ffmpeg.
 
 ```sh
-tools/tts/.venv/bin/python tools/tts/make_dialog_audio.py
+python3 tools/tts/make_dialog_audio.py          # fehlende Zeilen
+python3 tools/tts/make_dialog_audio.py --probe  # je Figur eine Hörprobe nach tools/tts/probe/
+python3 tools/tts/make_dialog_audio.py --alle   # alles neu
 ```
+
+Die Tresor-Codes (oben) bleiben bei Piper.

@@ -219,5 +219,5 @@ Nach Wirkung pro Aufwand sortiert:
 - **3 · Vagor zeigen:** Nach jedem Endgegner spricht er aus dem Nebel. Dazu die Brücken-Vision im
   Spiegeltempel, Quadros Grundriss der Zitadelle und Elles Geständnis am Ende von Klasse 5.
 
-**Offen:** Die geänderten Zeilen haben noch keine Aufnahme (die Browser-Stimme springt ein), bis
-`make_dialog_audio.py` neu läuft. Für Vagor ist die Stimme `de_DE-pavoque-low` vorgesehen.
+- **Sprachaufnahmen:** Alle Dialoge neu mit Gemini-TTS aufgenommen, eine Stimme und eine
+  Regieanweisung pro Figur (klingt deutlich lebendiger als Piper).
