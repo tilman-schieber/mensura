@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { getFlag, loadSave, setFlag, topicDone } from '../save';
+import { getFlag, loadSave, setFlag } from '../save';
 import { TILE, WorldScene } from './WorldScene';
 import { FONT, smooth } from '../ui/theme';
 import type { DialogLine } from '../ui/dialog';
@@ -16,8 +16,8 @@ const DIRT = 0;
 
 /** Regionen der Oberwelt in Schulreihenfolge. */
 interface Region {
-  /** nötige Schulthemen (alle abgehakt) */
-  topics: string[];
+  /** öffnet sich, sobald dieser Merker gesetzt ist (der vorige Ort geschafft), null = sofort */
+  after: string | null;
   done: string;
   reported: string;
   goGoal: string;
@@ -27,25 +27,25 @@ interface Region {
 
 const REGIONS: Region[] = [
   {
-    topics: [],
+    after: null,
     done: 'mine_outer_done',
     reported: 'elle_splitter',
     goGoal: 'Geh zur Mine im Osten',
     lockedGoal: '',
     thanks: [
       { speaker: 'Meisterin Elle', text: 'Das ist er! Ein Splitter des Urmaßes der Zahl. Sieh nur, wie die Farben ins Dorf zurückkehren.' },
-      { speaker: 'Meisterin Elle', text: 'Jedes Urmaß ist in zwei Hälften zerbrochen. Die andere Hälfte schläft tief unten in den Stollen. Dorthin gehen wir, wenn du in der Schule weitergekommen bist.' },
+      { speaker: 'Meisterin Elle', text: 'Jedes Urmaß ist in zwei Hälften zerbrochen. Die andere Hälfte schläft tief unten in den Stollen. Dorthin gehen wir später, wenn du mehr gelernt hast.' },
       { speaker: 'Meisterin Elle', text: 'Und hörst du das? Unten auf dem Markt ruft wieder jemand. Mira ist zurück, und Bürgermeister Rudolf auch!' },
-      { speaker: 'Meisterin Elle', text: 'Brom schreibt, das große Rechenwerk tief im Stollen steht still. Wenn ihr in der Schule schriftlich rechnet, fährst du mit dem Aufzug hinunter.' },
+      { speaker: 'Meisterin Elle', text: 'Brom schreibt, das große Rechenwerk tief im Stollen steht still. Fahr mit dem Aufzug hinunter und hilf Grete, es wieder in Gang zu bringen.' },
       { speaker: 'Meisterin Elle', text: 'Ruh dich aus, Lehrling. Deine Reise hat gerade erst begonnen.' },
     ],
   },
   {
-    topics: ['schriftlich'],
+    after: 'mine_outer_done',
     done: 'deep_done',
     reported: 'elle_deep',
     goGoal: 'Fahr im Stellenstollen mit dem Aufzug zum Rechenwerk',
-    lockedGoal: 'Der Aufzug zum Rechenwerk fährt mit dem Schulthema „Schriftlich rechnen“',
+    lockedGoal: 'Öffne zuerst den Tresor im Stellenstollen',
     thanks: [
       { speaker: 'Meisterin Elle', text: 'Das Rechenwerk läuft wieder? Brom hat mir schon einen Brief geschickt. Zwölf Seiten, alles doppelt nachgezählt.' },
       { speaker: 'Meisterin Elle', text: 'Und unter dem Tor schläft ein Wächter aus Zahlen, die sich nicht teilen lassen? Das ist Vagors Werk. Dorthin gehen wir im nächsten Schuljahr.' },
@@ -53,11 +53,11 @@ const REGIONS: Region[] = [
     ],
   },
   {
-    topics: ['geometrie'],
+    after: 'deep_done',
     done: 'temple_done',
     reported: 'elle_form',
     goGoal: 'Folge dem Weg nach Süden zum Spiegeltempel',
-    lockedGoal: 'Südweg öffnet sich mit dem Schulthema „Symmetrie“',
+    lockedGoal: 'Bring zuerst das Rechenwerk in Gang',
     thanks: [
       { speaker: 'Meisterin Elle', text: 'Der Splitter der Form! Zwei von vierzehn Splittern sind geborgen.' },
       { speaker: 'Meisterin Elle', text: 'Du siehst mich so seltsam an. Hat Lumen dir etwas in ihren Spiegeln gezeigt?' },
@@ -66,11 +66,11 @@ const REGIONS: Region[] = [
     ],
   },
   {
-    topics: ['groessen'],
+    after: 'temple_done',
     done: 'valley_done',
     reported: 'elle_size',
     goGoal: 'Folge dem Weg nach Norden ins Riesental',
-    lockedGoal: 'Nordweg öffnet sich mit dem Schulthema „Größen“',
+    lockedGoal: 'Hol zuerst den Splitter aus dem Spiegeltempel',
     thanks: [
       { speaker: 'Meisterin Elle', text: 'Der Splitter der Größe! Drei von vierzehn.' },
       { speaker: 'Meisterin Elle', text: 'Vagor hat wieder mit dir gesprochen? Hanna hat recht, er klingt traurig. Er war nicht immer so.' },
@@ -79,11 +79,11 @@ const REGIONS: Region[] = [
     ],
   },
   {
-    topics: ['groessen', 'flaechen'],
+    after: 'valley_done',
     done: 'fort_done',
     reported: 'elle_space',
     goGoal: 'Fahr im Riesental mit dem Boot zur Würfelfestung',
-    lockedGoal: 'Die Festung öffnet sich mit dem Schulthema „Flächen“',
+    lockedGoal: 'Hilf zuerst der Riesin Hanna',
     thanks: [
       { speaker: 'Meisterin Elle', text: 'Der Splitter des Raums! Vier von vierzehn. Das ganze erste Jahr hast du gemeistert.' },
       { speaker: 'Meisterin Elle', text: 'Hörst du den Hammer? Harald, der Schmied, ist wieder da. Jetzt ist Eichstadt fast wie früher.' },
@@ -273,7 +273,7 @@ export class VillageScene extends WorldScene {
     this.block(23, 3, 24, 3);
     this.block(28, 3, 29, 3);
     this.addExit(25, 3, 27, 3, () => this.enterMine());
-    this.addInteractable({ target: mine, stand: { x: 26, y: 4 }, onInteract: () => this.enterMine() });
+    this.addInteractable({ target: mine, stand: { x: 26, y: 4 }, onInteract: () => this.enterMine(), marker: () => (getFlag('elle_intro') && (!getFlag('mine_outer_done') || !getFlag('deep_done')) ? '!' : null) });
 
     // Bäume am Rand und verstreut
     const trees: [number, number][] = [
@@ -295,18 +295,18 @@ export class VillageScene extends WorldScene {
     // Elles Kartentisch vor dem Haus (Koordinaten, Klasse 5 Frühjahr)
     const table = this.placeObject('map-table', 5.5, 9, 0.8);
     this.block(5, 8, 5, 8);
-    this.addInteractable({ target: table, stand: { x: 5, y: 9 }, onInteract: () => this.mapTable() });
+    this.addInteractable({ target: table, stand: { x: 5, y: 9 }, onInteract: () => this.mapTable(), marker: () => (getFlag('temple_done') && !getFlag('map_done') ? '!' : null) });
 
     // Eule Pünktchen sitzt auf Elles Dach
     const owl = this.placeObject('owl', 6.2, 3.4, 0.55).setDepth(8 * TILE);
     this.tweens.add({ targets: owl, angle: { from: -4, to: 4 }, duration: 1600, yoyo: true, repeat: -1, ease: 'sine.inout' });
-    this.addInteractable({ target: owl, stand: { x: 6, y: 7 }, onInteract: () => this.talkToOwl() });
+    this.addInteractable({ target: owl, stand: { x: 6, y: 7 }, onInteract: () => this.talkToOwl(), marker: () => (!getFlag('met_owl') ? '!' : null) });
     this.buildTempleWay();
     this.buildValleyWay();
 
     // Meisterin Elle vor ihrem Haus
     const elle = this.addNpc('npc-elle', { x: 9, y: 8 }, 'south');
-    this.addInteractable({ target: elle, stand: { x: 9, y: 9 }, onInteract: () => { this.faceToPlayer(elle); this.talkToElle(); } });
+    this.addInteractable({ target: elle, stand: { x: 9, y: 9 }, onInteract: () => { this.faceToPlayer(elle); this.talkToElle(); }, marker: () => this.elleMarker() });
 
     this.updateGoal();
     if (!getFlag('elle_intro')) this.time.delayedCall(700, () => this.talkToElle());
@@ -324,9 +324,9 @@ export class VillageScene extends WorldScene {
   private buildValleyWay(): void {
     const marker = this.placeObject('giant-mushroom', 21.6, 2, 0.45);
     this.block(21, 1, 21, 1);
-    if (topicDone('groessen')) {
+    if (getFlag('temple_done')) {
       this.addExit(18, 0, 19, 0, () => this.goTo('Valley', 'village'));
-      this.addInteractable({ target: marker, stand: { x: 20, y: 1 }, onInteract: () => this.goTo('Valley', 'village') });
+      this.addInteractable({ target: marker, stand: { x: 20, y: 1 }, onInteract: () => this.goTo('Valley', 'village'), marker: () => (!getFlag('valley_done') ? '!' : null) });
       return;
     }
     this.block(18, 0, 19, 1);
@@ -344,7 +344,7 @@ export class VillageScene extends WorldScene {
   private foggedValley(): void {
     this.say([
       { speaker: 'Meisterin Elle', text: 'Dieser Weg führt ins Riesental. Noch liegt dort zu dichter Nebel.' },
-      { speaker: 'Meisterin Elle', text: 'Er lichtet sich, wenn ihr in der Schule Größen und Einheiten durchnehmt. Dann hakt ihr das Thema im Menü ab.' },
+      { speaker: 'Meisterin Elle', text: 'Mit jedem Splitter weicht der Nebel ein Stück. Hol zuerst den Splitter aus dem Spiegeltempel.' },
     ]);
   }
 
@@ -354,13 +354,13 @@ export class VillageScene extends WorldScene {
     const gate = this.placeObject('temple-gate', 16, 20.3, 0.7);
     this.block(14, 17, 14, 19);
     this.block(17, 17, 18, 19);
-    const open = topicDone('geometrie');
+    const open = getFlag('deep_done');
     if (open) {
       this.addExit(15, 19, 16, 19, () => this.goTo('Temple', 'village'));
-      this.addInteractable({ target: gate, stand: { x: 15, y: 18 }, onInteract: () => this.goTo('Temple', 'village') });
+      this.addInteractable({ target: gate, stand: { x: 15, y: 18 }, onInteract: () => this.goTo('Temple', 'village'), marker: () => (!getFlag('temple_done') ? '!' : null) });
       return;
     }
-    // Dichter Nebel versperrt den Weg, bis das Schulthema abgehakt ist
+    // Dichter Nebel versperrt den Weg, bis das Rechenwerk wieder läuft
     this.block(15, 16, 16, 19);
     const fog: Phaser.GameObjects.Ellipse[] = [];
     for (let i = 0; i < 9; i++) {
@@ -377,7 +377,7 @@ export class VillageScene extends WorldScene {
   private foggedWay(): void {
     this.say([
       { speaker: 'Meisterin Elle', text: 'Der Nebel ist hier noch zu dicht. Dieser Weg führt zum Spiegeltempel.' },
-      { speaker: 'Meisterin Elle', text: 'Er lichtet sich, wenn ihr in der Schule Figuren und Symmetrie durchnehmt. Dann hakt ihr das Thema im Menü unter Schulthemen ab.' },
+      { speaker: 'Meisterin Elle', text: 'Er weicht erst, wenn das große Rechenwerk tief im Stollen wieder läuft.' },
     ]);
   }
 
@@ -466,6 +466,7 @@ export class VillageScene extends WorldScene {
     this.addInteractable({
       target: npc,
       stand: v.stand,
+      marker: () => (!getFlag(`met_${v.key}`) || (v.quest && !getFlag(v.quest.flag)) ? '!' : null),
       onInteract: () => {
         this.faceToPlayer(npc);
         const met = `met_${v.key}`;
@@ -558,8 +559,8 @@ export class VillageScene extends WorldScene {
   }
 
   private mapTable(): void {
-    if (!topicDone('geometrie')) {
-      this.say([{ speaker: 'Meisterin Elle', text: 'Mein Kartentisch. Wenn ihr in der Schule das Koordinatensystem durchnehmt, zeichnen wir zusammen eine Karte von Eichstadt.' }]);
+    if (!getFlag('temple_done')) {
+      this.say([{ speaker: 'Meisterin Elle', text: 'Mein Kartentisch. Wenn du im Spiegeltempel die Sternenkarte gelesen hast, zeichnen wir zusammen eine Karte von Eichstadt.' }]);
       return;
     }
     const first = !getFlag('map_done');
@@ -595,17 +596,17 @@ export class VillageScene extends WorldScene {
     // Das Tor der Alten südlich am Ende des Westwegs
     const ruin = this.placeObject('ruin', 3.5, 19.4);
     this.block(1, 16, 5, 18);
-    this.addInteractable({ target: ruin, stand: { x: 3, y: 15 }, onInteract: () => this.ruinGate() });
+    this.addInteractable({ target: ruin, stand: { x: 3, y: 15 }, onInteract: () => this.ruinGate(), marker: () => (getFlag('ruin_roman') && getFlag('ruin_binary') && !getFlag('ruin_open') ? '!' : null) });
 
     // Steintafel und Runensteine nördlich am Weg davor
     const stele = this.placeObject('stele', 1.5, 12, 0.9);
     this.block(1, 11, 1, 11);
     this.ruinStars.ruin_roman = this.addStar('ruin_roman', 1.5 * TILE, 9.6 * TILE);
-    this.addInteractable({ target: stele, stand: { x: 2, y: 12 }, onInteract: () => this.ruinStation('RomanPuzzle', 'ruin_roman') });
+    this.addInteractable({ target: stele, stand: { x: 2, y: 12 }, onInteract: () => this.ruinStation('RomanPuzzle', 'ruin_roman'), marker: () => (getFlag('elle_intro') && !getFlag('ruin_roman') ? '!' : null) });
 
     const stones = this.placeObject('rune-stones', 4.6, 11.9, 0.7);
     this.ruinStars.ruin_binary = this.addStar('ruin_binary', 4.6 * TILE, 10.4 * TILE);
-    this.addInteractable({ target: stones, stand: { x: 4, y: 12 }, onInteract: () => this.ruinStation('BinaryPuzzle', 'ruin_binary') });
+    this.addInteractable({ target: stones, stand: { x: 4, y: 12 }, onInteract: () => this.ruinStation('BinaryPuzzle', 'ruin_binary'), marker: () => (getFlag('elle_intro') && !getFlag('ruin_binary') ? '!' : null) });
   }
 
   private ruinStation(puzzle: string, flag: string): void {
@@ -676,6 +677,11 @@ export class VillageScene extends WorldScene {
     this.say([{ speaker: 'Meisterin Elle', text: 'Die Mine liegt im Osten. Folge einfach dem Weg.' }, ...ruinHint]);
   }
 
+  private elleMarker(): '!' | '?' | null {
+    if (!getFlag('elle_intro')) return '!';
+    return REGIONS.some((r) => getFlag(r.done) && !getFlag(r.reported)) ? '?' : null;
+  }
+
   private updateGoal(): void {
     if (!getFlag('elle_intro')) {
       this.setGoal('Sprich mit Meisterin Elle');
@@ -686,7 +692,7 @@ export class VillageScene extends WorldScene {
       this.setGoal(carried.done === 'deep_done' ? 'Erzähl Meisterin Elle vom Rechenwerk' : 'Bring den Splitter zu Meisterin Elle');
       return;
     }
-    const open = REGIONS.find((r) => !getFlag(r.done) && r.topics.every((t) => topicDone(t)));
+    const open = REGIONS.find((r) => !getFlag(r.done) && (!r.after || getFlag(r.after)));
     if (open) {
       this.setGoal(open.goGoal);
       return;

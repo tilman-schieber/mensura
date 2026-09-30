@@ -85,29 +85,29 @@ export class TempleScene extends WorldScene {
       const img = this.placeObject('mirror', x + 0.5, y + 1);
       this.block(x, y, x, y);
       this.stars[m.flag] = this.addStar(m.flag, (x + 0.5) * TILE, (y - 2.2) * TILE);
-      this.addInteractable({ target: img, stand: { x, y: y + 1 }, onInteract: () => this.mirrorStation(m) });
+      this.addInteractable({ target: img, stand: { x, y: y + 1 }, onInteract: () => this.mirrorStation(m), marker: () => (getFlag('temple_intro') && !getFlag(m.flag) ? '!' : null) });
     }
 
     // Das Prisma in der Mitte des Läufers: Lichtbrücken
     const prism = this.placeObject('prism', 13, 10.2, 0.9);
     this.block(12, 9, 13, 9);
     this.stars[PRISM.flag] = this.addStar(PRISM.flag, 13 * TILE, 7.4 * TILE);
-    this.addInteractable({ target: prism, stand: { x: 12, y: 10 }, onInteract: () => this.mirrorStation({ ...PRISM, cell: [12, 9] }) });
+    this.addInteractable({ target: prism, stand: { x: 12, y: 10 }, onInteract: () => this.mirrorStation({ ...PRISM, cell: [12, 9] }), marker: () => (getFlag('temple_intro') && !getFlag(PRISM.flag) ? '!' : null) });
 
     // Heiligtum oben
     const gate = this.placeObject('temple-gate', 13, 4.6, 0.8);
-    this.addInteractable({ target: gate, stand: { x: 12, y: 5 }, onInteract: () => this.sanctum() });
+    this.addInteractable({ target: gate, stand: { x: 12, y: 5 }, onInteract: () => this.sanctum(), marker: () => (getFlag('temple_boss') && !getFlag('temple_done') ? '!' : null) });
     if (this.mirrorsDone() === TOTAL && !getFlag('temple_boss')) this.spawnShadow(false);
 
     this.addGoblin(GOBLIN, { x: 21, y: 14 }, 'west');
     this.addPage('page_temple', 3, 13);
-    this.addSign(8.5, 15.2, 'Spiegeltempel');
+    this.addPlaque(6.5, 3.95, 'Spiegeltempel');
 
     // Hüterin Lumen am Eingang
     this.lumen = this.addNpc('npc-lumen', { x: 15, y: 13 }, 'west');
     this.lumen.setAlpha(0.9);
     this.tweens.add({ targets: this.lumen, y: this.lumen.y - 3, duration: 1600, yoyo: true, repeat: -1, ease: 'sine.inout' });
-    this.addInteractable({ target: this.lumen, stand: { x: 14, y: 13 }, onInteract: () => { this.faceToPlayer(this.lumen); this.talkToLumen(); } });
+    this.addInteractable({ target: this.lumen, stand: { x: 14, y: 13 }, onInteract: () => { this.faceToPlayer(this.lumen); this.talkToLumen(); }, marker: () => (!getFlag('temple_intro') ? '!' : null) });
 
     this.updateGoal();
     if (!getFlag('temple_intro')) this.time.delayedCall(600, () => this.talkToLumen());
@@ -168,7 +168,7 @@ export class TempleScene extends WorldScene {
     const s = this.add.sprite(12.5 * TILE, 6.2 * TILE, 'avatar-player', 'south-0').setOrigin(0.5, 0.78).setTint(0x6a4aa8).setDepth(6.2 * TILE);
     this.block(12, 5, 12, 5);
     this.tweens.add({ targets: s, alpha: { from: 0.6, to: 0.95 }, duration: 900, yoyo: true, repeat: -1 });
-    this.addInteractable({ target: s, stand: { x: 12, y: 7 }, onInteract: () => this.fightShadow() });
+    this.addInteractable({ target: s, stand: { x: 12, y: 7 }, onInteract: () => this.fightShadow(), marker: () => 'boss' });
     if (dramatic) {
       s.setAlpha(0);
       this.cameras.main.flash(600, 180, 160, 255);

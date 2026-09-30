@@ -39,7 +39,7 @@ Zahlenstrahl, Runden):
 6. Zurück zu Elle mit dem ersten Splitter, „Fortsetzung folgt“
 
 **Stellenstollen, tiefe Ebene: das Rechenwerk** (Klasse 5, Winter; Aufzug rechts im Stollen,
-`MineDeepScene`): öffnet sich nach dem Tresor mit dem Schulthema „Schriftlich rechnen“.
+`MineDeepScene`): öffnet sich nach dem Tresor.
 Tüftlerin Grete, vier Stationen:
 - **Das Rechenwerk** (`ColumnPuzzle`, Z12): schriftlich addieren (Übertrag selbst schieben) und
   subtrahieren (selbst entbündeln), Spalte für Spalte
@@ -60,8 +60,8 @@ Tüftlerin Grete, vier Stationen:
 beginnt ein kurzer Kampf. Jede Aufgabe hat vier Antworten, die falschen sind typische Fehler.
 Zeitdruck ist im Menü abschaltbar. Besiegte Wesen kehren beim nächsten Betreten des Dorfs zurück.
 
-**Spiegeltempel** (Klasse 5, Frühjahr; Südweg aus Eichstadt, `TempleScene`): öffnet sich erst, wenn das
-Schulthema „Figuren, Symmetrie, Koordinaten“ abgehakt ist (sonst Nebel). Hüterin Lumen, vier Spiegel:
+**Spiegeltempel** (Klasse 5, Frühjahr; Südweg aus Eichstadt, `TempleScene`): öffnet sich, wenn das Rechenwerk wieder
+läuft (sonst Nebel). Hüterin Lumen, vier Spiegel und das Prisma:
 - **Spiegelwand** (`MirrorWallPuzzle`, R13): Spiegelbild auf dem Raster ergänzen; Achse senkrecht → waagerecht → schräg
 - **Siegel der Symmetrie** (`SymmetryPuzzle`, R4): Achsen zählen, symmetrische Figuren finden, Punktsymmetrie
 - **Haus der Vierecke** (`QuadPuzzle`, R6): benennen, Eigenschaften, Schlüssel/Schloss nach der Viereck-Hierarchie
@@ -69,8 +69,8 @@ Schulthema „Figuren, Symmetrie, Koordinaten“ abgehakt ist (sonst Nebel). Hü
 - **Endgegner Spiegel-Doppelgänger** (`DoppelgangerScene`, R13): Spiegelbild vorhersagen, senkrechte/waagerechte Achse, Punktspiegelung
 - Belohnung: Splitter der Form
 
-**Riesental** (Klasse 5, Sommer; Nordweg aus Eichstadt, `ValleyScene`): öffnet sich mit dem Schulthema
-„Größen und Einheiten“. Riesin Hanna (dreifache Größe), vier Stationen:
+**Riesental** (Klasse 5, Sommer; Nordweg aus Eichstadt, `ValleyScene`): öffnet sich nach dem
+Spiegeltempel. Riesin Hanna (dreifache Größe), vier Stationen:
 - **Skalenkappe** (`LengthPuzzle`, M5): Längen umrechnen, mm bis km, später Kommazahlen und gemischte Angaben; Einheitentreppe als Hinweis
 - **Riesenwaage** (`ScalePuzzle`, M5M): Gewichtsstücke auflegen, bis die Waage im Gleichgewicht ist; g → kg → t
 - **Schätzauge** (`EstimatePuzzle`, M6): Größenordnung schätzen (16 Alltagsdinge, Symbole in `public/assets/icons/estimate.png`)
@@ -78,8 +78,8 @@ Schulthema „Figuren, Symmetrie, Koordinaten“ abgehakt ist (sonst Nebel). Hü
 - **Endgegner Riesenkäfer** (`BeetleScene`): Schwachstelle in cm auf dem mm-Lineal treffen, kg ↔ g, Sekunden ↔ Minuten
 - Belohnung: Splitter der Größe
 
-**Würfelfestung** (Klasse 5, Sommer; mit dem Boot aus dem Riesental, `FortressScene`): öffnet sich mit
-dem Schulthema „Umfang, Flächen, Netze, Volumen“. Baumeister Quadro, vier Stationen:
+**Würfelfestung** (Klasse 5, Sommer; mit dem Boot aus dem Riesental, `FortressScene`): fährt, wenn im Riesental
+wieder jedes Maß stimmt. Baumeister Quadro, vier Stationen:
 - **Fliesenhalle** (`TilePuzzle`, M13/M9): Fläche und Umfang von Rechtecken und L-Räumen, mit und ohne Raster
 - **Faltstab** (`NetPuzzle`, R14): Würfelnetze erkennen, gegenüberliegende Flächen (`src/learn/cubeNets.ts` rollt einen Würfel übers Netz; findet genau die 11 Würfelnetze)
 - **Würfellager** (`VolumePuzzle`, M15): Einheitswürfel zählen, a · b · c, Liter
@@ -134,11 +134,19 @@ neue Aufgabe; man verliert nicht, braucht nur mehr Aufgaben. Abschaltbar mit „
 Die Rätsel an den Stationen haben keinen Zeitdruck.
 Das Ziffernfeld kann Kommazahlen (`createNumpad(…, { decimal: true, unit: 'cm' })`).
 
-**Schulmodus** (Menü → Schulthemen, `src/learn/topics.ts`): Themen abhaken, die im Unterricht dran waren.
-Nicht abgehakte Themen sind nur auf Einstiegsniveau spielbar (`levelCap` in `progress.ts`), Regionen
-öffnen sich erst mit ihrem Thema.
+**Reihenfolge:** Die Orte öffnen sich nacheinander wie im Schuljahr (Stellenstollen → Rechenwerk →
+Spiegeltempel → Riesental → Würfelfestung); in der Geschichte weicht der Nebel mit jedem geschafften Ort.
+Die Schwierigkeit richtet sich nur nach dem Können (`getLevel` in `progress.ts`). Früher gab es
+abzuhakende Schulthemen; das ist entfallen.
 
-**Menü** (oben rechts oder Esc, `src/scenes/MenuScene.ts`): Lernstand pro Skill, Schulthemen, Figur ändern,
+**Markierungen** (`Interactable.marker` in `WorldScene`): gelbes „!“ über allem mit etwas Neuem oder
+einer offenen Aufgabe, „?“ über Elle, wenn ein Splitter abzugeben ist, rotes „!“ über Endgegnern.
+Sie liegen in der Hud-Szene, damit der Nebel-Farbfilter sie nicht grau färbt. Das nächste antippbare
+Ding in Reichweite leuchtet (Glow-Filter) und bekommt einen kleinen Pfeil. Geheimnisse wie Messbuch-
+Seiten haben kein „!“, sie leuchten nur, wenn man davorsteht. Ortsnamen hängen drinnen als Plakette an
+der Wand (`addPlaque`).
+
+**Menü** (oben rechts oder Esc, `src/scenes/MenuScene.ts`): Lernstand pro Skill, Messbuch, Figur ändern,
 Speichern, Laden, Einstellungen, zurück zum Titelbild.
 
 **Spielstände** (`src/save.ts`, `SlotScene`): drei Plätze in `localStorage`, einer ist aktiv. Die Welt

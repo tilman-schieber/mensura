@@ -84,7 +84,7 @@ export class FortressScene extends WorldScene {
     tiles.lineStyle(3, 0xf0d78a, 1).strokeRect(4 * TILE, 6 * TILE, 5 * TILE, 3 * TILE);
     const tileZone = this.add.zone(4 * TILE, 6 * TILE, 5 * TILE, 3 * TILE).setOrigin(0);
     this.stars[ST.tiles.flag] = this.addStar(ST.tiles.flag, 6.5 * TILE, 5.2 * TILE);
-    this.addInteractable({ target: tileZone, stand: { x: 6, y: 9 }, onInteract: () => this.station(ST.tiles) });
+    this.addInteractable({ target: tileZone, stand: { x: 6, y: 9 }, onInteract: () => this.station(ST.tiles), marker: () => (getFlag('fort_intro') && !getFlag(ST.tiles.flag) ? '!' : null) });
 
     // Station 2: Würfelnetz auf dem Boden (Faltstab)
     const net = this.add.graphics().setDepth(-400);
@@ -95,7 +95,7 @@ export class FortressScene extends WorldScene {
     }
     const netZone = this.add.zone(18 * TILE, 5 * TILE, 4 * TILE, 3 * TILE).setOrigin(0);
     this.stars[ST.nets.flag] = this.addStar(ST.nets.flag, 19.5 * TILE, 4.4 * TILE);
-    this.addInteractable({ target: netZone, stand: { x: 19, y: 8 }, onInteract: () => this.station(ST.nets) });
+    this.addInteractable({ target: netZone, stand: { x: 19, y: 8 }, onInteract: () => this.station(ST.nets), marker: () => (getFlag('fort_intro') && !getFlag(ST.nets.flag) ? '!' : null) });
 
     // Station 3: Würfelstapel (Volumen)
     const stack = this.add.graphics().setDepth(13 * TILE);
@@ -104,21 +104,21 @@ export class FortressScene extends WorldScene {
     this.block(4, 11, 8, 12);
     const stackZone = this.add.zone(4 * TILE, 10.5 * TILE, 5 * TILE, 2.5 * TILE).setOrigin(0);
     this.stars[ST.volume.flag] = this.addStar(ST.volume.flag, 6 * TILE, 9.6 * TILE);
-    this.addInteractable({ target: stackZone, stand: { x: 6, y: 13 }, onInteract: () => this.station(ST.volume) });
+    this.addInteractable({ target: stackZone, stand: { x: 6, y: 13 }, onInteract: () => this.station(ST.volume), marker: () => (getFlag('fort_intro') && !getFlag(ST.volume.flag) ? '!' : null) });
 
     // Station 4: Malerwerkstatt (Oberfläche)
     const bench = this.placeObject('paint-bench', 20.5, 13);
     this.block(19, 12, 21, 12);
     this.stars[ST.paint.flag] = this.addStar(ST.paint.flag, 20.5 * TILE, 10.4 * TILE);
-    this.addInteractable({ target: bench, stand: { x: 20, y: 13 }, onInteract: () => this.station(ST.paint) });
+    this.addInteractable({ target: bench, stand: { x: 20, y: 13 }, onInteract: () => this.station(ST.paint), marker: () => (getFlag('fort_intro') && !getFlag(ST.paint.flag) ? '!' : null) });
 
     this.addGoblin(GOBLIN, { x: 15, y: 5 }, 'south');
     this.addPage('page_fortress', 3, 5);
-    this.addSign(9.5, 15.2, 'Würfelfestung');
+    this.addPlaque(6.5, 3.95, 'Würfelfestung');
 
     // Baumeister Quadro am Eingang
     this.quadro = this.addNpc('npc-quadro', { x: 14, y: 13 }, 'west');
-    this.addInteractable({ target: this.quadro, stand: { x: 13, y: 13 }, onInteract: () => { this.faceToPlayer(this.quadro); this.talkToQuadro(); } });
+    this.addInteractable({ target: this.quadro, stand: { x: 13, y: 13 }, onInteract: () => { this.faceToPlayer(this.quadro); this.talkToQuadro(); }, marker: () => (!getFlag('fort_intro') ? '!' : null) });
 
     if (this.stationsDone() === 4 && !getFlag('fort_boss')) this.spawnKubus(false);
 
@@ -176,7 +176,7 @@ export class FortressScene extends WorldScene {
     const k = this.placeObject('kubus', 13, 9.4, 0.6);
     this.block(12, 7, 13, 8);
     this.tweens.add({ targets: k, y: k.y - 6, duration: 1300, yoyo: true, repeat: -1, ease: 'sine.inout' });
-    this.addInteractable({ target: k, stand: { x: 13, y: 10 }, onInteract: () => this.fightKubus() });
+    this.addInteractable({ target: k, stand: { x: 13, y: 10 }, onInteract: () => this.fightKubus(), marker: () => 'boss' });
     if (dramatic) {
       k.setAlpha(0);
       this.tweens.add({ targets: k, alpha: 1, duration: 1400 });

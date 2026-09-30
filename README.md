@@ -34,8 +34,9 @@ einlesen, etwa für ein anderes Gerät. Ein Spielstand aus der Zeit vor den Spei
 (`mensura.save.v1`) wird beim ersten Start zu Platz 1.
 
 **Bedienung:** Tippen oder Klicken, wohin die Figur laufen soll; Figuren und Dinge antippen. Pfeiltasten
-gehen auch. Das Menü oben rechts (oder Esc) zeigt den Lernstand und die **Schulthemen**: Dort hakt man ab, was
-im Unterricht schon dran war. Erst dann öffnen sich die passenden Regionen.
+gehen auch. Ein gelbes **!** zeigt, wo es etwas zu tun gibt, ein **?**, wo man etwas abgeben kann; was
+man antippen kann, leuchtet auf, wenn man davorsteht. Die Orte öffnen sich der Reihe nach, in der
+Reihenfolge des Schuljahrs. Das Menü oben rechts (oder Esc) zeigt Lernstand und Messbuch.
 
 ## Inhalt des Repos
 

@@ -1,6 +1,6 @@
 import { music } from '../audio/music';
 import Phaser from 'phaser';
-import { getFlag, setFlag, topicDone } from '../save';
+import { getFlag, setFlag } from '../save';
 import { TILE, WorldScene, type GoblinVisit } from './WorldScene';
 import type { Cell } from './pathfind';
 import { Terrain, vertexGrid, type TilesetData } from './terrain';
@@ -88,30 +88,30 @@ export class ValleyScene extends WorldScene {
     const boot = this.placeObject('giant-boot', 6, 8.2, 0.8);
     this.block(4, 6, 7, 7);
     this.stars[ST.boot.flag] = this.addStar(ST.boot.flag, 6 * TILE, 4.2 * TILE);
-    this.addInteractable({ target: boot, stand: { x: 6, y: 9 }, onInteract: () => this.station(ST.boot) });
+    this.addInteractable({ target: boot, stand: { x: 6, y: 9 }, onInteract: () => this.station(ST.boot), marker: () => (getFlag('valley_intro') && !getFlag(ST.boot.flag) ? '!' : null) });
 
     // Station 2: Riesenwaage (Gewichte)
     const bal = this.placeObject('balance', 24, 8.2);
     this.block(23, 7, 24, 7);
     this.stars[ST.scale.flag] = this.addStar(ST.scale.flag, 24 * TILE, 4.8 * TILE);
-    this.addInteractable({ target: bal, stand: { x: 24, y: 9 }, onInteract: () => this.station(ST.scale) });
+    this.addInteractable({ target: bal, stand: { x: 24, y: 9 }, onInteract: () => this.station(ST.scale), marker: () => (getFlag('valley_intro') && !getFlag(ST.scale.flag) ? '!' : null) });
 
     // Station 3: Aussichtspilz (Schätzauge)
     const mush = this.placeObject('giant-mushroom', 6, 16.4, 0.9);
     this.block(5, 14, 6, 15);
     this.stars[ST.mushroom.flag] = this.addStar(ST.mushroom.flag, 6 * TILE, 12.2 * TILE);
-    this.addInteractable({ target: mush, stand: { x: 6, y: 13 }, onInteract: () => this.station(ST.mushroom) });
+    this.addInteractable({ target: mush, stand: { x: 6, y: 13 }, onInteract: () => this.station(ST.mushroom), marker: () => (getFlag('valley_intro') && !getFlag(ST.mushroom.flag) ? '!' : null) });
 
     // Station 4: Fähranleger (Zeitspannen)
     const dock = this.placeObject('ferry-dock', 26.2, 15.6);
     this.block(25, 14, 26, 15);
     this.stars[ST.ferry.flag] = this.addStar(ST.ferry.flag, 26 * TILE, 12.4 * TILE);
-    this.addInteractable({ target: dock, stand: { x: 24, y: 14 }, onInteract: () => this.station(ST.ferry) });
+    this.addInteractable({ target: dock, stand: { x: 24, y: 14 }, onInteract: () => this.station(ST.ferry), marker: () => (getFlag('valley_intro') && !getFlag(ST.ferry.flag) ? '!' : null) });
 
-    // Fährboot hinüber zur Würfelfestung (mit dem Schulthema „Flächen und Körper“)
+    // Fährboot hinüber zur Würfelfestung, sobald im Tal wieder jedes Maß stimmt
     const boat = this.placeObject('boat', 28.4, 13.4, 0.9);
     this.tweens.add({ targets: boat, y: boat.y + 3, duration: 1500, yoyo: true, repeat: -1, ease: 'sine.inout' });
-    this.addInteractable({ target: boat, stand: { x: 26, y: 13 }, onInteract: () => this.boat() });
+    this.addInteractable({ target: boat, stand: { x: 26, y: 13 }, onInteract: () => this.boat(), marker: () => (getFlag('valley_done') && !getFlag('fort_done') ? '!' : null) });
 
     // Deko: kleinere Pilze
     for (const [x, y] of [[10, 15], [20, 16], [11, 3], [20, 2], [2, 11]] as [number, number][]) {
@@ -132,7 +132,7 @@ export class ValleyScene extends WorldScene {
     this.hanna.setScale(3);
     this.hanna.setDepth(8 * TILE);
     this.block(14, 5, 16, 7);
-    this.addInteractable({ target: this.hanna, stand: { x: 15, y: 9 }, onInteract: () => this.talkToHanna() });
+    this.addInteractable({ target: this.hanna, stand: { x: 15, y: 9 }, onInteract: () => this.talkToHanna(), marker: () => (!getFlag('valley_intro') ? '!' : null) });
 
     if (this.stationsDone() === 4 && !getFlag('valley_boss')) this.spawnBeetle(false);
     if (getFlag('valley_boss')) this.addLadybug();
@@ -143,10 +143,10 @@ export class ValleyScene extends WorldScene {
   }
 
   private boat(): void {
-    if (!topicDone('flaechen')) {
+    if (!getFlag('valley_done')) {
       this.say([
         { speaker: 'Riesin Hanna', text: 'Mit dem Boot kommst du zur Würfelfestung. Doch über dem Fluss hängt noch zu dichter Nebel.' },
-        { speaker: 'Riesin Hanna', text: 'Frag Meisterin Elle, wann er sich lichtet. Sie weiß so etwas. Dann setze ich dich über.' },
+        { speaker: 'Riesin Hanna', text: 'Erst wenn hier im Tal wieder jedes Maß stimmt, weicht er. Dann setze ich dich über.' },
       ]);
       return;
     }
@@ -210,7 +210,7 @@ export class ValleyScene extends WorldScene {
     const b = this.placeObject('kaefer', 15, 4.6, 0.45);
     this.block(14, 3, 16, 4);
     this.tweens.add({ targets: b, angle: { from: -3, to: 3 }, duration: 700, yoyo: true, repeat: -1 });
-    this.addInteractable({ target: b, stand: { x: 13, y: 5 }, onInteract: () => this.fightBeetle() });
+    this.addInteractable({ target: b, stand: { x: 13, y: 5 }, onInteract: () => this.fightBeetle(), marker: () => 'boss' });
     if (dramatic) {
       b.setAlpha(0);
       this.tweens.add({ targets: b, alpha: 1, duration: 1200 });

@@ -1,18 +1,17 @@
 import Phaser from 'phaser';
-import { getStat, levelCap, recordAttempt } from '../learn/progress';
+import { getStat, recordAttempt } from '../learn/progress';
 import { PAGES, type MessbuchPage } from '../messbuch';
 import { SKILLS, type SkillId } from '../learn/skills';
-import { TOPICS } from '../learn/topics';
-import { activeSlot, getFlag, loadSave, setFlag, writeSave } from '../save';
+import { activeSlot, getFlag, loadSave, setFlag } from '../save';
 import { FONT, smooth } from '../ui/theme';
 import { COLORS, GAME_HEIGHT, GAME_WIDTH, button, text } from '../ui/theme';
 import { goToTitle } from './flow';
 
-type Page = 'lernstand' | 'schule' | 'messbuch';
+type Page = 'lernstand' | 'messbuch';
 
 /**
- * Menü über der Welt: weiterspielen, Lernstand (welche Skills sitzen), Schulthemen
- * (Schulmodus), Figur ändern, speichern, laden, Einstellungen, zurück zum Titelbild.
+ * Menü über der Welt: weiterspielen, Lernstand (welche Skills sitzen), Messbuch,
+ * Figur ändern, speichern, laden, Einstellungen, zurück zum Titelbild.
  * Die Welt ist solange pausiert. Esc öffnet und schließt es.
  */
 export class MenuScene extends Phaser.Scene {
@@ -41,7 +40,6 @@ export class MenuScene extends Phaser.Scene {
     const items: [string, () => void][] = [
       ['Weiterspielen', () => this.close()],
       ['Lernstand', () => this.show('lernstand')],
-      ['Schulthemen', () => this.show('schule')],
       ['Messbuch', () => this.show('messbuch')],
       ['Figur ändern', () => this.editAvatar()],
       ['Speichern', () => this.overlay('Slots', { mode: 'save', from: 'Menu' })],
@@ -49,7 +47,7 @@ export class MenuScene extends Phaser.Scene {
       ['Einstellungen', () => this.overlay('Settings', { from: 'Menu' })],
       ['Zum Titelbild', () => goToTitle(this)],
     ];
-    items.forEach(([label, action], i) => button(this, bx, 90 + i * 49, label, action, opts));
+    items.forEach(([label, action], i) => button(this, bx, 92 + i * 53, label, action, opts));
 
     this.page = this.add.container(0, 0);
     this.show('lernstand');
@@ -69,7 +67,6 @@ export class MenuScene extends Phaser.Scene {
   private show(page: Page): void {
     this.page.removeAll(true);
     if (page === 'lernstand') this.learningReport(290, 100);
-    else if (page === 'schule') this.schoolTopics(290, 100);
     else this.messbuch(290, 100);
   }
 
@@ -78,7 +75,7 @@ export class MenuScene extends Phaser.Scene {
     const p = this.page;
     p.add(text(this, x, y, 'Was du schon kannst', 22, COLORS.goldText).setOrigin(0, 0.5));
     // Nur Skills zeigen, die schon geübt wurden oder zu einem abgehakten Thema gehören
-    const ids = (Object.keys(SKILLS) as SkillId[]).filter((id) => getStat(id).attempts > 0 || levelCap(id) === 1).slice(0, 7);
+    const ids = (Object.keys(SKILLS) as SkillId[]).filter((id) => getStat(id).attempts > 0).slice(0, 7);
     if (!ids.length) {
       p.add(text(this, x, y + 50, 'Noch nichts geübt. Auf ins Abenteuer!', 17, COLORS.muted).setOrigin(0, 0.5));
     }
@@ -94,49 +91,8 @@ export class MenuScene extends Phaser.Scene {
       }
       p.add(g);
       let info = s.attempts === 0 ? 'noch nicht geübt' : `${s.correct} von ${s.attempts} Aufgaben richtig`;
-      if (levelCap(id) < 1) info += '  ·  nur Einstieg (Schulthema nicht abgehakt)';
       p.add(text(this, x + 170, row + 19, info, 14, COLORS.muted).setOrigin(0, 0.5));
     });
-  }
-
-  /** Schulmodus: Themen abhaken, die im Unterricht schon dran waren. */
-  private schoolTopics(x: number, y: number): void {
-    const p = this.page;
-    p.add(text(this, x, y, 'Was war in der Schule schon dran?', 22, COLORS.goldText).setOrigin(0, 0.5));
-    p.add(
-      text(this, x, y + 28, 'Nicht abgehakte Themen gibt es im Spiel nur zum Reinschnuppern.', 14, COLORS.muted).setOrigin(0, 0.5),
-    );
-    // Nur was schon im Spiel ist; Klasse 6 als eine Zeile darunter
-    const now = TOPICS.filter((t) => !t.later);
-    const later = TOPICS.filter((t) => t.later);
-    now.forEach((t, i) => {
-      const row = y + 58 + i * 29;
-      const box = this.add.graphics();
-      const draw = (checked: boolean) => {
-        box.clear();
-        box.lineStyle(2, t.later ? 0x3c5566 : COLORS.gold, 1).strokeRoundedRect(x, row - 11, 22, 22, 4);
-        if (checked) box.fillStyle(COLORS.gold, 1).fillRoundedRect(x + 5, row - 6, 12, 12, 2);
-      };
-      draw(!!loadSave().settings.topics[t.id]);
-      const name = text(this, x + 34, row, t.name, 16, COLORS.text).setOrigin(0, 0.5);
-      const term = text(this, x + 440, row, t.term.replace('Klasse ', 'Kl. '), 14, COLORS.muted).setOrigin(0, 0.5);
-      p.add([box, name, term]);
-      const hit = this.add.zone(x - 6, row - 16, 560, 32).setOrigin(0).setInteractive({ useHandCursor: true });
-      hit.on('pointerup', () => {
-        const save = loadSave();
-        save.settings.topics[t.id] = !save.settings.topics[t.id];
-        writeSave(save);
-        draw(save.settings.topics[t.id]);
-      });
-      p.add(hit);
-    });
-    if (later.length) {
-      p.add(
-        text(this, x, y + 58 + now.length * 29 + 6, `Kommt später: ${later.map((t) => t.name).join(' · ')}`, 13, '#5d6b76')
-          .setOrigin(0, 0.5)
-          .setWordWrapWidth(560),
-      );
-    }
   }
 
   /** Vagors Messbuch: gefundene Seiten lesen und die Rechnungen prüfen */

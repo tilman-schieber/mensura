@@ -28,7 +28,7 @@ export interface SaveGame {
   settings: {
     /** Zeitdruck in Kämpfen gegen Nebelwesen */
     battleTimer: boolean;
-    /** Schulmodus: Themen, die im Unterricht schon dran waren (Topic-IDs) */
+    /** früher: abgehakte Schulthemen (nicht mehr benutzt, bleibt für alte Spielstände) */
     topics: Record<string, boolean>;
     /**
      * Schriftliche Subtraktion wie in der Grundschule gelernt. Der Bildungsplan BW (Grundschule 3/4,
@@ -128,11 +128,6 @@ export function writeSave(save: SaveGame): void {
 
 export function getFlag(name: string): boolean {
   return !!loadSave().flags[name];
-}
-
-/** Wurde ein Schulthema schon im Unterricht behandelt (Schulmodus)? */
-export function topicDone(id: string): boolean {
-  return !!loadSave().settings.topics[id];
 }
 
 export function setFlag(name: string, value = true): void {

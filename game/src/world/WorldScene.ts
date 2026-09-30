@@ -33,11 +33,16 @@ const SPEED = 105; // Weltpixel pro Sekunde
 const PLAYER_KEY = 'avatar-player';
 const NPC_FRAME: Record<Direction, number> = { south: 0, east: 1, north: 2, west: 3 };
 
+/** Markierung über einem Ding: „!“ = hier gibt es etwas zu tun, „?“ = etwas abgeben, boss = Endgegner */
+export type Marker = '!' | '?' | 'boss';
+
 export interface Interactable {
   target: Phaser.GameObjects.GameObject & { getBounds(): Phaser.Geom.Rectangle };
   /** Zelle, von der aus man interagiert */
   stand: Cell;
   onInteract: () => void;
+  /** Welche Markierung gerade darüber schweben soll (wird laufend neu abgefragt) */
+  marker?: () => Marker | null;
 }
 
 interface Exit {
@@ -68,6 +73,14 @@ export abstract class WorldScene extends Phaser.Scene {
   private keys!: Phaser.Types.Input.Keyboard.CursorKeys;
   private lastCell = { x: -1, y: -1 };
   private fog?: Phaser.Filters.ColorMatrix;
+  /**
+   * schwebende „!“ und „?“ über Figuren und Stationen. Sie liegen in der Hud-Szene (nicht in der
+   * Welt), damit der Nebel-Farbfilter sie nicht grau färbt; ihre Lage wird jedes Bild umgerechnet.
+   */
+  private markers = new Map<Interactable, { text: Phaser.GameObjects.Text; kind: Marker; x: number; y: number }>();
+  /** das nächste antippbare Ding leuchtet, dazu ein kleiner Pfeil */
+  private near?: { i: Interactable; glow?: Phaser.Filters.Glow; tween?: Phaser.Tweens.Tween };
+  private nearArrow?: Phaser.GameObjects.Text;
 
   /** Szene bauen: Gelände, Objekte, Figuren. Gibt die Startposition (Zelle) zurück. */
   protected abstract buildWorld(entry?: string): Cell;
@@ -83,6 +96,8 @@ export abstract class WorldScene extends Phaser.Scene {
   create(data: { entry?: string } = {}): void {
     this.blocked.clear();
     this.interactables = [];
+    this.markers = new Map();
+    this.near = undefined;
     this.exits = [];
     this.path = [];
     this.pending = null;
@@ -123,6 +138,16 @@ export abstract class WorldScene extends Phaser.Scene {
     this.setFog(this.fogDensity());
     void music.play(MUSIC[this.scene.key] ?? 'village');
     music.setFog(this.musicFog(this.fogDensity()));
+
+    this.nearArrow = undefined;
+    this.events.once('shutdown', () => {
+      for (const m of this.markers.values()) m.text.destroy();
+      this.markers.clear();
+      this.nearArrow?.destroy();
+    });
+    this.refreshMarkers();
+    this.time.addEvent({ delay: 400, loop: true, callback: () => this.refreshMarkers() });
+    this.time.addEvent({ delay: 150, loop: true, callback: () => this.refreshNear() });
 
     this.input.on('pointerup', (p: Phaser.Input.Pointer) => this.onTap(p));
     this.keys = this.input.keyboard!.createCursorKeys();
@@ -232,7 +257,138 @@ export abstract class WorldScene extends Phaser.Scene {
   }
 
   protected removeInteractable(target: Interactable['target']): void {
+    for (const i of this.interactables.filter((it) => it.target === target)) {
+      this.markers.get(i)?.text.destroy();
+      this.markers.delete(i);
+      if (this.near?.i === i) this.clearNear();
+    }
     this.interactables = this.interactables.filter((i) => i.target !== target);
+  }
+
+  /** Die Hud-Szene startet ein Bild später als die Welt; vorher kann man dort nichts anlegen. */
+  private hudReady(): boolean {
+    return this.hud().sys.settings.status === Phaser.Scenes.RUNNING;
+  }
+
+  /** „!“ und „?“ über allem, was gerade etwas zu bieten hat (wie in Rollenspielen üblich) */
+  private refreshMarkers(): void {
+    if (!this.hudReady()) return;
+    for (const i of this.interactables) {
+      const kind = i.target.active ? (i.marker?.() ?? null) : null;
+      const old = this.markers.get(i);
+      if (old && old.kind === kind) continue;
+      old?.text.destroy();
+      this.markers.delete(i);
+      if (!kind) continue;
+      const b = i.target.getBounds();
+      const t = smooth(
+        this.hud().add.text(0, 0, kind === '?' ? '?' : '!', {
+          fontFamily: FONT,
+          fontSize: kind === 'boss' ? '38px' : '32px',
+          fontStyle: 'bold',
+          color: kind === 'boss' ? '#ff5a4a' : '#ffd23f',
+          stroke: '#2a1804',
+          strokeThickness: 6,
+          resolution: 2,
+        }),
+      )
+        .setOrigin(0.5, 1)
+        .setDepth(5000)
+        .setShadow(0, 2, '#000000', 4, true, true);
+      this.markers.set(i, { text: t, kind, x: b.centerX, y: b.top });
+    }
+  }
+
+  /** Das nächste antippbare Ding in Reichweite leuchtet; ein kleiner Pfeil zeigt es an. */
+  private refreshNear(): void {
+    if (!this.player || !this.hudReady()) return;
+    if (!this.nearArrow) {
+      const hud = this.hud();
+      this.nearArrow = smooth(
+        hud.add.text(0, 0, '▼', { fontFamily: FONT, fontSize: '18px', color: '#fff8d8', stroke: '#2a1804', strokeThickness: 4, resolution: 2 }),
+      )
+        .setOrigin(0.5, 1)
+        .setDepth(5000)
+        .setVisible(false);
+      hud.tweens.add({ targets: this.nearArrow, alpha: 0.4, duration: 500, yoyo: true, repeat: -1 });
+    }
+    const here = this.cellOf(this.player.x, this.player.y);
+    let best: Interactable | undefined;
+    let bestD = 2.3;
+    for (const i of this.interactables) {
+      if (!i.target.active) continue;
+      const d = Math.hypot(i.stand.x - here.x, i.stand.y - here.y);
+      if (d < bestD) {
+        bestD = d;
+        best = i;
+      }
+    }
+    if (best === this.near?.i) {
+      if (best) this.placeNearArrow(best);
+      return;
+    }
+    this.clearNear();
+    if (!best) return;
+    const obj = best.target;
+    let glow: Phaser.Filters.Glow | undefined;
+    let tween: Phaser.Tweens.Tween | undefined;
+    // Leuchten nur bei Bildern und Figuren; Schilder und Flächen bekommen nur den Pfeil
+    if (obj instanceof Phaser.GameObjects.Image || obj instanceof Phaser.GameObjects.Sprite) {
+      obj.enableFilters();
+      glow = obj.filters?.external.addGlow(0xfff2a8, 2, 0, 1, false, 8, 6);
+      if (glow) tween = this.tweens.add({ targets: glow, outerStrength: 5, duration: 600, yoyo: true, repeat: -1, ease: 'sine.inout' });
+    }
+    this.near = { i: best, glow, tween };
+    this.placeNearArrow(best);
+  }
+
+  private placeNearArrow(i: Interactable): void {
+    // Hat das Ding schon ein „!“ oder „?“, reicht das Leuchten
+    const b = i.target.getBounds();
+    const [x, y] = this.toScreen(b.centerX, b.top);
+    this.nearArrow?.setPosition(x, y - 4).setVisible(!this.markers.has(i) && !this.frozen);
+  }
+
+  /** Weltkoordinaten → Bildschirm (für Anzeigen in der Hud-Szene) */
+  private toScreen(x: number, y: number): [number, number] {
+    const cam = this.cameras.main;
+    return [(x - cam.worldView.x) * cam.zoom, (y - cam.worldView.y) * cam.zoom];
+  }
+
+  /** Markierungen der Kamera folgen lassen, sanft auf und ab */
+  private placeMarkers(time: number): void {
+    const bob = Math.sin(time / 280) * 4;
+    for (const m of this.markers.values()) {
+      const [x, y] = this.toScreen(m.x, m.y);
+      m.text.setPosition(x, y - 2 + bob).setVisible(!this.frozen);
+    }
+    if (this.near) this.placeNearArrow(this.near.i);
+  }
+
+  private clearNear(): void {
+    const n = this.near;
+    if (!n) return;
+    n.tween?.remove();
+    const obj = n.i.target as Phaser.GameObjects.GameObject & { filters?: Phaser.Types.GameObjects.FiltersInternalExternal | null };
+    if (n.glow && obj.active) obj.filters?.external.remove(n.glow);
+    this.near = undefined;
+    this.nearArrow?.setVisible(false);
+  }
+
+  /** Bronzeplakette mit dem Ortsnamen an einer Wand (steht nicht im Weg, nicht antippbar) */
+  protected addPlaque(cellX: number, cellY: number, name: string): void {
+    const x = cellX * TILE;
+    const y = cellY * TILE;
+    const t = smooth(this.add.text(x, y, name, { fontFamily: FONT, fontSize: '9px', color: '#2a1804', resolution: 4 }).setOrigin(0.5));
+    const w = Math.ceil(t.width) + 16;
+    const h = 16;
+    const g = this.add.graphics();
+    g.fillStyle(0x3a2408, 1).fillRoundedRect(x - w / 2 - 1, y - h / 2 - 1, w + 2, h + 2, 3);
+    g.fillStyle(0xc8964a, 1).fillRoundedRect(x - w / 2, y - h / 2, w, h, 3);
+    g.fillStyle(0xe8c078, 1).fillRect(x - w / 2 + 2, y - h / 2 + 1, w - 4, 2);
+    for (const dx of [-w / 2 + 4, w / 2 - 4]) g.fillStyle(0x6a4a1a, 1).fillCircle(x + dx, y, 1.5);
+    g.setDepth(y);
+    t.setDepth(y + 1);
   }
 
   /** Einfaches Holzschild mit dem Namen des Orts */
@@ -293,6 +449,7 @@ export abstract class WorldScene extends Phaser.Scene {
     this.addInteractable({
       target: sprite,
       stand,
+      marker: () => (getFlag(g.flag) ? null : '!'),
       onInteract: () => {
         this.faceToPlayer(sprite);
         const caught = getFlag(g.flag);
@@ -422,8 +579,9 @@ export abstract class WorldScene extends Phaser.Scene {
     this.facing = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'east' : 'west') : dy > 0 ? 'south' : 'north';
   }
 
-  update(_t: number, delta: number): void {
+  update(time: number, delta: number): void {
     if (!this.player) return;
+    this.placeMarkers(time);
     const step = (SPEED * delta) / 1000;
     let dx = 0;
     let dy = 0;

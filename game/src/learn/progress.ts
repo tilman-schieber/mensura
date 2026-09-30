@@ -1,5 +1,4 @@
 import { loadSave, writeSave } from '../save';
-import { topicOfSkill } from './topics';
 import type { SkillId } from './skills';
 
 // Könnensstand pro Skill. `level` liegt zwischen 0 (neu) und 1 (sicher) und steuert,
@@ -20,21 +19,9 @@ export function getStat(skill: SkillId): SkillStat {
   return loadSave().progress[skill] ?? { ...START };
 }
 
-/**
- * Höchste Schwierigkeit für einen Skill im Schulmodus: Ist sein Schulthema noch nicht
- * abgehakt, bleiben die Aufgaben auf Einstiegsniveau (untere Stufen).
- */
-export const PREVIEW_CAP = 0.34;
-
-export function levelCap(skill: SkillId): number {
-  const topic = topicOfSkill(skill);
-  if (!topic) return 1;
-  return loadSave().settings.topics[topic.id] ? 1 : PREVIEW_CAP;
-}
-
-/** Schwierigkeit für die nächste Aufgabe (Können, begrenzt durch den Schulmodus). */
+/** Schwierigkeit für die nächste Aufgabe: das Können in diesem Skill (0–1). */
 export function getLevel(skill: SkillId): number {
-  return Math.min(getStat(skill).level, levelCap(skill));
+  return getStat(skill).level;
 }
 
 /**
