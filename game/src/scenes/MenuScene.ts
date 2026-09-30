@@ -1,12 +1,14 @@
 import Phaser from 'phaser';
-import { getStat, levelCap } from '../learn/progress';
+import { getStat, levelCap, recordAttempt } from '../learn/progress';
+import { PAGES, type MessbuchPage } from '../messbuch';
 import { SKILLS, type SkillId } from '../learn/skills';
 import { TOPICS } from '../learn/topics';
-import { activeSlot, loadSave, writeSave } from '../save';
+import { activeSlot, getFlag, loadSave, setFlag, writeSave } from '../save';
+import { FONT, smooth } from '../ui/theme';
 import { COLORS, GAME_HEIGHT, GAME_WIDTH, button, text } from '../ui/theme';
 import { goToTitle } from './flow';
 
-type Page = 'lernstand' | 'schule';
+type Page = 'lernstand' | 'schule' | 'messbuch';
 
 /**
  * Menü über der Welt: weiterspielen, Lernstand (welche Skills sitzen), Schulthemen
@@ -35,18 +37,19 @@ export class MenuScene extends Phaser.Scene {
     text(this, GAME_WIDTH - 60, 50, `Platz ${activeSlot() ?? '–'} · ${loadSave().avatar?.name ?? ''}`, 15, COLORS.muted).setOrigin(1, 0.5);
 
     const bx = 150;
-    const opts = { width: 210, height: 46, size: 19 };
+    const opts = { width: 210, height: 44, size: 18 };
     const items: [string, () => void][] = [
       ['Weiterspielen', () => this.close()],
       ['Lernstand', () => this.show('lernstand')],
       ['Schulthemen', () => this.show('schule')],
+      ['Messbuch', () => this.show('messbuch')],
       ['Figur ändern', () => this.editAvatar()],
       ['Speichern', () => this.overlay('Slots', { mode: 'save', from: 'Menu' })],
       ['Laden', () => this.overlay('Slots', { mode: 'load', from: 'Menu' })],
       ['Einstellungen', () => this.overlay('Settings', { from: 'Menu' })],
       ['Zum Titelbild', () => goToTitle(this)],
     ];
-    items.forEach(([label, action], i) => button(this, bx, 96 + i * 54, label, action, opts));
+    items.forEach(([label, action], i) => button(this, bx, 90 + i * 49, label, action, opts));
 
     this.page = this.add.container(0, 0);
     this.show('lernstand');
@@ -66,7 +69,8 @@ export class MenuScene extends Phaser.Scene {
   private show(page: Page): void {
     this.page.removeAll(true);
     if (page === 'lernstand') this.learningReport(290, 100);
-    else this.schoolTopics(290, 100);
+    else if (page === 'schule') this.schoolTopics(290, 100);
+    else this.messbuch(290, 100);
   }
 
   /** Lernstand: pro Skill ein Balken (0–5 Kristalle) und wie oft richtig. */
@@ -124,6 +128,62 @@ export class MenuScene extends Phaser.Scene {
       });
       p.add(hit);
     });
+  }
+
+  /** Vagors Messbuch: gefundene Seiten lesen und die Rechnungen prüfen */
+  private messbuch(x: number, y: number): void {
+    const p = this.page;
+    p.add(text(this, x, y, 'Vagors Messbuch', 22, COLORS.goldText).setOrigin(0, 0.5));
+    const found = PAGES.filter((pg) => getFlag(pg.id));
+    p.add(
+      text(this, x, y + 28, `${found.length} von ${PAGES.length} Seiten gefunden. Sie liegen gut versteckt, an jedem Ort eine.`, 14, COLORS.muted).setOrigin(0, 0.5),
+    );
+    PAGES.forEach((pg, i) => {
+      const row = y + 70 + i * 52;
+      if (!getFlag(pg.id)) {
+        p.add(text(this, x + 10, row, `Seite ${i + 1}: ???  (${pg.place})`, 17, '#5d6b76').setOrigin(0, 0.5));
+        return;
+      }
+      const checked = getFlag(`${pg.id}_checked`);
+      p.add(button(this, x + 190, row, `Seite ${i + 1}: ${pg.title}`, () => this.readPage(pg), { width: 380, height: 44, size: 17 }));
+      if (checked) p.add(text(this, x + 400, row, '✓ geprüft', 16, COLORS.goldText).setOrigin(0, 0.5));
+    });
+  }
+
+  private readPage(pg: MessbuchPage): void {
+    const p = this.page;
+    p.removeAll(true);
+    const x = 290;
+    const g = this.add.graphics();
+    g.fillStyle(0xe9dcbc, 1).fillRoundedRect(x, 84, 600, 330, 8);
+    g.lineStyle(2, 0x8a6a3a, 1).strokeRoundedRect(x, 84, 600, 330, 8);
+    p.add(g);
+    const ink = '#3a2a18';
+    p.add(text(this, x + 300, 110, pg.title, 22, ink));
+    const checked = getFlag(`${pg.id}_checked`);
+    const feedback = text(this, x + 300, 340, checked ? pg.explain : 'Stimmt die Rechnung? Tipp auf eine falsche Zeile oder auf „Alles richtig“.', 15, ink);
+    feedback.setWordWrapWidth(560).setAlign('center');
+    const check = (choice: number | null) => {
+      const right = choice === pg.error;
+      recordAttempt(['PLAUS'], right);
+      if (right) setFlag(`${pg.id}_checked`);
+      feedback.setText(right ? `Richtig! ${pg.explain}` : choice === null ? 'Schau noch einmal genau hin. Rechne jede Zeile selbst nach.' : 'Diese Zeile stimmt. Rechne sie nach!');
+    };
+    pg.lines.forEach((line, i) => {
+      const t = smooth(this.add.text(x + 300, 160 + i * 44, line, { fontFamily: FONT, fontSize: '21px', color: ink, resolution: 2 }).setOrigin(0.5));
+      t.setInteractive({ useHandCursor: true }).on('pointerup', () => check(i));
+      p.add(t);
+    });
+    p.add(
+      smooth(
+        this.add
+          .text(x + 300, 300, `„${pg.note.text}“  (Vagor)`, { fontFamily: FONT, fontSize: '15px', fontStyle: 'italic', color: '#6a4a2a', align: 'center', wordWrap: { width: 560 }, resolution: 2 })
+          .setOrigin(0.5),
+      ),
+    );
+    p.add(feedback);
+    p.add(button(this, x + 120, 455, 'Alles richtig', () => check(null), { width: 200, height: 46, size: 18 }));
+    p.add(button(this, x + 480, 455, 'Zurück', () => this.show('messbuch'), { width: 160, height: 46, size: 18 }));
   }
 
   private close(): void {

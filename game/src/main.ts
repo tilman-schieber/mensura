@@ -36,6 +36,7 @@ import { NetPuzzle } from './puzzles/NetPuzzle';
 import { VolumePuzzle } from './puzzles/VolumePuzzle';
 import { PaintPuzzle } from './puzzles/PaintPuzzle';
 import { KubusScene } from './puzzles/KubusScene';
+import { CheatPuzzle } from './puzzles/CheatPuzzle';
 import { COLORS, GAME_HEIGHT, GAME_WIDTH, text } from './ui/theme';
 
 class BootScene extends Phaser.Scene {
@@ -49,6 +50,9 @@ class BootScene extends Phaser.Scene {
     // von mehreren Szenen und Rätseln genutzt
     this.load.image('mine-cart', 'assets/objects/mine-cart.png');
     this.load.image('splitter', 'assets/objects/splitter.png');
+    this.load.image('owl', 'assets/objects/owl.png');
+    this.load.image('messbuch-page', 'assets/objects/messbuch-page.png');
+    this.load.spritesheet('npc-pimal', 'assets/npcs/pimal.png', { frameWidth: 68, frameHeight: 68 });
     this.load.json('dialog-voice-index', 'assets/audio/dialog/index.json');
   }
 
@@ -91,7 +95,7 @@ async function start() {
     scene: [BootScene, TitleScene, SlotScene, SettingsScene, PrologueScene, AvatarScene, VillageScene, MineScene, TempleScene, ValleyScene, FortressScene, HudScene, MenuScene, OreCartPuzzle, RailPuzzle, RoundingPuzzle, VaultPuzzle, ColossusScene, RomanPuzzle, BinaryPuzzle, FogBattleScene,
       MirrorWallPuzzle, SymmetryPuzzle, QuadPuzzle, CoordinatePuzzle, DoppelgangerScene,
       LengthPuzzle, ScalePuzzle, EstimatePuzzle, FerryPuzzle, BeetleScene,
-      TilePuzzle, NetPuzzle, VolumePuzzle, PaintPuzzle, KubusScene],
+      TilePuzzle, NetPuzzle, VolumePuzzle, PaintPuzzle, KubusScene, CheatPuzzle],
   });
   // Zum Debuggen im Browser-Terminal erreichbar (nur im Entwicklungsmodus)
   if (import.meta.env.DEV) (window as unknown as { game: Phaser.Game }).game = game;

@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { drawCuboid } from '../puzzles/cuboid';
 import { getFlag, setFlag } from '../save';
-import { TILE, WorldScene } from './WorldScene';
+import { TILE, WorldScene, type GoblinVisit } from './WorldScene';
 import type { Cell } from './pathfind';
 import { Terrain, vertexGrid, type TilesetData } from './terrain';
 
@@ -26,6 +26,16 @@ const ST = {
   paint: { flag: 'fort_paint', puzzle: 'PaintPuzzle' },
 } satisfies Record<string, Station>;
 const STATIONS: Station[] = Object.values(ST);
+
+const GOBLIN: GoblinVisit = {
+  flag: 'goblin_fort',
+  topic: 'raum',
+  intro: [
+    { speaker: 'Pi-mal-Daumen', text: 'Ich helfe Quadro beim Bauen! Also, ich rechne. So ungefähr.' },
+    { speaker: 'Pi-mal-Daumen', text: 'Länge, Breite, Höhe, alles eins. Oder? Hihi.' },
+  ],
+  caught: [{ speaker: 'Pi-mal-Daumen', text: 'Na gut, na gut. Länge mal Breite, nicht plus. Aber sag es nicht Quadro!' }],
+};
 
 export class FortressScene extends WorldScene {
   private stars: Record<string, Phaser.GameObjects.Text> = {};
@@ -100,6 +110,10 @@ export class FortressScene extends WorldScene {
     this.block(19, 12, 21, 12);
     this.stars[ST.paint.flag] = this.addStar(ST.paint.flag, 20.5 * TILE, 10.4 * TILE);
     this.addInteractable({ target: bench, stand: { x: 20, y: 13 }, onInteract: () => this.station(ST.paint) });
+
+    this.addGoblin(GOBLIN, { x: 15, y: 5 }, 'south');
+    this.addPage('page_fortress', 3, 5);
+    this.addSign(9.5, 15.2, 'Mauerhöhe: 12 m');
 
     // Baumeister Quadro am Eingang
     this.quadro = this.addNpc('npc-quadro', { x: 14, y: 13 }, 'west');

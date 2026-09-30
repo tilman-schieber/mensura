@@ -27,6 +27,7 @@ export const SKILLS = {
   R6: { id: 'R6', name: 'Vierecke und ihre Eigenschaften' },
   R12: { id: 'R12', name: 'Koordinatensystem' },
   R13: { id: 'R13', name: 'Achsen- und Punktspiegelung durchführen' },
+  PLAUS: { id: '2.2.13', name: 'Ergebnisse prüfen: Überschlag und Plausibilität' },
 } as const satisfies Record<string, Skill>;
 
 export type SkillId = keyof typeof SKILLS;

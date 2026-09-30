@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { getFlag, loadSave, setFlag, topicDone } from '../save';
 import { TILE, WorldScene } from './WorldScene';
+import { FONT, smooth } from '../ui/theme';
 import type { DialogLine } from '../ui/dialog';
 import type { Cell } from './pathfind';
 import { Terrain, vertexGrid, type TilesetData } from './terrain';
@@ -34,6 +35,7 @@ const REGIONS: Region[] = [
     thanks: [
       { speaker: 'Meisterin Elle', text: 'Das ist er! Ein Splitter des Urmaßes der Zahl. Sieh nur, wie die Farben ins Dorf zurückkehren.' },
       { speaker: 'Meisterin Elle', text: 'Jedes Urmaß ist in zwei Hälften zerbrochen. Die andere Hälfte schläft tief unten in den Stollen. Dorthin gehen wir, wenn du in der Schule weitergekommen bist.' },
+      { speaker: 'Meisterin Elle', text: 'Und hörst du das? Unten auf dem Markt ruft wieder jemand. Mira ist zurück!' },
       { speaker: 'Meisterin Elle', text: 'Die nächste Spur führt nach Süden, zum Spiegeltempel. Dort ruht das Urmaß der Form.' },
       { speaker: 'Meisterin Elle', text: 'Ruh dich aus, Lehrling. Deine Reise hat gerade erst begonnen.' },
     ],
@@ -48,6 +50,7 @@ const REGIONS: Region[] = [
       { speaker: 'Meisterin Elle', text: 'Der Splitter der Form! Zwei von vierzehn Splittern sind geborgen.' },
       { speaker: 'Meisterin Elle', text: 'Du siehst mich so seltsam an. Hat Lumen dir etwas in ihren Spiegeln gezeigt?' },
       { speaker: 'Meisterin Elle', text: 'Die Große Brücke. Ja, Vagor und ich waren einmal Freunde. Mehr will ich dazu jetzt nicht sagen.' },
+      { speaker: 'Meisterin Elle', text: 'Bürgermeister Rudolf ist auch wieder da. Er steht schon vor Vagors Plakaten und schimpft.' },
       { speaker: 'Meisterin Elle', text: 'Im Norden liegt das Riesental. Dort hütet eine Riesin das Urmaß der Größe.' },
     ],
   },
@@ -60,6 +63,7 @@ const REGIONS: Region[] = [
     thanks: [
       { speaker: 'Meisterin Elle', text: 'Der Splitter der Größe! Drei von vierzehn.' },
       { speaker: 'Meisterin Elle', text: 'Vagor hat wieder mit dir gesprochen? Hanna hat recht, er klingt traurig. Er war nicht immer so.' },
+      { speaker: 'Meisterin Elle', text: 'Flora, die Alchemistin, ist zurückgekommen. Hoffentlich explodiert diesmal nichts.' },
       { speaker: 'Meisterin Elle', text: 'Hinter dem Fluss im Riesental steht die Würfelfestung. Dort ruht das Urmaß des Raums.' },
     ],
   },
@@ -71,6 +75,7 @@ const REGIONS: Region[] = [
     lockedGoal: 'Die Festung öffnet sich mit dem Schulthema „Flächen“',
     thanks: [
       { speaker: 'Meisterin Elle', text: 'Der Splitter des Raums! Vier von vierzehn. Das ganze erste Jahr hast du gemeistert.' },
+      { speaker: 'Meisterin Elle', text: 'Hörst du den Hammer? Harald, der Schmied, ist wieder da. Jetzt ist Eichstadt fast wie früher.' },
       { speaker: 'Meisterin Elle', text: 'Und was ist das? Ein Grundriss von Quadro … Die Zitadelle steht dort, wo die Brücke war.' },
       { speaker: 'Meisterin Elle', text: 'Setz dich, Lehrling. Es ist Zeit, dass du die Wahrheit erfährst.' },
       { speaker: 'Meisterin Elle', text: 'Vagor und ich haben die Große Brücke zusammen geplant. Er hat gerechnet, und ich sollte die Probe machen.' },
@@ -82,9 +87,113 @@ const REGIONS: Region[] = [
   },
 ];
 
+/**
+ * Dorfbewohner, die vor dem Nebel geflohen sind. Jeder abgegebene Splitter bringt einen zurück,
+ * mit einem eigenen Ort im Dorf. So sieht man bei jeder Rückkehr, was man erreicht hat.
+ */
+interface Villager {
+  key: string;
+  /** zurück, sobald dieser Splitter bei Elle abgegeben ist */
+  after: string;
+  cell: Cell;
+  facing: 'south' | 'east' | 'north' | 'west';
+  stand: Cell;
+  prop?: { key: string; x: number; y: number; block: [number, number, number, number] };
+  first: DialogLine[];
+  again: DialogLine[];
+}
+
+const VILLAGERS: Villager[] = [
+  {
+    key: 'mira',
+    after: 'elle_splitter',
+    cell: { x: 7, y: 16 },
+    facing: 'east',
+    stand: { x: 7, y: 15 },
+    prop: { key: 'market-stall', x: 9.4, y: 18.2, block: [8, 16, 10, 17] },
+    first: [
+      { speaker: 'Händlerin Mira', text: 'Du bist also Elles Lehrling! Ich bin Mira. Als der Nebel kam, bin ich zu meiner Schwester geflohen.' },
+      { speaker: 'Händlerin Mira', text: 'Im Nebel stimmten nicht einmal meine Preise. Jetzt kann ich wieder rechnen und verkaufen.' },
+    ],
+    again: [{ speaker: 'Händlerin Mira', text: 'Äpfel, Brot, Rüben! Alles genau abgewogen, nicht mehr ungefähr.' }],
+  },
+  {
+    key: 'rudolf',
+    after: 'elle_form',
+    cell: { x: 16, y: 8 },
+    facing: 'west',
+    stand: { x: 16, y: 9 },
+    first: [
+      { speaker: 'Bürgermeister Rudolf', text: 'Ah, der Lehrling! Rudolf, Bürgermeister von Eichstadt. Endlich bin ich wieder zu Hause.' },
+      { speaker: 'Bürgermeister Rudolf', text: 'Hast du die Plakate gesehen? „Seit es Maße gibt: 100 Prozent mehr Streit!“ Woher will Vagor das wissen?' },
+      { speaker: 'Bürgermeister Rudolf', text: 'Irgendwann zählen wir nach. Mit echten Zahlen, nicht mit ungefähren.' },
+    ],
+    again: [{ speaker: 'Bürgermeister Rudolf', text: 'Glaub nicht alles, was auf einem Plakat steht. Frag immer: Woher kommt die Zahl?' }],
+  },
+  {
+    key: 'flora',
+    after: 'elle_size',
+    cell: { x: 22, y: 10 },
+    facing: 'south',
+    stand: { x: 22, y: 11 },
+    prop: { key: 'alchemy-table', x: 24, y: 11, block: [23, 10, 24, 10] },
+    first: [
+      { speaker: 'Alchemistin Flora', text: 'Hallo! Ich bin Flora, die Alchemistin. Im Nebel wurden meine Rezepte zu: ein bisschen hiervon, ein bisschen davon.' },
+      { speaker: 'Alchemistin Flora', text: 'Da ist mir ein Trank explodiert! Jetzt nehme ich wieder genau 250 Gramm, nicht ungefähr eine Handvoll.' },
+    ],
+    again: [{ speaker: 'Alchemistin Flora', text: 'Ein Rezept ist Mathe, die man trinken kann. Solange die Mengen stimmen.' }],
+  },
+  {
+    key: 'harald',
+    after: 'elle_space',
+    cell: { x: 26, y: 16 },
+    facing: 'west',
+    stand: { x: 26, y: 15 },
+    prop: { key: 'anvil', x: 24.6, y: 17, block: [24, 16, 24, 16] },
+    first: [
+      { speaker: 'Schmied Harald', text: 'Tag! Harald, der Schmied. Ohne Länge, Breite und Höhe kann ich keine Hufeisen schmieden.' },
+      { speaker: 'Schmied Harald', text: 'Jetzt, wo das Urmaß des Raums zurück ist, stimmt wieder jedes Maß. Danke, Lehrling!' },
+    ],
+    again: [{ speaker: 'Schmied Harald', text: 'Zweimal messen, einmal schmieden. So macht man das.' }],
+  },
+];
+
+/** Nebelwesen im Dorf und was aus ihnen wird, wenn man sie erlöst */
+const WISPS: { cell: Cell; count: number; becomes: string; freed: DialogLine[]; play: DialogLine[] }[] = [
+  {
+    cell: { x: 17, y: 13 },
+    count: 2,
+    becomes: 'sheep',
+    freed: [{ speaker: 'Eule Pünktchen', text: 'Sieh nur! Aus dem Nebelwesen ist ein Schaf geworden. Es hatte nur sein Maß verloren.' }],
+    play: [{ speaker: 'Eule Pünktchen', text: 'Das Schaf möchte eine Runde Kopfrechnen üben. Mäh!' }],
+  },
+  {
+    cell: { x: 22, y: 12 },
+    count: 3,
+    becomes: 'fox',
+    freed: [{ speaker: 'Eule Pünktchen', text: 'Ein Fuchs! Er hatte vergessen, wie groß er ist. Jetzt weiß er es wieder.' }],
+    play: [{ speaker: 'Eule Pünktchen', text: 'Der Fuchs will wissen, ob du immer noch so schnell rechnest wie im Nebel.' }],
+  },
+  {
+    cell: { x: 26, y: 8 },
+    count: 3,
+    becomes: 'lantern',
+    freed: [{ speaker: 'Eule Pünktchen', text: 'Eine Laterne! Sie leuchtet wieder genau so hell, wie sie soll.' }],
+    play: [{ speaker: 'Eule Pünktchen', text: 'Die Laterne flackert auffordernd. Noch eine Runde Kopfrechnen?' }],
+  },
+];
+
+/** Wegweiser: genaue Entfernung erst, wenn der Nebel in dieser Richtung gelichtet ist */
+const SIGNPOST: { label: string; dist: string; clear: string; dx: number; dy: number }[] = [
+  { label: 'Mine', dist: '320 m', clear: 'mine_outer_done', dx: 1, dy: 0 },
+  { label: 'Riesental', dist: '250 m', clear: 'valley_done', dx: 0, dy: -1 },
+  { label: 'Spiegeltempel', dist: '180 m', clear: 'temple_done', dx: 0, dy: 1 },
+  { label: 'Ruine', dist: '140 m', clear: 'ruin_open', dx: -1, dy: 0 },
+];
+
 export class VillageScene extends WorldScene {
   private ruinStars: Record<string, Phaser.GameObjects.Text> = {};
-  private wisps: { cell: Cell; count: number; sprite: Phaser.GameObjects.Image; calmUntil: number }[] = [];
+  private wisps: { index: number; cell: Cell; count: number; sprite: Phaser.GameObjects.Image; calmUntil: number }[] = [];
 
   constructor() {
     super('Village');
@@ -109,6 +218,10 @@ export class VillageScene extends WorldScene {
     this.load.image('nebelwesen', 'assets/objects/nebelwesen.png');
     this.load.image('temple-gate', 'assets/objects/temple-gate.png');
     this.load.image('giant-mushroom', 'assets/objects/giant-mushroom.png');
+    for (const k of ['market-stall', 'notice-board', 'anvil', 'alchemy-table', 'fox', 'lantern', 'sheep']) {
+      this.load.image(k, `assets/objects/${k}.png`);
+    }
+    for (const v of VILLAGERS) this.load.spritesheet(`npc-${v.key}`, `assets/npcs/${v.key}.png`, { frameWidth: 68, frameHeight: 68 });
   }
 
   protected buildWorld(entry?: string): Cell {
@@ -148,6 +261,15 @@ export class VillageScene extends WorldScene {
 
     this.buildRuin();
     this.spawnWisps();
+    this.buildBoard();
+    this.buildSignpost();
+    this.buildVillagers();
+    this.addPage('page_village', 10, 3);
+
+    // Eule Pünktchen sitzt auf Elles Dach
+    const owl = this.placeObject('owl', 6.2, 3.4, 0.55).setDepth(8 * TILE);
+    this.tweens.add({ targets: owl, angle: { from: -4, to: 4 }, duration: 1600, yoyo: true, repeat: -1, ease: 'sine.inout' });
+    this.addInteractable({ target: owl, stand: { x: 6, y: 7 }, onInteract: () => this.talkToOwl() });
     this.buildTempleWay();
     this.buildValleyWay();
 
@@ -232,18 +354,34 @@ export class VillageScene extends WorldScene {
 
   private spawnWisps(): void {
     this.wisps = [];
-    const groups: [number, number, number][] = [
-      [17, 13, 2],
-      [22, 12, 3],
-      [26, 8, 3],
-    ];
-    for (const [x, y, count] of groups) {
+    WISPS.forEach((w, index) => {
+      const { x, y } = w.cell;
+      if (getFlag(`wisp_freed_${index}`)) {
+        this.placeFreed(index);
+        return;
+      }
       const sprite = this.add.image((x + 0.5) * TILE, (y + 0.4) * TILE, 'nebelwesen').setAlpha(0.85).setDepth((y + 1) * TILE);
       this.tweens.add({ targets: sprite, y: sprite.y - 5, duration: 1400, yoyo: true, repeat: -1, ease: 'sine.inout' });
-      const wisp = { cell: { x, y }, count, sprite, calmUntil: 0 };
+      const wisp = { index, cell: { x, y }, count: w.count, sprite, calmUntil: 0 };
       this.wisps.push(wisp);
       this.addInteractable({ target: sprite, stand: { x: x - 1, y }, onInteract: () => this.fightWisp(wisp) });
+    });
+  }
+
+  /** Das erlöste Wesen bleibt im Dorf; antippen = noch eine Runde Kopfrechnen */
+  private placeFreed(index: number, appear = false): void {
+    const w = WISPS[index];
+    const img = this.placeObject(w.becomes, w.cell.x + 0.5, w.cell.y + 1, w.becomes === 'lantern' ? 0.75 : 0.7);
+    this.block(w.cell.x, w.cell.y, w.cell.x, w.cell.y);
+    if (appear) {
+      img.setAlpha(0).setScale(0.2);
+      this.tweens.add({ targets: img, alpha: 1, scale: 0.7, duration: 900, ease: 'back.out' });
     }
+    this.addInteractable({
+      target: img,
+      stand: { x: w.cell.x - 1, y: w.cell.y },
+      onInteract: () => this.say(w.play, () => this.startPuzzle('FogBattleScene', () => {}, w.count)),
+    });
   }
 
   protected onEnterCell(c: Cell): void {
@@ -258,12 +396,127 @@ export class VillageScene extends WorldScene {
     if (!w.sprite.active) return;
     this.startPuzzle('FogBattleScene', (won) => {
       if (won) {
+        // Erlöst: Das Nebelwesen bekommt seine Gestalt zurück und bleibt im Dorf
         this.tweens.killTweensOf(w.sprite);
+        this.removeInteractable(w.sprite);
+        this.cameras.main.flash(400, 240, 240, 220);
         this.tweens.add({ targets: w.sprite, alpha: 0, scale: 1.8, duration: 700, onComplete: () => w.sprite.destroy() });
+        setFlag(`wisp_freed_${w.index}`);
+        this.placeFreed(w.index, true);
+        this.time.delayedCall(900, () => this.say(WISPS[w.index].freed));
       } else {
         w.calmUntil = this.time.now + 4000;
       }
     }, w.count);
+  }
+
+  // ---------- Dorfleben ----------
+
+  /** Wer schon zurück ist, steht an seinem Platz. */
+  private buildVillagers(): void {
+    for (const v of VILLAGERS) {
+      if (v.prop) {
+        this.placeObject(v.prop.key, v.prop.x, v.prop.y);
+        const [x0, y0, x1, y1] = v.prop.block;
+        this.block(x0, y0, x1, y1);
+      }
+      if (getFlag(v.after)) this.spawnVillager(v);
+    }
+  }
+
+  private spawnVillager(v: Villager, appear = false): void {
+    const npc = this.addNpc(`npc-${v.key}`, v.cell, v.facing);
+    if (appear) {
+      npc.setAlpha(0);
+      this.tweens.add({ targets: npc, alpha: 1, duration: 1200 });
+    }
+    this.addInteractable({
+      target: npc,
+      stand: v.stand,
+      onInteract: () => {
+        this.faceToPlayer(npc);
+        const met = `met_${v.key}`;
+        this.say(getFlag(met) ? v.again : v.first, () => setFlag(met));
+      },
+    });
+  }
+
+  /** Anschlagbrett mit Vagors Plakaten (gefälschte Statistiken, aufgedeckt erst in Klasse 6) */
+  private buildBoard(): void {
+    const board = this.placeObject('notice-board', 14.8, 8.1, 0.8);
+    this.block(14, 7, 15, 7);
+    const g = this.add.graphics().setDepth(board.depth + 1);
+    const posters: [number, number, number][] = [
+      [-18, -38, 0xe8dcc0],
+      [-2, -42, 0xd8c8f0],
+      [13, -36, 0xf0d0c0],
+    ];
+    for (const [dx, dy, color] of posters) {
+      g.fillStyle(color, 1).fillRect(board.x + dx - 6, board.y + dy - 8, 12, 15);
+      g.fillStyle(0x4a2a6a, 1).fillRect(board.x + dx - 4, board.y + dy - 5, 8, 2).fillRect(board.x + dx - 4, board.y + dy - 1, 6, 1).fillRect(board.x + dx - 4, board.y + dy + 2, 7, 1);
+    }
+    this.addInteractable({
+      target: board,
+      stand: { x: 15, y: 8 },
+      onInteract: () =>
+        this.say([
+          { speaker: 'Plakat', text: 'Seit es Maße gibt: 100 Prozent mehr Streit! Gezeichnet, Vagor.' },
+          { speaker: 'Plakat', text: 'Neun von zehn Nebelwesen sind zufrieden!' },
+          { speaker: 'Plakat', text: 'Wer misst, der irrt. Wer nicht misst, irrt nie.' },
+          { speaker: 'Eule Pünktchen', text: 'Hm. Wer hat die Nebelwesen denn gefragt? Und wer hat den Streit gezählt? Das prüfen wir irgendwann nach.' },
+        ]),
+    });
+  }
+
+  /** Wegweiser an der Kreuzung: im Nebel nur ungefähr, nach dem Splitter genau */
+  private buildSignpost(): void {
+    const cx = 10.5 * TILE;
+    const base = 11 * TILE;
+    const c = this.add.container(cx, base).setDepth(base + 4);
+    const g = this.add.graphics();
+    g.fillStyle(0x4a3018, 1).fillRect(-2, -58, 4, 58);
+    c.add(g);
+    SIGNPOST.forEach((s, i) => {
+      const y = -52 + i * 12;
+      const dir = s.dx || (s.dy < 0 ? 1 : -1);
+      const w = 92;
+      const x0 = dir > 0 ? 2 : -w - 2;
+      const arrow = this.add.graphics();
+      arrow.fillStyle(0x2a1a0c, 1).fillRect(x0 - 1, y - 6, w + 2, 12);
+      arrow.fillStyle(0xc9a15a, 1).fillRect(x0, y - 5, w, 10);
+      arrow.fillStyle(0xc9a15a, 1).fillTriangle(dir > 0 ? x0 + w : x0, y - 5, dir > 0 ? x0 + w + 6 : x0 - 6, y, dir > 0 ? x0 + w : x0, y + 5);
+      const exact = `${s.label} ${s.dist}`;
+      const t = smooth(this.add.text(x0 + w / 2, y, exact, { fontFamily: FONT, fontSize: '8px', color: '#2a1a0c', resolution: 4 }).setOrigin(0.5));
+      if (!getFlag(s.clear)) this.fogFlicker(t, exact);
+      c.add([arrow, t]);
+    });
+    this.block(10, 10, 10, 10);
+    (c as unknown as { getBounds: () => Phaser.Geom.Rectangle }).getBounds = () => new Phaser.Geom.Rectangle(cx - 80, base - 64, 160, 64);
+    this.addInteractable({
+      target: c as unknown as Phaser.GameObjects.Image,
+      stand: { x: 10, y: 11 },
+      onInteract: () => {
+        const foggy = SIGNPOST.some((s) => !getFlag(s.clear));
+        this.say([
+          foggy
+            ? { speaker: 'Wegweiser', text: 'Die Zahlen auf manchen Schildern flackern. Wo noch Nebel liegt, ist alles nur ungefähr.' }
+            : { speaker: 'Wegweiser', text: 'Alle Entfernungen sind wieder genau. Der Nebel hat hier nichts mehr zu sagen.' },
+        ]);
+      },
+    });
+  }
+
+  private talkToOwl(): void {
+    const met = getFlag('met_owl');
+    this.say(
+      met
+        ? [{ speaker: 'Eule Pünktchen', text: 'Huhu! Ich passe von hier oben auf dich auf.' }]
+        : [
+            { speaker: 'Eule Pünktchen', text: 'Huhu! Ich bin Pünktchen, Meisterin Elles Eule. Mir entgeht kein Komma.' },
+            { speaker: 'Eule Pünktchen', text: 'Wenn du bei einem Rätsel nicht weiterkommst, tipp auf „Hinweis“. Dann flattere ich herbei.' },
+          ],
+      () => setFlag('met_owl'),
+    );
   }
 
   // ---------- Ruine der Alten ----------
@@ -339,6 +592,7 @@ export class VillageScene extends WorldScene {
     if (carried) {
       setFlag(carried.reported);
       this.clearFog();
+      for (const v of VILLAGERS) if (v.after === carried.reported) this.spawnVillager(v, true);
       this.say(carried.thanks, () => this.updateGoal());
       return;
     }

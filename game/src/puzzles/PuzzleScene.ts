@@ -31,6 +31,7 @@ export abstract class PuzzleScene extends Phaser.Scene {
   private rounds = 3;
   private roundLabel!: Phaser.GameObjects.Text;
   private owlText!: Phaser.GameObjects.Text;
+  private owl!: Phaser.GameObjects.Image;
   private owlBubble!: Phaser.GameObjects.Graphics;
   private busy = false;
 
@@ -57,12 +58,14 @@ export abstract class PuzzleScene extends Phaser.Scene {
     // Hinweis-Eule unten links
     button(this, 104, GAME_HEIGHT - 56, 'Hinweis', () => this.nextHint(), { width: 140, height: 48, size: 20 });
     this.owlBubble = this.add.graphics();
+    // Eule Pünktchen bringt die Hinweise
+    this.owl = this.add.image(214, GAME_HEIGHT - 60, 'owl').setScale(0.9).setDepth(6).setVisible(false);
     this.owlText = smooth(this.add
-      .text(190, GAME_HEIGHT - 72, '', {
+      .text(246, GAME_HEIGHT - 72, '', {
         fontFamily: FONT,
         fontSize: '19px',
         color: COLORS.text,
-        wordWrap: { width: 560 },
+        wordWrap: { width: 520 },
         resolution: 2,
       })
       .setDepth(5));
@@ -97,7 +100,9 @@ export abstract class PuzzleScene extends Phaser.Scene {
   protected showOwl(message: string): void {
     this.owlText.setText(message);
     this.owlBubble.clear();
+    this.owl.setVisible(!!message);
     if (!message) return;
+    this.tweens.add({ targets: this.owl, y: { from: GAME_HEIGHT - 50, to: GAME_HEIGHT - 60 }, duration: 250, ease: 'back.out' });
     const b = this.owlText.getBounds();
     this.owlBubble
       .fillStyle(0x0b1117, 0.95)

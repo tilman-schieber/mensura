@@ -3,7 +3,7 @@ import { makeBlockTextures, blockKey } from '../puzzles/blocks';
 import { getFlag, setFlag } from '../save';
 import type { DialogLine } from '../ui/dialog';
 import { FONT, smooth } from '../ui/theme';
-import { TILE, WorldScene } from './WorldScene';
+import { TILE, WorldScene, type GoblinVisit } from './WorldScene';
 import type { Cell } from './pathfind';
 import { Terrain, vertexGrid, type TilesetData } from './terrain';
 
@@ -28,6 +28,16 @@ const STATIONS: Station[] = [
   { flag: 'mine_rail', puzzle: 'RailPuzzle', name: 'Lorenbahn', done: { speaker: 'Vorarbeiter Brom', text: 'Die Lorenbahn läuft wieder. Jede Lore steht, wo sie soll.' } },
   { flag: 'mine_round', puzzle: 'RoundingPuzzle', name: 'Haltestellen', done: { speaker: 'Vorarbeiter Brom', text: 'Die Loren halten wieder an den richtigen Haltestellen.' } },
 ];
+
+const GOBLIN: GoblinVisit = {
+  flag: 'goblin_mine',
+  topic: 'zahl',
+  intro: [
+    { speaker: 'Pi-mal-Daumen', text: 'Hihi! Ich bin Pi-mal-Daumen. Genau rechnen ist was für Langweiler. Ich runde, wie es mir passt!' },
+    { speaker: 'Pi-mal-Daumen', text: 'Die Plakate in Eichstadt? Die hab ich für Vagor geklebt. Wetten, du merkst nicht, wann ich schummle?' },
+  ],
+  caught: [{ speaker: 'Pi-mal-Daumen', text: 'Grrr! Erwischt. Das sag ich Vagor … nein, lieber doch nicht.' }],
+};
 
 export class MineScene extends WorldScene {
   private stars: Record<string, Phaser.GameObjects.Text> = {};
@@ -98,6 +108,11 @@ export class MineScene extends WorldScene {
     // --- Der Erzkoloss bewacht den Tresor, sobald die Stationen geschafft sind
     if (this.stationsDone() === 3 && !getFlag('koloss_done')) this.spawnKoloss(false);
 
+    // --- Nebenbei: Pi-mal-Daumen, eine Messbuch-Seite, ein Schild am Eingang
+    this.addGoblin(GOBLIN, { x: 21, y: 6 }, 'west');
+    this.addPage('page_mine', 4, 5);
+    this.addSign(17.5, 15.2, 'Stollen 1 · 350 m tief');
+
     // --- Vorarbeiter Brom am Eingang
     this.brom = this.addNpc('npc-brom', { x: 15, y: 13 }, 'west');
     this.addInteractable({ target: this.brom, stand: { x: 14, y: 13 }, onInteract: () => { this.faceToPlayer(this.brom); this.talkToBrom(); } });
@@ -153,6 +168,7 @@ export class MineScene extends WorldScene {
     c.add(g);
     labels.forEach((l, i) => {
       const t = smooth(this.add.text(i * 64 + 16, 9, l, { fontFamily: FONT, fontSize: '11px', color: '#2a1a0c', resolution: 4 }).setOrigin(0.5));
+      if (this.fogDensity() > 0) this.fogFlicker(t, l);
       c.add(t);
     });
     c.setSize(110, 46);

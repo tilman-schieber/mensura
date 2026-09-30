@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { getFlag, setFlag, topicDone } from '../save';
-import { TILE, WorldScene } from './WorldScene';
+import { TILE, WorldScene, type GoblinVisit } from './WorldScene';
 import type { Cell } from './pathfind';
 import { Terrain, vertexGrid, type TilesetData } from './terrain';
 
@@ -26,6 +26,15 @@ const ST = {
 } satisfies Record<string, Station>;
 const STATIONS: Station[] = Object.values(ST);
 
+const GOBLIN: GoblinVisit = {
+  flag: 'goblin_valley',
+  topic: 'groesse',
+  intro: [
+    { speaker: 'Pi-mal-Daumen', text: 'Hihi! Bei den Riesen ist sowieso alles zu groß. Da fällt keinem auf, wenn ich ein bisschen übertreibe.' },
+  ],
+  caught: [{ speaker: 'Pi-mal-Daumen', text: 'Au weia. Du kennst deine Größen ja wirklich.' }],
+};
+
 export class ValleyScene extends WorldScene {
   private stars: Record<string, Phaser.GameObjects.Text> = {};
   private hanna!: Phaser.GameObjects.Sprite;
@@ -47,6 +56,7 @@ export class ValleyScene extends WorldScene {
     this.load.image('balance', 'assets/objects/balance.png');
     this.load.image('ferry-dock', 'assets/objects/ferry-dock.png');
     this.load.image('kaefer', 'assets/objects/kaefer.png');
+    this.load.image('mouse-hole', 'assets/objects/mouse-hole.png');
     this.load.image('boat', 'assets/objects/boat.png');
     this.load.spritesheet('npc-hanna', 'assets/npcs/hanna.png', { frameWidth: 68, frameHeight: 68 });
   }
@@ -108,6 +118,14 @@ export class ValleyScene extends WorldScene {
       this.block(x, y, x, y);
     }
 
+    // Stein mit Mauseloch: Mit der Skalenkappe wird man klein genug, um hineinzukriechen
+    const stone = this.placeObject('mouse-hole', 11, 15, 1);
+    this.block(10, 13, 11, 14);
+    this.addInteractable({ target: stone, stand: { x: 11, y: 15 }, onInteract: () => this.mouseHole(stone) });
+
+    this.addGoblin(GOBLIN, { x: 21, y: 13 }, 'west');
+    this.addSign(13.5, 18.6, 'Fähre: 120 m');
+
     // Riesin Hanna auf dem Platz, dreimal so groß wie alle anderen
     this.hanna = this.addNpc('npc-hanna', { x: 15, y: 7 }, 'south');
     this.hanna.setScale(3);
@@ -162,7 +180,12 @@ export class ValleyScene extends WorldScene {
     } else if (!getFlag('valley_done')) {
       this.say([{ speaker: 'Riesin Hanna', text: 'Da, wo der Käfer saß, glitzert etwas! Heb es auf.' }]);
     } else {
-      this.say([{ speaker: 'Riesin Hanna', text: 'Komm jederzeit wieder, Kleines. Tupfi und ich messen inzwischen alles zweimal nach.' }]);
+      this.say([
+        { speaker: 'Riesin Hanna', text: 'Komm jederzeit wieder, Kleines. Tupfi und ich messen inzwischen alles zweimal nach.' },
+        ...(getFlag('page_valley')
+          ? []
+          : [{ speaker: 'Riesin Hanna', text: 'Ach, und meine Mäuse erzählen, im großen Stein liegt etwas Seltsames. Mit der Skalenkappe passt du ins Mauseloch!' }]),
+      ]);
     }
   }
 
@@ -231,6 +254,52 @@ export class ValleyScene extends WorldScene {
           ]),
       );
     });
+  }
+
+  /** Das Mauseloch: Skalenkappe auf, klein werden, hineinkriechen, Messbuch-Seite finden. */
+  private mouseHole(stone: Phaser.GameObjects.Image): void {
+    if (!getFlag('valley_intro')) {
+      this.say([{ speaker: 'Eule Pünktchen', text: 'Ein winziges Mauseloch. Da passt nicht einmal ein Finger hinein.' }]);
+      return;
+    }
+    if (getFlag('page_valley')) {
+      this.say([{ speaker: 'Eule Pünktchen', text: 'Im Mauseloch liegen nur noch Körner und Federn. Die Seite hast du schon.' }]);
+      return;
+    }
+    this.say(
+      [{ speaker: 'Eule Pünktchen', text: 'Ein Mauseloch! Setz Hannas Skalenkappe auf, dann wirst du so klein wie eine Maus.' }],
+      () => {
+        const p = this.player;
+        const home = { x: p.x, y: p.y };
+        const hole = { x: stone.x + 8, y: stone.y - 8 };
+        this.setFrozen(true);
+        this.cameras.main.flash(300, 200, 240, 200);
+        // schrumpfen, hineinkrabbeln, drinnen suchen, wieder heraus und groß werden
+        this.tweens.chain({
+          targets: p,
+          tweens: [
+            { scale: 0.25, duration: 700, ease: 'back.in' },
+            { x: hole.x, y: hole.y, duration: 700 },
+            { alpha: 0, duration: 250 },
+          ],
+          onComplete: () =>
+            this.say([{ speaker: 'Eule Pünktchen', text: 'Drinnen ist es warm und trocken. Zwischen Körnern und Federn liegt ein zusammengefaltetes Blatt …' }], () =>
+              this.findPage('page_valley', undefined, () => {
+                this.setFrozen(true);
+                this.tweens.chain({
+                  targets: p,
+                  tweens: [
+                    { alpha: 1, duration: 250 },
+                    { x: home.x, y: home.y, duration: 700 },
+                    { scale: 1, duration: 600, ease: 'back.out' },
+                  ],
+                  onComplete: () => this.setFrozen(false),
+                });
+              }),
+            ),
+        });
+      },
+    );
   }
 
   /** Tupfi, Hannas Marienkäfer, krabbelt wieder winzig neben ihr (im Code gezeichnet). */

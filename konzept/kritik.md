@@ -221,3 +221,21 @@ Nach Wirkung pro Aufwand sortiert:
 
 - **Sprachaufnahmen:** Alle Dialoge neu mit Gemini-TTS aufgenommen, eine Stimme und eine
   Regieanweisung pro Figur (klingt deutlich lebendiger als Piper).
+- **4 · Messbuch:** fünf versteckte Seiten (Eichstadt hinter Elles Haus, je eine Ecke in Stollen,
+  Tempel und Festung, im Riesental im Mauseloch). Vagor liest seinen Satz vor; im Menü „Messbuch“
+  prüft man die Rechnung. Zwei Seiten haben einen Fehler (Stellenwert, Einheiten), die anderen stimmen.
+- **5 · Eichstadt lebt:** Mira (Markt), Bürgermeister Rudolf, Alchemistin Flora und Schmied Harald
+  kommen mit den vier Splittern zurück; Elle erwähnt jede Rückkehr. Vagors Plakate hängen am
+  Anschlagbrett. Der Wegweiser zeigt Entfernungen erst genau, wenn in der Richtung der Nebel weicht.
+- **6 · Nebelwesen erlösen:** Die drei Nebelwesen im Dorf werden zu Schaf, Fuchs und Laterne und
+  bleiben; antippen heißt eine weitere Runde Kopfrechnen.
+- **7 · Pi-mal-Daumen:** in jeder der vier Regionen, mit eigenem Rätsel (`CheatPuzzle`: stimmt oder
+  geschummelt?), passend zum Thema der Region. Neuer Skill „Ergebnisse prüfen“ (2.2.13).
+- **8 · Werkzeug in der Oberwelt:** Mit der Skalenkappe schrumpft man und kriecht ins Mauseloch.
+- **Weitere Lücken:** Zahlen auf Schildern flackern im Nebel („≈ ?? m“) und werden mit dem Splitter
+  genau. Eule Pünktchen sitzt auf Elles Dach und bringt die Hinweise in jedem Rätsel. Elle geht am
+  Stock.
+
+**Bewusst offen:** Die Fragen der späteren Regionen (Bruchwald, Frostfeuerturm, Uhrwerk-Kloster,
+Finale) brauchen diese Regionen erst; sie stehen im Spielkonzept. Pi-mal-Daumens Seitenwechsel und
+die Lupe der Wahrheit für Vagors Plakate gehören ins Finale (Klasse 6).

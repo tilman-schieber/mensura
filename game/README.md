@@ -84,6 +84,14 @@ gehortet hat; die Spiegel zeigen Vagor und Elle an der Großen Brücke; der Ries
 Marienkäfer Tupfi; Quadro hat Vagors Zitadelle gebaut. Am Ende von Klasse 5 gesteht Elle, dass sie
 die Probe weggelassen hat.
 
+**Nebenwege** (siehe [kritik.md](../konzept/kritik.md)): In jeder Region steht **Pi-mal-Daumen**, Vagors
+Nebelkobold, und schummelt (`CheatPuzzle`, Thema je Region). Überall liegt eine versteckte Seite aus
+**Vagors Messbuch** (`src/messbuch.ts`, `addPage()`), im Riesental im Mauseloch, das man nur mit der
+Skalenkappe erreicht. Im Menü unter „Messbuch“ liest man die Seiten und findet Vagors Rechenfehler.
+**Eichstadt** füllt sich mit jedem Splitter (Mira, Rudolf, Flora, Harald), erlöste Nebelwesen bleiben
+als Schaf, Fuchs und Laterne. Schilder zeigen im Nebel nur ungefähre Zahlen (`addSign()`).
+**Eule Pünktchen** bringt die Hinweise in allen Rätseln.
+
 Endgegner mit Phasen erben von `BossScene` (Herzen, Lebensbalken, Treffer, Sieg).
 Das Ziffernfeld kann Kommazahlen (`createNumpad(…, { decimal: true, unit: 'cm' })`).
 
@@ -129,6 +137,7 @@ gespeicherten Können pro Skill (`src/learn/progress.ts`). Stationen lassen sich
 | `src/ui/` | Schrift/Farben/Knöpfe, Dialogbox, Ziffernfeld, Sprachausgabe |
 | `src/save.ts` | Spielstände im Browser: drei Plätze, Export/Import, Einstellungen |
 | `src/story.ts` | Urmaße, Splitter-Zählung, Ortsnamen (für Titelbild und Spielstände) |
+| `src/messbuch.ts` | Die Seiten aus Vagors Messbuch (Rechnung, Fehler, Vagors Satz) |
 | `src/ui/screens.ts` | Nebel-Hintergrund, Rückfrage-Fenster, kurze Meldungen |
 | `tools/build_avatar_sheets.py` + `avatar_characters.json` | Avatar-Spritesheets aus PixelLab bauen |
 | `tools/fetch_assets.py` + `assets.json` | Kachelsets, Objekte und NPCs von PixelLab holen |
@@ -149,6 +158,8 @@ Grafiken, nur einen Eintrag in `HAIR_COLORS` oder `CLOTH_COLORS`.
 
 Spritesheet-Format: 4 Zeilen (Süd, Ost, Nord, West), Spalte 0 = Stehen, Spalten 1–6 = Laufen,
 je 80 × 80 px (Figur zentriert).
+
+`fetch_assets.py` braucht Pillow: `uv run --with pillow python3 tools/fetch_assets.py objects`.
 
 ```sh
 python3 tools/build_avatar_sheets.py            # alle Avatar-Sheets

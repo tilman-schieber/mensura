@@ -27,13 +27,28 @@
     "ferry-dock": "327d3e70-dc60-4eb2-b1d1-0eef1c4a647a",
     "kubus": "2da5cc24-98af-48d5-872c-baaa2416f5b0",
     "paint-bench": "d5ce4ec8-f962-4f3e-ac8e-ce34e57eccbc",
-    "boat": "94cf15eb-95ad-484b-9556-f72b7c46e47a"
+    "boat": "94cf15eb-95ad-484b-9556-f72b7c46e47a",
+    "fox": "8dd0625e-855b-49fc-833d-89f20b79f15f",
+    "lantern": "f31da2f9-4239-4eb0-9f6a-e06a41c4661b",
+    "sheep": "59226e95-8d45-4738-aca9-fe4d597c9a99",
+    "owl": "85e3f20a-5dc2-4261-a771-801c04e32a90",
+    "market-stall": "cb3cb744-f6c9-48f3-964f-1202dfdf71d2",
+    "notice-board": "9563ba4e-e255-4930-b76f-1aa3b16f1681",
+    "mouse-hole": "c6d95930-2d07-4739-b99d-6ee823690308",
+    "anvil": "89cc5449-dca4-453b-941d-836931fd1ab7",
+    "alchemy-table": "a36920fb-0ee3-4119-821f-2298582fd797",
+    "messbuch-page": "59719b8d-ecd6-4d8a-ae05-7e7cecd6ae27"
   },
   "npcs": {
-    "elle": "be3e5d9c-ab8f-4ae3-b7e3-991b678f2b6e",
+    "elle": "24b889ec-93c4-47d5-961b-62567fc0f1f5",
     "brom": "a937becc-96ce-467e-a300-723710877968",
     "lumen": "3f72f18c-6406-4773-b7a6-047c6376aace",
     "hanna": "59cac9c7-fd7b-400a-8c29-97a774c355c9",
-    "quadro": "95c8eec2-600d-4330-81b7-b1cb4b40369b"
+    "quadro": "95c8eec2-600d-4330-81b7-b1cb4b40369b",
+    "pimal": "fe01db4f-d406-4896-a4fa-18a1d67eada1",
+    "mira": "b02ff8e8-00b9-4a02-97a1-136f7ad538a3",
+    "rudolf": "073ff02d-6842-4c41-abb7-d2f389f1fe9f",
+    "flora": "f60727e2-b0e4-419f-b867-173c6ffda83a",
+    "harald": "2f9274aa-fcf6-4cb4-9899-421bb2c8f7c9"
   }
 }

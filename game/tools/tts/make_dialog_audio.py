@@ -38,6 +38,14 @@ VOICES = {
     "Riesin Hanna": ("Leda", "ein fröhliches, lebhaftes elfjähriges Mädchen", False),
     "Baumeister Quadro": ("Puck", "ein pingeliger, eifriger Baumeister; schnell und etwas aufgeregt", False),
     "Erzählerin": ("Sulafat", "eine warme Erzählerin, die ein Märchen vorliest; ruhig und ein wenig geheimnisvoll", False),
+    "Eule Pünktchen": ("Zephyr", "eine kluge, etwas besserwisserische kleine Eule; hell, flink und freundlich", False),
+    "Pi-mal-Daumen": ("Fenrir", "ein frecher, kichernder kleiner Kobold; schnell und schelmisch", False),
+    "Händlerin Mira": ("Autonoe", "eine herzliche, fröhliche Marktfrau", False),
+    "Bürgermeister Rudolf": ("Sadaltager", "ein gemütlicher, etwas wichtigtuerischer alter Bürgermeister", False),
+    "Alchemistin Flora": ("Laomedeia", "eine begeisterte junge Alchemistin; lebhaft und etwas chaotisch", False),
+    "Schmied Harald": ("Orus", "ein kräftiger, ruhiger Schmied mit tiefer Stimme", False),
+    "Plakat": ("Schedar", "ein Marktschreier, der eine Werbeanzeige vorliest; übertrieben begeistert", False),
+    "Wegweiser": ("Iapetus", "ein ruhiger Erzähler", False),
     "Vagor": ("Enceladus", "ein einsamer Mann, der aus dem Nebel spricht; leise, bitter und traurig, nicht brüllend", True),
 }
 DEFAULT = ("Kore", "freundlich und klar", False)

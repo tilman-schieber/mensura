@@ -1,13 +1,29 @@
 import Phaser from 'phaser';
 import { buildAvatarTexture, type Direction } from '../avatar/avatar';
-import { getFlag, loadSave, writeSave } from '../save';
+import { PAGES, pageById } from '../messbuch';
+import { getFlag, loadSave, setFlag, writeSave } from '../save';
 import { COLORS, FONT, smooth } from '../ui/theme';
 import type { HudScene } from '../scenes/HudScene';
 import type { DialogLine } from '../ui/dialog';
+import type { CheatTopic } from '../puzzles/CheatPuzzle';
 import { findPath, nearestWalkable, type Cell } from './pathfind';
 import type { Terrain } from './terrain';
 
 export const TILE = 32;
+
+/** Ein Auftritt von Pi-mal-Daumen in einer Region */
+export interface GoblinVisit {
+  flag: string;
+  topic: CheatTopic;
+  intro: DialogLine[];
+  caught: DialogLine[];
+}
+
+const GOBLIN_AGAIN: DialogLine[] = [
+  { speaker: 'Pi-mal-Daumen', text: 'Du schon wieder! Noch eine Runde? Diesmal merkst du es bestimmt nicht.' },
+];
+const GOBLIN_WON: DialogLine[] = [{ speaker: 'Pi-mal-Daumen', text: 'Hihi! Ungefähr ist doch genau genug!' }];
+const GOBLIN_CAUGHT_AGAIN: DialogLine[] = [{ speaker: 'Pi-mal-Daumen', text: 'Schon wieder erwischt. Wie machst du das bloß?' }];
 const SPEED = 105; // Weltpixel pro Sekunde
 const PLAYER_KEY = 'avatar-player';
 const NPC_FRAME: Record<Direction, number> = { south: 0, east: 1, north: 2, west: 3 };
@@ -47,6 +63,8 @@ export abstract class WorldScene extends Phaser.Scene {
   private keys!: Phaser.Types.Input.Keyboard.CursorKeys;
   private lastCell = { x: -1, y: -1 };
   private fog?: Phaser.Filters.ColorMatrix;
+  /** Schilder, deren Zahlen im Nebel flackern (siehe addSign) */
+  private fogSigns: { text: Phaser.GameObjects.Text; exact: string; timer: Phaser.Time.TimerEvent }[] = [];
 
   /** Szene bauen: Gelände, Objekte, Figuren. Gibt die Startposition (Zelle) zurück. */
   protected abstract buildWorld(entry?: string): Cell;
@@ -63,6 +81,7 @@ export abstract class WorldScene extends Phaser.Scene {
     this.blocked.clear();
     this.interactables = [];
     this.exits = [];
+    this.fogSigns = [];
     this.path = [];
     this.pending = null;
     this.frozen = false;
@@ -125,6 +144,14 @@ export abstract class WorldScene extends Phaser.Scene {
 
   /** Nebel langsam auf eine neue Dichte bringen, z. B. wenn ein Splitter geborgen ist. */
   protected clearFog(density = this.fogDensity(), duration = 2500): void {
+    if (density <= 0) {
+      // Schilder zeigen wieder genaue Zahlen
+      for (const s of this.fogSigns) {
+        s.timer.remove();
+        s.text.setText(s.exact).setAlpha(1);
+      }
+      this.fogSigns = [];
+    }
     if (!this.fog) return;
     const cm = this.fog.colorMatrix;
     this.tweens.addCounter({ from: cm.alpha, to: density, duration, ease: 'sine.inout', onUpdate: (t) => (cm.alpha = t.getValue() ?? density) });
@@ -142,6 +169,13 @@ export abstract class WorldScene extends Phaser.Scene {
       this.tweens.add({ targets: veil, fillAlpha: 0, duration: 900, onComplete: () => veil.destroy() });
       onDone?.();
     });
+  }
+
+  /** Welt anhalten, z. B. während einer Zwischensequenz (Laufen und Antippen gesperrt). */
+  protected setFrozen(frozen: boolean): void {
+    this.frozen = frozen;
+    this.path = [];
+    this.pending = null;
   }
 
   protected setGoal(message: string): void {
@@ -185,6 +219,110 @@ export abstract class WorldScene extends Phaser.Scene {
     this.interactables.push(i);
   }
 
+  protected removeInteractable(target: Interactable['target']): void {
+    this.interactables = this.interactables.filter((i) => i.target !== target);
+  }
+
+  /**
+   * Holzschild mit Text. Liegt über dem Ort noch Nebel, flackern die Zahlen darauf
+   * („≈ 4?0 m“), bis der Nebel weicht. So sieht man, was „Nebel des Ungefähren“ heißt.
+   */
+  protected addSign(cellX: number, cellY: number, exact: string, onTap?: () => void): Phaser.GameObjects.Container {
+    const c = this.add.container(cellX * TILE, cellY * TILE);
+    const t = smooth(this.add.text(0, -30, exact, { fontFamily: FONT, fontSize: '10px', color: '#2a1a0c', align: 'center', resolution: 4 }).setOrigin(0.5));
+    const w = Math.max(44, t.width + 14);
+    const h = t.height + 10;
+    const g = this.add.graphics();
+    g.fillStyle(0x4a3018, 1).fillRect(-2, -30, 4, 30);
+    g.fillStyle(0x2a1a0c, 1).fillRoundedRect(-w / 2 - 1, -30 - h / 2 - 1, w + 2, h + 2, 3);
+    g.fillStyle(0xc9a15a, 1).fillRoundedRect(-w / 2, -30 - h / 2, w, h, 3);
+    c.add([g, t]).setDepth(cellY * TILE + 8);
+    this.block(Math.floor(cellX), Math.floor(cellY) - 1, Math.floor(cellX), Math.floor(cellY) - 1);
+    if (this.fogDensity() > 0) this.fogFlicker(t, exact);
+    if (onTap) {
+      (c as unknown as { getBounds: () => Phaser.Geom.Rectangle }).getBounds = () =>
+        new Phaser.Geom.Rectangle(c.x - w / 2, c.y - 30 - h / 2, w, h + 30);
+      this.addInteractable({ target: c as Interactable['target'], stand: { x: Math.floor(cellX), y: Math.floor(cellY) }, onInteract: onTap });
+    }
+    return c;
+  }
+
+  /** Ziffern flackern und werden zu „≈ …“, solange der Nebel liegt. */
+  protected fogFlicker(t: Phaser.GameObjects.Text, exact: string): void {
+    const fuzzy = () =>
+      Math.random() < 0.4
+        ? `≈ ${exact.replace(/\d/g, (d) => (Math.random() < 0.5 ? '?' : d))}`
+        : exact.replace(/\d[\d ]*/g, () => '≈ ?? ');
+    t.setText(fuzzy());
+    const timer = this.time.addEvent({
+      delay: 650,
+      loop: true,
+      callback: () => t.setText(fuzzy()).setAlpha(0.65 + Math.random() * 0.35),
+    });
+    this.fogSigns.push({ text: t, exact, timer });
+  }
+
+  /** Versteckte Seite aus Vagors Messbuch; glitzert leise, verschwindet beim Aufheben. */
+  protected addPage(id: string, cellX: number, cellY: number): void {
+    if (getFlag(id)) return;
+    const img = this.placeObject('messbuch-page', cellX + 0.5, cellY + 0.9, 0.8);
+    this.tweens.add({ targets: img, alpha: { from: 1, to: 0.55 }, duration: 900, yoyo: true, repeat: -1, ease: 'sine.inout' });
+    this.addInteractable({ target: img, stand: { x: cellX, y: cellY }, onInteract: () => this.findPage(id, img) });
+  }
+
+  protected findPage(id: string, img?: Phaser.GameObjects.Image, onDone?: () => void): void {
+    const page = pageById(id);
+    if (!page || getFlag(id)) return;
+    if (img) {
+      this.removeInteractable(img);
+      this.tweens.killTweensOf(img);
+      this.tweens.add({ targets: img, y: img.y - 30, alpha: 0, duration: 600, onComplete: () => img.destroy() });
+    }
+    const first = !PAGES.some((p) => getFlag(p.id));
+    setFlag(id);
+    this.say(
+      [
+        { speaker: 'Eule Pünktchen', text: 'Huhu! Eine Seite aus einem alten Messbuch. Da steht Vagors Name drauf!' },
+        page.note,
+        first
+          ? { speaker: 'Eule Pünktchen', text: 'Ich lege sie ins Messbuch. Im Menü kannst du sie in Ruhe lesen. Ob Vagors Rechnung stimmt?' }
+          : { speaker: 'Eule Pünktchen', text: 'Noch eine Seite! Ich lege sie zu den anderen ins Messbuch.' },
+      ],
+      onDone,
+    );
+  }
+
+  /** Pi-mal-Daumen, Vagors Nebelkobold: behauptet etwas, man erwischt ihn beim Schummeln. */
+  protected addGoblin(g: GoblinVisit, cell: Cell, facing: Direction = 'south'): void {
+    const sprite = this.addNpc('npc-pimal', cell, facing);
+    this.tweens.add({ targets: sprite, y: sprite.y - 3, duration: 500, yoyo: true, repeat: -1, ease: 'sine.inout' });
+    const stand = { x: cell.x - 1, y: cell.y };
+    this.addInteractable({
+      target: sprite,
+      stand,
+      onInteract: () => {
+        this.faceToPlayer(sprite);
+        const caught = getFlag(g.flag);
+        this.say(caught ? GOBLIN_AGAIN : g.intro, () =>
+          this.startPuzzle(
+            'CheatPuzzle',
+            (solved) => {
+              if (!solved) {
+                this.say(GOBLIN_WON);
+                return;
+              }
+              const first = !getFlag(g.flag);
+              setFlag(g.flag);
+              this.say(first ? g.caught : GOBLIN_CAUGHT_AGAIN);
+            },
+            3,
+            { topic: g.topic },
+          ),
+        );
+      },
+    });
+  }
+
   /** Lässt eine Figur zur Spielfigur schauen. */
   protected faceToPlayer(npc: Phaser.GameObjects.Sprite): void {
     const dx = this.player.x - npc.x;
@@ -204,10 +342,11 @@ export abstract class WorldScene extends Phaser.Scene {
   }
 
   /** Friert die Welt ein, startet ein Rätsel und taut danach wieder auf. */
-  protected startPuzzle(key: string, onDone: (solved: boolean) => void, rounds = 3): void {
+  protected startPuzzle(key: string, onDone: (solved: boolean) => void, rounds = 3, extra: object = {}): void {
     this.frozen = true;
     this.path = [];
     this.scene.launch(key, {
+      ...extra,
       rounds,
       onDone: (solved: boolean) => this.thaw(() => onDone(solved)),
     });

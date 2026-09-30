@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { getFlag, setFlag } from '../save';
-import { TILE, WorldScene } from './WorldScene';
+import { TILE, WorldScene, type GoblinVisit } from './WorldScene';
 import type { Cell } from './pathfind';
 import { Terrain, vertexGrid, type TilesetData } from './terrain';
 
@@ -25,6 +25,16 @@ const MIRRORS: Mirror[] = [
   { flag: 'temple_quad', puzzle: 'QuadPuzzle', cell: [5, 11] },
   { flag: 'temple_star', puzzle: 'CoordinatePuzzle', cell: [20, 11] },
 ];
+
+const GOBLIN: GoblinVisit = {
+  flag: 'goblin_temple',
+  topic: 'form',
+  intro: [
+    { speaker: 'Pi-mal-Daumen', text: 'Psst, Lehrling! Ich kenne mich mit Figuren aus. Jedenfalls so ungefähr.' },
+    { speaker: 'Pi-mal-Daumen', text: 'Hör gut zu, was ich über Spiegel und Vierecke weiß. Hihi.' },
+  ],
+  caught: [{ speaker: 'Pi-mal-Daumen', text: 'Pah! Die Spiegel haben mich verpetzt.' }],
+};
 
 export class TempleScene extends WorldScene {
   private stars: Record<string, Phaser.GameObjects.Text> = {};
@@ -76,6 +86,10 @@ export class TempleScene extends WorldScene {
     const gate = this.placeObject('temple-gate', 13, 4.6, 0.8);
     this.addInteractable({ target: gate, stand: { x: 12, y: 5 }, onInteract: () => this.sanctum() });
     if (this.mirrorsDone() === 4 && !getFlag('temple_boss')) this.spawnShadow(false);
+
+    this.addGoblin(GOBLIN, { x: 21, y: 14 }, 'west');
+    this.addPage('page_temple', 3, 13);
+    this.addSign(8.5, 15.2, 'Spiegeltempel · 4 Spiegel');
 
     // Hüterin Lumen am Eingang
     this.lumen = this.addNpc('npc-lumen', { x: 15, y: 13 }, 'west');
