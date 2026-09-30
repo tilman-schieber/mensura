@@ -195,9 +195,11 @@ export class FortressScene extends WorldScene {
   }
 
   private fightKubus(): void {
+    if (getFlag('fort_boss')) return;
     this.startPuzzle('KubusScene', (won) => {
       if (!won) return;
       setFlag('fort_boss');
+      if (this.kubus) this.removeInteractable(this.kubus);
       this.kubus?.destroy();
       this.kubus = undefined;
       this.unblock(12, 7, 13, 8);

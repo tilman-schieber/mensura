@@ -17,6 +17,14 @@ interface Task {
 }
 
 function makeTask(level: number): Task {
+  // keine glatten Zehner (40 · 7, 23 · 30): Dann gäbe es nichts zu rechnen
+  for (;;) {
+    const t = rawTask(level);
+    if (t.a % 10 !== 0 && t.b % 10 !== 0) return t;
+  }
+}
+
+function rawTask(level: number): Task {
   const tier = pickByLevel(level, [0, 1, 2, 3]);
   if (tier === 0) return { a: randInt(12, 98), b: randInt(3, 9) };
   if (tier === 1) return { a: randInt(123, 987), b: randInt(3, 9) };

@@ -27,6 +27,8 @@ export class ColossusScene extends BossScene {
     winText: 'Der Erzkoloss zerfällt zu Nebel und Staub!',
     regroupText: 'Der Koloss sammelt neue Kraft. Atme durch und versuch es noch einmal!',
     chipColor: 0xe0a93a,
+    seconds: 30,
+    regenText: 'Zu langsam! Der Koloss flickt seine Rüstung.',
   };
 
   constructor() {
@@ -92,6 +94,9 @@ export class ColossusScene extends BossScene {
     ]);
     let v = interestingNumber(tier.digits);
     if (v % tier.step === 0) v += randInt(1, tier.step - 1);
+    // entscheidende Ziffer nie 0 (7 003 auf Tausender wäre geschenkt)
+    const decisive = (x: number) => Math.floor(x / (tier.step / 10)) % 10;
+    while (decisive(v) === 0) v = Math.floor(v / tier.step) * tier.step + randInt(1, 9) * (tier.step / 10) + (v % (tier.step / 10));
     const correct = roundTo(v, tier.step);
     const lower = Math.floor(v / tier.step) * tier.step;
     const wrongNear = correct === lower ? lower + tier.step : lower;
@@ -130,9 +135,9 @@ export class ColossusScene extends BossScene {
     ]);
     const step = spec.minor;
     const steps = Math.round((spec.to - spec.from) / step);
-    // Sind alle Hauptmarken beschriftet, liegt die sichere Stelle zwischen ihnen (sonst zu leicht)
+    // Die sichere Stelle liegt nie auf einer großen Marke (sonst zu leicht)
     let safe = spec.from + randInt(1, steps - 1) * step;
-    while (spec.labels === 'all' && safe % spec.major === 0) safe = spec.from + randInt(1, steps - 1) * step;
+    while (safe % spec.major === 0) safe = spec.from + randInt(1, steps - 1) * step;
     this.prompt.setText(`„Ich zertrampele alles!“ Nur bei ${formatNumber(safe)} bist du sicher. Tipp auf die Stelle!`);
     this.hint = `Jede große Marke ist ${formatNumber(spec.major)} weiter, jede kleine ${formatNumber(spec.minor)}.`;
 

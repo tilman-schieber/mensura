@@ -40,6 +40,14 @@ const THINGS: Thing[] = [
 ];
 const PRONOUN = { der: 'er', die: 'sie', das: 'es' } as const;
 
+/** Zufallszahl aus [min, max], die kein Vielfaches von `step` ist (keine glatten Werte) */
+function notMultiple(min: number, max: number, step: number): number {
+  let v: number;
+  do v = randInt(min, max);
+  while (v % step === 0);
+  return v;
+}
+
 function makeTask(level: number): Task {
   const thing = THINGS[randInt(0, THINGS.length - 1)];
   const tier = pickByLevel(level, [0, 1, 2, 3, 4]);
@@ -55,21 +63,22 @@ function makeTask(level: number): Task {
     return randInt(0, 1) ? { value: randInt(2, 9), from: 'km', to: 'm', thing } : { value: randInt(2, 9) * 1000, from: 'm', to: 'km', thing };
   }
   if (tier === 3) {
+    // Kommazahlen: glatte Werte (2,0 m; 30 cm → 0,3 m) wären wieder nur Stufe 0
     const opts: Task[] = [
-      { value: randInt(11, 49) / 10, from: 'm', to: 'cm', thing },
-      { value: randInt(11, 95), from: 'cm', to: 'm', thing },
-      { value: randInt(11, 49) / 10, from: 'km', to: 'm', thing },
-      { value: randInt(11, 95) / 10, from: 'cm', to: 'mm', thing },
+      { value: notMultiple(11, 49, 10) / 10, from: 'm', to: 'cm', thing },
+      { value: notMultiple(11, 95, 10), from: 'cm', to: 'm', thing },
+      { value: notMultiple(11, 49, 10) / 10, from: 'km', to: 'm', thing },
+      { value: notMultiple(11, 95, 10) / 10, from: 'cm', to: 'mm', thing },
     ];
     return opts[randInt(0, opts.length - 1)];
   }
-  // gemischte Angaben und größere Sprünge
+  // gemischte Angaben und größere Sprünge; keine glatten Meter (2000 mm = 2 m)
   const m = randInt(1, 4);
   const cm = randInt(1, 99);
   const options: Task[] = [
     { value: m * 100 + cm, from: 'cm', to: 'cm', mixed: `${m} m ${cm} cm`, thing },
-    { value: randInt(1001, 4999), from: 'mm', to: 'm', thing },
-    { value: randInt(101, 999) / 100, from: 'm', to: 'mm', thing },
+    { value: notMultiple(1001, 4999, 100), from: 'mm', to: 'm', thing },
+    { value: notMultiple(101, 999, 100) / 100, from: 'm', to: 'mm', thing },
   ];
   return options[randInt(0, options.length - 1)];
 }

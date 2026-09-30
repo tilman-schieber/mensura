@@ -44,8 +44,11 @@ export class RoundingPuzzle extends PuzzleScene {
     const tier = pickByLevel(getLevel('Z18'), TIERS);
     this.step = tier.step;
     // Zahl, die nicht schon rund ist; ab und zu genau die Mitte (…5…)
+    // Die entscheidende Ziffer (rechts von der Rundungsstelle) ist nie 0: 7 003 auf Tausender wäre geschenkt
+    const decisive = (x: number) => Math.floor(x / (tier.step / 10)) % 10;
     let v = interestingNumber(tier.digits);
     if (v % tier.step === 0) v += randInt(1, tier.step - 1);
+    while (decisive(v) === 0) v = Math.floor(v / tier.step) * tier.step + randInt(1, 9) * (tier.step / 10) + (v % (tier.step / 10));
     if (randInt(0, 5) === 0) v = Math.floor(v / tier.step) * tier.step + tier.step / 2;
     this.value = v;
 

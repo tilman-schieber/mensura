@@ -390,6 +390,10 @@ class MusicPlayer {
     if (ctx.state === 'suspended') void ctx.resume();
   }
 
+  get fogLevel(): number {
+    return this.fog;
+  }
+
   get playing(): string | null {
     return this.current?.id ?? this.wanted;
   }

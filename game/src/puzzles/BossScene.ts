@@ -2,12 +2,16 @@ import { music } from '../audio/music';
 import Phaser from 'phaser';
 import { randInt } from '../learn/numbers';
 import { recordAttempt } from '../learn/progress';
+import { loadSave } from '../save';
 import type { SkillId } from '../learn/skills';
 import { COLORS, GAME_HEIGHT, GAME_WIDTH, button, text } from '../ui/theme';
 
 // Gemeinsames Gerüst für Endgegner mit Phasen (Erzkoloss, Riesenkäfer …):
-// Herzen, Lebensbalken, Hinweis, Treffer-Effekt, Phasenwechsel, Sieg.
-// Alles ohne Zeitdruck. Fehler kosten ein Herz; ohne Herzen beginnt nur die Phase neu.
+// Herzen, Lebensbalken, Zeitbalken, Hinweis, Treffer-Effekt, Phasenwechsel, Sieg.
+// Fehler kosten ein Herz; ohne Herzen beginnt nur die Phase neu.
+// Jede Aufgabe hat eine Zeit. Läuft sie ab, regeneriert sich der Gegner um einen Treffer und
+// es kommt eine neue Aufgabe: Man braucht dann mehr Aufgaben, verliert aber nicht.
+// Der Zeitbalken lässt sich mit „Zeitdruck im Kampf“ in den Einstellungen abschalten.
 //
 // Unterklassen setzen die Konfiguration und bauen in `ask(phase)` eine Frage in
 // `this.area` auf. Antworten melden sie mit `right()` oder `wrong()`.
@@ -27,6 +31,10 @@ export interface BossConfig {
   regroupText: string;
   /** Farbe der Splitter beim Treffer */
   chipColor: number;
+  /** Sekunden pro Aufgabe (Standard 30) */
+  seconds?: number;
+  /** Meldung, wenn die Zeit abläuft und der Gegner sich erholt */
+  regenText?: string;
 }
 
 const HEARTS = 3;
@@ -46,6 +54,10 @@ export abstract class BossScene extends Phaser.Scene {
   private busy = false;
   private heartIcons: Phaser.GameObjects.Text[] = [];
   private hpBar!: Phaser.GameObjects.Graphics;
+  private timeBar!: Phaser.GameObjects.Graphics;
+  /** verbleibende Zeit der Aufgabe in ms; null = Uhr steht */
+  private timeLeft: number | null = null;
+  private timed = true;
 
   /** Frage für die aktuelle Phase aufbauen */
   protected abstract ask(phase: number): void;
@@ -57,6 +69,8 @@ export abstract class BossScene extends Phaser.Scene {
     this.hearts = HEARTS;
     this.busy = false;
     this.heartIcons = [];
+    this.timeLeft = null;
+    this.timed = loadSave().settings.battleTimer;
   }
 
   preload(): void {
@@ -78,6 +92,7 @@ export abstract class BossScene extends Phaser.Scene {
 
     text(this, GAME_WIDTH / 2, 22, c.title, 24, COLORS.goldText);
     this.hpBar = this.add.graphics();
+    this.timeBar = this.add.graphics();
     for (let i = 0; i < HEARTS; i++) this.heartIcons.push(text(this, 40 + i * 34, 30, '♥', 30, '#e0564a'));
     button(this, GAME_WIDTH - 60, 30, 'Hinweis', () => this.feedback.setText(this.hint), { width: 110, height: 44, size: 18 });
 
@@ -104,11 +119,52 @@ export abstract class BossScene extends Phaser.Scene {
     this.busy = false;
     this.feedback.setText('');
     this.ask(this.phase);
+    this.timeLeft = this.timed ? (this.config.seconds ?? 30) * 1000 : null;
+  }
+
+  update(_t: number, delta: number): void {
+    if (this.timeLeft === null || this.busy) {
+      this.drawTime();
+      return;
+    }
+    this.timeLeft -= delta;
+    this.drawTime();
+    if (this.timeLeft <= 0) this.timeUp();
+  }
+
+  private drawTime(): void {
+    const g = this.timeBar;
+    g.clear();
+    if (this.timeLeft === null) return;
+    const total = (this.config.seconds ?? 30) * 1000;
+    const f = Math.max(0, this.timeLeft / total);
+    const w = 300;
+    const x = GAME_WIDTH / 2 - w / 2;
+    g.fillStyle(0x0b1117, 1).fillRoundedRect(x, 62, w, 8, 4);
+    g.fillStyle(f > 0.5 ? 0x7ac070 : f > 0.2 ? 0xe0b040 : 0xe0564a, 1).fillRoundedRect(x + 2, 63, (w - 4) * f, 6, 3);
+  }
+
+  /** Zeit abgelaufen: Der Gegner erholt sich um einen Treffer, dann kommt eine neue Aufgabe. */
+  private timeUp(): void {
+    this.timeLeft = null;
+    this.busy = true;
+    const healed = this.hits > 0;
+    if (healed) this.hits -= 1;
+    this.drawHp();
+    this.cameras.main.flash(300, 120, 200, 140);
+    this.tweens.add({ targets: this.boss, scale: this.config.imageScale * 1.12, duration: 250, yoyo: true });
+    this.feedback.setText(
+      healed
+        ? (this.config.regenText ?? 'Zu langsam! Der Gegner erholt sich ein Stück.')
+        : 'Die Zeit ist um. Hier kommt eine neue Aufgabe.',
+    );
+    this.time.delayedCall(1600, () => this.nextQuestion());
   }
 
   protected right(skills: SkillId[], message: string): void {
     if (this.busy) return;
     this.busy = true;
+    this.timeLeft = null;
     recordAttempt(skills, true);
     this.feedback.setText(message);
     this.strike();
@@ -136,6 +192,7 @@ export abstract class BossScene extends Phaser.Scene {
     this.feedback.setText(message);
     if (this.hearts <= 0) {
       this.busy = true;
+      this.timeLeft = null;
       this.time.delayedCall(1600, () => {
         this.feedback.setText(this.config.regroupText);
         this.hearts = HEARTS;

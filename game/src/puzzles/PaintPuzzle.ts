@@ -24,9 +24,16 @@ function makeTask(level: number): Task {
     const s = randInt(2, 6);
     return { a: s, b: s, c: s, lid: true };
   }
-  if (tier === 1) return { a: randInt(2, 5), b: randInt(2, 4), c: randInt(2, 4), lid: true };
-  if (tier === 2) return { a: randInt(4, 10), b: randInt(3, 7), c: randInt(2, 6), lid: true };
-  return { a: randInt(4, 10), b: randInt(3, 7), c: randInt(2, 6), lid: false };
+  // Ab Stufe 1 ein echter Quader: kein zufälliger Würfel, und keine zwei gleichen Kanten,
+  // damit wirklich drei verschiedene Flächenpaare zu berechnen sind.
+  let t: Task;
+  do {
+    t =
+      tier === 1
+        ? { a: randInt(2, 5), b: randInt(2, 4), c: randInt(2, 4), lid: true }
+        : { a: randInt(4, 10), b: randInt(3, 7), c: randInt(2, 6), lid: tier === 2 };
+  } while (t.a === t.b || t.b === t.c || t.a === t.c);
+  return t;
 }
 
 const surface = (t: Task) => 2 * (t.a * t.b + t.a * t.c + t.b * t.c) - (t.lid ? 0 : t.a * t.b);

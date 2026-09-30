@@ -110,7 +110,7 @@ export class SettingsScene extends Phaser.Scene {
         writeSave(save);
         setButtonLabel(timerBtn, this.onOff(save.settings.battleTimer));
       }, { width: 150, height: 48, size: 20 });
-      text(this, labelX, row + 22, 'Aus: Nebelwesen warten, bis du fertig gerechnet hast.', 13, COLORS.muted).setOrigin(0, 0.5);
+      text(this, labelX, row + 22, 'Aus: Nebelwesen und Endgegner warten, bis du fertig bist.', 13, COLORS.muted).setOrigin(0, 0.5);
     }
 
     // Wie in der Grundschule gelernt: Der Bildungsplan BW lässt „Abziehen oder Ergänzen“ offen

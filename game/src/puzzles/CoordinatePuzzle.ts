@@ -107,8 +107,12 @@ export class CoordinatePuzzle extends PuzzleScene {
       return;
     }
 
-    this.target = [rnd(), rnd()];
-    if (this.target[0] === this.target[1]) this.target[1] = this.target[1] === step ? 2 * step : this.target[1] - step;
+    // Zielpunkt: keine 0-Koordinate, nicht x = y (sonst wäre der Tauschfehler gleich der Lösung)
+    // und bei nur teilweise beschrifteten Achsen auf den unbeschrifteten Linien, damit man
+    // die Zwischenschritte wirklich abzählen muss.
+    const offLabel = (v: number) => t.label === t.grid || v % t.label !== 0;
+    do this.target = [rnd(), rnd()];
+    while (this.target[0] === this.target[1] || !offLabel(this.target[0]) || !offLabel(this.target[1]));
     const [tx, ty] = this.target;
 
     if (t.mode === 'setzen') {

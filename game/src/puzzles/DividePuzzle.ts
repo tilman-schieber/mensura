@@ -20,8 +20,11 @@ function makeTask(level: number): Task {
   const tier = pickByLevel(level, [0, 1, 2, 3]);
   const [dMin, dMax, qMin, qMax] =
     tier === 0 ? [2, 5, 11, 49] : tier === 1 ? [3, 9, 21, 199] : tier === 2 ? [4, 9, 102, 999] : [11, 25, 12, 99];
-  const divisor = randInt(dMin, dMax);
-  const q = randInt(qMin, qMax);
+  let divisor = randInt(dMin, dMax);
+  while (divisor % 10 === 0) divisor = randInt(dMin, dMax);
+  // kein glattes Zehner-Ergebnis (1 610 : 23 = 70) und keine Teilung durch 10
+  let q = randInt(qMin, qMax);
+  while (q % 10 === 0) q = randInt(qMin, qMax);
   return { dividend: divisor * q, divisor };
 }
 

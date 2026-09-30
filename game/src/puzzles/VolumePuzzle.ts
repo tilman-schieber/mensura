@@ -21,9 +21,11 @@ interface Task {
 
 function makeTask(level: number): Task {
   const tier = pickByLevel(level, [0, 1, 2, 3]);
-  if (tier === 0) return { a: randInt(2, 3), b: randInt(2, 3), c: randInt(1, 2), grid: true, unit: 'Würfel', liters: false };
+  // Immer mindestens zwei Schichten: Bei nur einer Schicht (c = 1) ist es bloß eine Fläche.
+  if (tier === 0) return { a: randInt(2, 3), b: randInt(2, 3), c: 2, grid: true, unit: 'Würfel', liters: false };
   if (tier === 1) return { a: randInt(3, 5), b: randInt(2, 4), c: randInt(2, 4), grid: true, unit: 'cm³', liters: false };
-  if (tier === 2) return { a: randInt(4, 12), b: randInt(3, 8), c: randInt(2, 6), grid: false, unit: 'cm³', liters: false };
+  // Länge 10 ausgelassen: „mal 10“ nimmt das eigentliche Rechnen ab
+  if (tier === 2) return { a: [4, 5, 6, 7, 8, 9, 11, 12][randInt(0, 7)], b: randInt(3, 8), c: randInt(2, 6), grid: false, unit: 'cm³', liters: false };
   // Becken in dm: Liter
   return { a: randInt(3, 8) * 1, b: randInt(2, 5), c: randInt(2, 4), grid: false, unit: 'l', liters: true };
 }

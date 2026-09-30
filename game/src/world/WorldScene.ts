@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { buildAvatarTexture, type Direction } from '../avatar/avatar';
 import { music } from '../audio/music';
+import { DECO, DECO_SCALE } from './deco';
 import { PAGES, pageById } from '../messbuch';
 import { getFlag, loadSave, setFlag, writeSave } from '../save';
 import { COLORS, FONT, smooth } from '../ui/theme';
@@ -100,6 +101,11 @@ export abstract class WorldScene extends Phaser.Scene {
     const look = loadSave().avatar!;
     buildAvatarTexture(this, look, PLAYER_KEY);
     const start = this.buildWorld(data.entry);
+    const decoScale = DECO_SCALE[this.scene.key] ?? 1;
+    for (const [key, x, y, block, scale] of DECO[this.scene.key] ?? []) {
+      this.placeObject(key, x + 0.5, y + 1, (scale ?? 1) * decoScale);
+      if (block) this.block(x, y, x, y);
+    }
 
     this.player = this.add.sprite(0, 0, PLAYER_KEY, 'south-0').setOrigin(0.5, 0.78);
     this.placePlayer(start);
@@ -119,7 +125,7 @@ export abstract class WorldScene extends Phaser.Scene {
     this.fog = undefined;
     this.setFog(this.fogDensity());
     void music.play(MUSIC[this.scene.key] ?? 'village');
-    music.setFog(this.fogDensity());
+    music.setFog(this.musicFog(this.fogDensity()));
 
     this.input.on('pointerup', (p: Phaser.Input.Pointer) => this.onTap(p));
     this.keys = this.input.keyboard!.createCursorKeys();
@@ -138,6 +144,14 @@ export abstract class WorldScene extends Phaser.Scene {
     this.hud().dialog(lines, () => this.thaw(onDone));
   }
 
+  /**
+   * Schiefe Musik nur, wo man wirklich im Nebel steht: in einer Region vor ihrem Splitter.
+   * Eichstadt ist Heimat, dort bleibt die Musik sauber, auch wenn das Dorf noch blass ist.
+   */
+  private musicFog(density: number): number {
+    return this.scene.key === 'Village' ? 0 : density;
+  }
+
   /** Nebel sofort setzen (Szenenaufbau) */
   private setFog(density: number): void {
     if (density <= 0 && !this.fog) return;
@@ -150,7 +164,7 @@ export abstract class WorldScene extends Phaser.Scene {
 
   /** Nebel langsam auf eine neue Dichte bringen, z. B. wenn ein Splitter geborgen ist. */
   protected clearFog(density = this.fogDensity(), duration = 2500): void {
-    music.setFog(density, duration / 1000);
+    music.setFog(this.musicFog(density), duration / 1000);
     if (density <= 0) {
       // Schilder zeigen wieder genaue Zahlen
       for (const s of this.fogSigns) {
@@ -392,7 +406,8 @@ export abstract class WorldScene extends Phaser.Scene {
     const wy = p.worldY;
     const here = this.cellOf(this.player.x, this.player.y);
 
-    const hit = this.interactables.find((i) => i.target.getBounds().contains(wx, wy));
+    // zerstörte Objekte (besiegte Gegner, aufgehobene Seiten) nicht mehr antippen
+    const hit = this.interactables.find((i) => i.target.active && i.target.getBounds().contains(wx, wy));
     if (hit) {
       this.pending = hit;
       if (here.x === hit.stand.x && here.y === hit.stand.y) this.arrive();
@@ -426,7 +441,7 @@ export abstract class WorldScene extends Phaser.Scene {
   private interactNearby(): void {
     if (this.frozen) return;
     const here = this.cellOf(this.player.x, this.player.y);
-    const i = this.interactables.find((it) => Math.abs(it.stand.x - here.x) <= 1 && Math.abs(it.stand.y - here.y) <= 1);
+    const i = this.interactables.find((it) => it.target.active && Math.abs(it.stand.x - here.x) <= 1 && Math.abs(it.stand.y - here.y) <= 1);
     if (i) {
       this.pending = i;
       this.arrive();

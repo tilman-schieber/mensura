@@ -135,6 +135,18 @@ export function interestingNumber(digits: number): number {
   return Number(s);
 }
 
+/**
+ * Wie interestingNumber, aber nie trivial: höchstens eine Null und nicht lauter gleiche Ziffern
+ * (also nicht 500, 7 000 oder 333).
+ */
+export function nonTrivialNumber(digits: number): number {
+  for (;;) {
+    const n = interestingNumber(digits);
+    const s = String(n);
+    if (s.split('0').length - 1 <= 1 && new Set(s).size > 1) return n;
+  }
+}
+
 /** Rundet auf die gegebene Stufe (10, 100, 1000 …), kaufmännisch. */
 export function roundTo(n: number, step: number): number {
   return Math.round(n / step) * step;

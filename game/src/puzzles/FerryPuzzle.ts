@@ -28,11 +28,12 @@ interface Task {
 function makeTask(level: number): Task {
   const tier = pickByLevel(level, [0, 1, 2, 3, 4]);
   if (tier === 0) {
+    // Start zur vollen Stunde, aber nicht nur ganze Stunden warten (13:00 → 15:00 wäre zu leicht)
     const s = randInt(7, 14) * 60;
-    return { mode: 'warten', start: s, length: randInt(1, 4) * 60 };
+    return { mode: 'warten', start: s, length: randInt(1, 3) * 60 + [15, 30, 45][randInt(0, 2)] };
   }
   if (tier === 1) {
-    const s = randInt(7, 16) * 60 + randInt(0, 6) * 5;
+    const s = randInt(7, 16) * 60 + randInt(1, 6) * 5;
     return { mode: 'warten', start: s, length: randInt(2, 9) * 5 };
   }
   if (tier === 2) {
@@ -44,9 +45,10 @@ function makeTask(level: number): Task {
     return { mode: 'ankunft', start: s, length: 60 + randInt(4, 11) * 5 };
   }
   const s = randInt(8, 12) * 60 + randInt(6, 11) * 5;
+  const l = randInt(100, 169);
   return randInt(0, 1)
     ? { mode: 'warten', start: s, length: randInt(2, 3) * 60 + randInt(3, 11) * 5 }
-    : { mode: 'ankunft', start: s, length: randInt(100, 170) };
+    : { mode: 'ankunft', start: s, length: l >= 120 ? l + 1 : l }; // 100 … 170 min, aber nie glatt 2 h
 }
 
 export class FerryPuzzle extends PuzzleScene {

@@ -21,6 +21,8 @@ export class BeetleScene extends BossScene {
     phaseBreaks: ['Sein Panzer knackt! Jetzt drückt er mit ganzer Kraft …', 'Er wird wütend! Er greift im Takt an …'],
     winText: 'Der Riesenkäfer flüchtet ins hohe Gras!',
     regroupText: 'Der Käfer krabbelt zurück. Sammle dich und versuch es noch einmal!',
+    seconds: 35,
+    regenText: 'Zu langsam! Der Käfer saugt neuen Nebel auf und wird wieder größer.',
     chipColor: 0x9a6a2a,
   };
 
@@ -37,7 +39,11 @@ export class BeetleScene extends BossScene {
   // ---------- Phase 1: Schwachstelle auf dem mm-Lineal ----------
 
   private askRuler(): void {
-    const mm = randInt(11, 94);
+    // Nur auf den kleinen Millimeterstrichen: keine beschrifteten Zentimeter (3,0 cm)
+    // und keine halben Zentimeter (3,5 cm), die man ohne Zählen an den langen Strichen findet.
+    let mm: number;
+    do mm = randInt(11, 94);
+    while (mm % 5 === 0);
     const cm = mm / 10;
     this.prompt.setText(`Schwachstelle bei ${formatDecimal(cm)} cm! Triff sie auf deinem Millimeter-Lineal.`);
     this.hint = `1 cm = 10 mm. Wie viele Millimeter sind ${formatDecimal(cm)} cm?`;
@@ -70,7 +76,10 @@ export class BeetleScene extends BossScene {
   // ---------- Phase 2: Gegengewicht wählen ----------
 
   private askWeight(): void {
-    const g = randInt(11, 49) * 100 + (randInt(0, 1) ? 50 : 0);
+    // keine glatten Kilogramm (2 kg = 2000 g wäre zu leicht)
+    let g: number;
+    do g = randInt(11, 49) * 100 + (randInt(0, 1) ? 50 : 0);
+    while (g % 1000 === 0);
     const kg = g / 1000;
     this.prompt.setText(`Sein Panzer drückt mit ${formatDecimal(kg)} kg! Welches Gegengewicht hält genau dagegen?`);
     this.hint = '1 kg = 1000 g. Das Komma rückt drei Stellen nach rechts.';
@@ -91,7 +100,10 @@ export class BeetleScene extends BossScene {
   private askTime(): void {
     const kind = randInt(0, 1);
     if (kind === 0) {
-      const s = randInt(3, 11) * 15 + 60; // 105 … 225 s
+      // 105 … 225 s, aber keine ganzen Minuten (120 s = 2 min 0 s wäre zu leicht)
+      let s: number;
+      do s = randInt(3, 11) * 15 + 60;
+      while (s % 60 === 0);
       const m = Math.floor(s / 60);
       const r = s % 60;
       this.prompt.setText(`Er greift alle ${s} Sekunden an! Wie lange ist das?`);

@@ -3,13 +3,16 @@ import { buildAvatarTexture } from '../avatar/avatar';
 import { randInt } from '../learn/numbers';
 import { recordAttempt } from '../learn/progress';
 import { loadSave } from '../save';
+import { music } from '../audio/music';
 import { COLORS, GAME_HEIGHT, GAME_WIDTH, button, text } from '../ui/theme';
 
 // Endgegner des Spiegeltempels: der Spiegel-Doppelgänger (Spiegelungen, R13).
 // Ein dunkles Spiegelbild der eigenen Figur. In jeder Runde steht die Figur auf einem
 // Feld; man tippt das Feld an, auf dem das Spiegelbild erscheinen wird. Richtig: Licht
 // trifft den Doppelgänger. Falsch: Er erscheint woanders und trifft dich.
-// Phasen: senkrechte Achse, waagerechte Achse, Punktspiegelung am Zentrum. Kein Zeitdruck.
+// Phasen: senkrechte Achse, waagerechte Achse, Punktspiegelung am Zentrum.
+// Jede Runde hat eine Zeit (wie bei den anderen Endgegnern): Läuft sie ab, erholt sich der
+// Doppelgänger um einen Treffer. Abschaltbar mit „Zeitdruck im Kampf“.
 
 type Phase = 'senkrecht' | 'waagerecht' | 'punkt';
 const PHASES: Phase[] = ['senkrecht', 'waagerecht', 'punkt'];
@@ -19,6 +22,7 @@ const COLS = 9;
 const ROWS = 7;
 const CELL = 50;
 const KEY = 'avatar-boss';
+const SECONDS = 15;
 
 export class DoppelgangerScene extends Phaser.Scene {
   private onDone?: (won: boolean) => void;
@@ -37,6 +41,9 @@ export class DoppelgangerScene extends Phaser.Scene {
   private feedback!: Phaser.GameObjects.Text;
   private heartIcons: Phaser.GameObjects.Text[] = [];
   private hpBar!: Phaser.GameObjects.Graphics;
+  private timeBar!: Phaser.GameObjects.Graphics;
+  private timeLeft: number | null = null;
+  private timed = true;
 
   constructor() {
     super('DoppelgangerScene');
@@ -49,9 +56,14 @@ export class DoppelgangerScene extends Phaser.Scene {
     this.hearts = HEARTS;
     this.busy = false;
     this.heartIcons = [];
+    this.timeLeft = null;
+    this.timed = loadSave().settings.battleTimer;
   }
 
   create(): void {
+    const before = music.playing;
+    void music.play('boss');
+    this.events.once('shutdown', () => before && void music.play(before));
     const bg = this.add.graphics();
     bg.fillGradientStyle(0x2a2440, 0x2a2440, 0x0c0b14, 0x0c0b14, 1).fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
     this.add.rectangle(0, 0, GAME_WIDTH, GAME_HEIGHT, 0, 0).setOrigin(0).setInteractive();
@@ -59,6 +71,7 @@ export class DoppelgangerScene extends Phaser.Scene {
     text(this, GAME_WIDTH / 2, 22, 'Der Spiegel-Doppelgänger', 24, COLORS.goldText);
     for (let i = 0; i < HEARTS; i++) this.heartIcons.push(text(this, 40 + i * 34, 30, '♥', 30, '#e0564a'));
     this.hpBar = this.add.graphics();
+    this.timeBar = this.add.graphics();
     this.prompt = text(this, GAME_WIDTH / 2, 76, '', 21, COLORS.text);
     this.feedback = text(this, GAME_WIDTH / 2, GAME_HEIGHT - 22, '', 18, COLORS.goldText);
     button(this, GAME_WIDTH - 60, 30, 'Hinweis', () => this.feedback.setText(this.hint()), { width: 110, height: 44, size: 18 });
@@ -140,23 +153,59 @@ export class DoppelgangerScene extends Phaser.Scene {
         ? 'Er spiegelt sich jetzt am Punkt in der Mitte! Wo erscheint er?'
         : `Er spiegelt sich an der ${p === 'senkrecht' ? 'senkrechten' : 'waagerechten'} Achse. Tippe das Feld, auf dem er erscheint!`,
     );
-    // Figur auf ein Feld, das nicht auf der Achse / im Zentrum liegt
+    // Figur auf ein Feld, das nicht auf der Achse / im Zentrum liegt. Außerdem nicht direkt
+    // neben der Achse (Spiegelbild wäre einfach das Nachbarfeld) und bei der Punktspiegelung
+    // nicht auf der Mittelzeile/-spalte (dann wäre es nur eine gewöhnliche Achsenspiegelung).
+    // Auch nicht zweimal hintereinander dasselbe Feld.
+    const [prevX, prevY] = this.pos;
+    const cx = (COLS - 1) / 2;
+    const cy = (ROWS - 1) / 2;
     let x: number;
     let y: number;
     do {
       x = randInt(0, COLS - 1);
       y = randInt(0, ROWS - 1);
-      const [mx, my] = this.mirror(x, y);
-      if (mx !== x || my !== y) break;
-    } while (true);
+    } while (
+      (x === prevX && y === prevY) ||
+      (p === 'senkrecht' && Math.abs(x - cx) <= 1) ||
+      (p === 'waagerecht' && Math.abs(y - cy) <= 1) ||
+      (p === 'punkt' && (x === cx || y === cy))
+    );
     this.pos = [x, y];
     const [px, py] = this.center(x, y);
     this.me.setPosition(px, py);
+    this.timeLeft = this.timed ? SECONDS * 1000 : null;
+  }
+
+  update(_t: number, delta: number): void {
+    const g = this.timeBar;
+    g.clear();
+    if (this.timeLeft === null) return;
+    if (!this.busy) this.timeLeft -= delta;
+    const f = Math.max(0, this.timeLeft / (SECONDS * 1000));
+    const w = 300;
+    const x = GAME_WIDTH / 2 - w / 2;
+    g.fillStyle(0x0b1117, 1).fillRoundedRect(x, 58, w, 8, 4);
+    g.fillStyle(f > 0.5 ? 0x7ac070 : f > 0.2 ? 0xe0b040 : 0xe0564a, 1).fillRoundedRect(x + 2, 59, (w - 4) * f, 6, 3);
+    if (this.timeLeft <= 0 && !this.busy) this.timeUp();
+  }
+
+  /** Zeit abgelaufen: Der Doppelgänger erholt sich um einen Treffer, neue Runde. */
+  private timeUp(): void {
+    this.timeLeft = null;
+    this.busy = true;
+    const healed = this.hits > 0;
+    if (healed) this.hits -= 1;
+    this.drawHp();
+    this.cameras.main.flash(300, 150, 120, 220);
+    this.feedback.setText(healed ? 'Zu langsam! Der Doppelgänger sammelt neuen Nebel.' : 'Die Zeit ist um. Er taucht woanders auf …');
+    this.time.delayedCall(1500, () => this.nextRound());
   }
 
   private guess(x: number, y: number): void {
     if (this.busy) return;
     this.busy = true;
+    this.timeLeft = null;
     const [tx, ty] = this.mirror(...this.pos);
     const [sx, sy] = this.center(tx, ty);
     this.shadow.setPosition(sx, sy).setAlpha(0);

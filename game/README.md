@@ -92,7 +92,8 @@ dem Schulthema „Umfang, Flächen, Netze, Volumen“. Baumeister Quadro, vier S
   Häufigkeitstabelle, Säulendiagramm zeichnen, Diagramme lesen (auch Maximum/Minimum, Mittelwert).
   Danach hängt eine ehrliche Umfrage neben Vagors Plakaten.
 - **Miras Marktstand** (`MarketPuzzle`, Z11/M5G): Reicht das Geld (Überschlag), Wechselgeld,
-  Stückpreise, Euro und Cent (Cent erst mit dem Schulthema „Größen“)
+  Stückpreise, Euro und Cent. Immer mit Cent, erst halbe Euro, dann 10-, dann 5-Cent-Schritte;
+  beim Malnehmen höchstens 4 Stück zu höchstens 3 €
 - **Elles Kartentisch** (`MapTablePuzzle`, R12): Orte von Eichstadt ins Koordinatensystem eintragen
   und ablesen; die Karte füllt sich nach und nach. Selbst vermessen und Maßstab kommen in Klasse 6.
 
@@ -126,7 +127,11 @@ Skalenkappe erreicht. Im Menü unter „Messbuch“ liest man die Seiten und fin
 als Schaf, Fuchs und Laterne. Schilder zeigen im Nebel nur ungefähre Zahlen (`addSign()`).
 **Eule Pünktchen** bringt die Hinweise in allen Rätseln.
 
-Endgegner mit Phasen erben von `BossScene` (Herzen, Lebensbalken, Treffer, Sieg).
+Endgegner mit Phasen erben von `BossScene` (Herzen, Lebensbalken, Zeitbalken, Treffer, Sieg).
+**Zeit im Bosskampf:** Jede Aufgabe hat eine Zeit (Koloss 30 s, Käfer 35 s, Kubus 40 s,
+Doppelgänger 15 s pro Runde). Läuft sie ab, erholt sich der Gegner um einen Treffer und es kommt eine
+neue Aufgabe; man verliert nicht, braucht nur mehr Aufgaben. Abschaltbar mit „Zeitdruck im Kampf“.
+Die Rätsel an den Stationen haben keinen Zeitdruck.
 Das Ziffernfeld kann Kommazahlen (`createNumpad(…, { decimal: true, unit: 'cm' })`).
 
 **Schulmodus** (Menü → Schulthemen, `src/learn/topics.ts`): Themen abhaken, die im Unterricht dran waren.
@@ -185,8 +190,9 @@ Begleitung, Bass und Schlagzeug aus der Akkordfolge. Jeder Ort hat ein eigenes L
 Vorspann, Endgegner und eine Fanfare für jeden Splitter. Die Melodie des Spiegeltempels ist ihr
 eigenes Spiegelbild (zweite Hälfte = erste Hälfte rückwärts).
 
-**Nebel des Ungefähren:** Solange er liegt, klingt die Musik verstimmt, wacklig und dumpf, Begleitung
-und Schlagzeug treten zurück. Mit dem Splitter wird sie wieder genau (`music.setFog`).
+**Nebel des Ungefähren:** In einer Region vor ihrem Splitter und im Kampf gegen Nebelwesen klingt die
+Musik verstimmt, wacklig und dumpf, Begleitung und Schlagzeug treten zurück. Mit dem Splitter wird sie
+wieder genau (`music.setFog`). In Eichstadt bleibt sie immer sauber.
 
 **Eigene MIDI-Dateien:** `public/assets/music/<id>.mid` ersetzt das eingebaute Lied, siehe
 `public/assets/music/README.md`. Lautstärke der Musik: Einstellungen.

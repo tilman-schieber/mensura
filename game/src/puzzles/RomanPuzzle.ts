@@ -44,7 +44,9 @@ export class RomanPuzzle extends PuzzleScene {
   protected buildRound(): void {
     const tier = pickByLevel(getLevel('Z1S'), TIERS);
     // bei den großen Zahlen gern Jahreszahlen
-    this.target = tier.max > 100 && randInt(0, 1) ? randInt(1400, 2100) : randInt(tier.max > 20 ? 21 : 2, tier.max);
+    // nicht trivial: kein einzelnes Zeichen (V, X, L …) und nicht nur ein Zeichen wiederholt (II, XX, CCC)
+    do this.target = tier.max > 100 && randInt(0, 1) ? randInt(1400, 2100) : randInt(tier.max > 20 ? 21 : 2, tier.max);
+    while (new Set(toRoman(this.target)).size < 2);
     this.carved = '';
     const r = this.round;
     const roman = toRoman(this.target);

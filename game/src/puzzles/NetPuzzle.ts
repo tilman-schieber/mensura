@@ -65,9 +65,18 @@ export class NetPuzzle extends PuzzleScene {
     if (mode === 'finden') {
       r.add(text(this, GAME_WIDTH / 2, 88, 'Tippe alle Netze an, die sich zu einem Würfel falten lassen!', 22, COLORS.text));
       const validCount = randInt(1, 3);
+      // Vier verschiedene Netze: zweimal dasselbe Netz nebeneinander wäre geschenkt
+      const seen = new Set<string>();
+      const shape = (net: Cell[]) => net.map((c) => c.join(',')).sort().join(';');
+      const fresh = (valid: boolean) => {
+        let net = randomNet(valid);
+        for (let i = 0; i < 20 && seen.has(shape(net)); i++) net = randomNet(valid);
+        seen.add(shape(net));
+        return net;
+      };
       this.nets = Phaser.Utils.Array.Shuffle([
-        ...Array.from({ length: validCount }, () => randomNet(true)),
-        ...Array.from({ length: 4 - validCount }, () => randomNet(false)),
+        ...Array.from({ length: validCount }, () => fresh(true)),
+        ...Array.from({ length: 4 - validCount }, () => fresh(false)),
       ]);
       this.nets.forEach((net, i) => {
         const cx = 140 + i * 205;

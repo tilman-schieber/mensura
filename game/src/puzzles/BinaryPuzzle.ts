@@ -45,7 +45,10 @@ export class BinaryPuzzle extends PuzzleScene {
   protected buildRound(): void {
     const tier = pickByLevel(getLevel('Z1S'), TIERS);
     const n = tier.stones;
-    this.target = randInt(1, 2 ** n - 1);
+    // nicht 0 oder 1 und nicht nur ein einziger Stein (2, 4, 8 …): mindestens zwei Stellen mit 1
+    const ones = (x: number) => x.toString(2).split('1').length - 1;
+    do this.target = randInt(3, 2 ** n - 1);
+    while (ones(this.target) < 2);
     this.lit = Array(n).fill(false);
     this.stoneViews = [];
     this.glowViews = [];

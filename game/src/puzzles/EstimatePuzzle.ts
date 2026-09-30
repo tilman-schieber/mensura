@@ -39,6 +39,15 @@ const ITEMS: Item[] = [
   { icon: 15, question: 'Wie groß ist ein Kind in der 5. Klasse?', value: 1400, kind: 'laenge', tip: 'Etwas kleiner als eine Tür.' },
 ];
 
+/** Tür, Milch, Schokolade: stehen als Vergleichswerte im Hinweis */
+const REFERENCE = [0, 11, 12];
+
+/** Auf zwei geltende Ziffern runden, damit „: 3“ keine krummen Werte ergibt (56,67 mm → 57 mm) */
+function twoDigits(v: number): number {
+  const p = 10 ** (Math.floor(Math.log10(v)) - 1);
+  return Math.round(v / p) * p;
+}
+
 /** Wert in einer passenden Einheit: 2000 mm → „2 m“, 150 g → „150 g“, 1 500 000 g → „1,5 t“. */
 function nice(value: number, kind: Item['kind']): string {
   if (kind === 'laenge') {
@@ -67,22 +76,35 @@ export class EstimatePuzzle extends PuzzleScene {
   }
 
   protected buildRound(): void {
-    // Anfangs die vertrauten Dinge, später auch die großen und kleinen Extreme
-    const pool = ITEMS.filter((it) => !this.used.has(it.icon) && (getLevel('M6') > 0.3 || ![3, 6, 8, 10].includes(it.icon)));
-    const item = (pool.length ? pool : ITEMS)[randInt(0, (pool.length ? pool : ITEMS).length - 1)];
+    // Anfangs die vertrauten Dinge, später auch die großen und kleinen Extreme.
+    // Tür, Milch und Schokolade sind die Referenzwerte aus dem Hinweis selbst
+    // („eine Tür etwa 2 m“, „Milch etwa 1 kg“, „Schokolade 100 g“), also keine Schätzfrage.
+    const level = getLevel('M6');
+    const allowed = ITEMS.filter((it) => !REFERENCE.includes(it.icon) && (level > 0.3 || ![3, 6, 8, 10].includes(it.icon)));
+    let pool = allowed.filter((it) => !this.used.has(it.icon));
+    if (!pool.length) {
+      this.used.clear();
+      pool = allowed;
+    }
+    const item = pool[randInt(0, pool.length - 1)];
     this.used.add(item.icon);
     const r = this.round;
 
     r.add(this.add.image(250, 250, 'estimate-icons', item.icon).setScale(4));
     r.add(text(this, GAME_WIDTH / 2, 92, item.question, 24, COLORS.text));
 
-    const factors = Phaser.Utils.Array.Shuffle([0.01, 0.1, 10, 100]).slice(0, 3);
-    const options = Phaser.Utils.Array.Shuffle([item.value, ...factors.map((f) => item.value * f)]);
+    // Immer die beiden Nachbar-Größenordnungen (· 10 und : 10). Der dritte Ablenker ist
+    // anfangs · 100 oder : 100, später nur · 3 oder : 3, damit er nicht offensichtlich absurd ist.
+    const third = level < 0.5 ? [0.01, 100][randInt(0, 1)] : [1 / 3, 3][randInt(0, 1)];
+    const options = Phaser.Utils.Array.Shuffle([item.value, ...[0.1, 10, third].map((f) => twoDigits(item.value * f))]);
     options.forEach((v, i) => {
       r.add(
         button(this, 690, 160 + i * 72, nice(v, item.kind), () => {
           if (v === item.value) this.solved(`Richtig, etwa ${nice(item.value, item.kind)}. ${item.tip}`);
-          else this.wrong(`${nice(v, item.kind)} wäre ${v > item.value ? 'viel zu groß' : 'viel zu klein'}. ${item.tip}`);
+          else {
+            const far = v > item.value * 5 || v < item.value / 5;
+            this.wrong(`${nice(v, item.kind)} wäre ${far ? 'viel ' : ''}zu ${v > item.value ? 'groß' : 'klein'}. ${item.tip}`);
+          }
         }, { width: 220, height: 58, size: 24 }),
       );
     });
@@ -91,7 +113,7 @@ export class EstimatePuzzle extends PuzzleScene {
       item.kind === 'laenge'
         ? 'Vergleiche mit Dingen, die du kennst: Ein Finger ist etwa 1 cm breit, eine Tür etwa 2 m hoch.'
         : 'Vergleiche mit Dingen, die du kennst: Eine Tafel Schokolade wiegt 100 g, eine Tüte Milch etwa 1 kg.',
-      'Die Antworten unterscheiden sich um das Zehnfache. Welche passt ungefähr?',
+      'Die meisten Antworten unterscheiden sich um das Zehnfache. Welche passt ungefähr?',
       item.tip,
     ];
   }

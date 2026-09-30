@@ -13,8 +13,8 @@ import { Rail, drawCart, type RailSpec } from './rail';
 // Die Schwierigkeit steckt in der Skala: erst 0–100 mit allen Beschriftungen,
 // später 0–10 000 nur mit Anfang und Ende, Strahlen, die nicht bei 0 beginnen, usw.
 
+// Immer mit feiner Einteilung: Ziele liegen nie auf den beschrifteten großen Schwellen.
 const TIERS: RailSpec[] = [
-  { from: 0, to: 100, major: 10, minor: 0, labels: 'all' },
   { from: 0, to: 100, major: 10, minor: 1, labels: 'all' },
   { from: 0, to: 1000, major: 100, minor: 10, labels: 'all' },
   { from: 0, to: 10000, major: 1000, minor: 100, labels: 'ends+middle' },
@@ -45,7 +45,9 @@ export class RailPuzzle extends PuzzleScene {
     }
     const step = spec.minor || spec.major;
     const steps = Math.round((spec.to - spec.from) / step);
-    this.target = spec.from + randInt(1, steps - 1) * step;
+    // nicht auf einer großen Schwelle (80, 3 000 …): Man soll die feinen Striche zählen
+    do this.target = spec.from + randInt(1, steps - 1) * step;
+    while (spec.minor && (this.target - spec.from) % spec.major === 0);
     const mode = randInt(0, 1) === 0 ? 'schieben' : 'ablesen';
 
     const r = this.round;

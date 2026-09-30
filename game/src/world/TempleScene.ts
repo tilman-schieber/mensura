@@ -187,9 +187,11 @@ export class TempleScene extends WorldScene {
   }
 
   private fightShadow(): void {
+    if (getFlag('temple_boss')) return;
     this.startPuzzle('DoppelgangerScene', (won) => {
       if (!won) return;
       setFlag('temple_boss');
+      if (this.shadow) this.removeInteractable(this.shadow);
       this.shadow?.destroy();
       this.shadow = undefined;
       this.unblock(12, 5, 12, 5);

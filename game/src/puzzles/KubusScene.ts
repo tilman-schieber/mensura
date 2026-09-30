@@ -21,6 +21,8 @@ export class KubusScene extends BossScene {
     phaseBreaks: ['Seine Schilde zerbrechen! Er klappt sich auf …', 'Er wankt! Gleich zerfällt er in Würfel …'],
     winText: 'Der Kubus-Wächter zerfällt in viele kleine Würfel!',
     regroupText: 'Der Wächter setzt sich wieder zusammen. Versuch es noch einmal!',
+    seconds: 40,
+    regenText: 'Zu langsam! Der Wächter setzt einen Stein wieder ein.',
     chipColor: 0x8aa0c8,
   };
 
@@ -35,8 +37,9 @@ export class KubusScene extends BossScene {
   }
 
   private options(values: number[], correct: number, unit: string, onWrong: (v: number) => string, skill: 'M13' | 'M9' | 'M15'): void {
-    const opts = Phaser.Utils.Array.Shuffle([...new Set(values)].filter((v) => v > 0)).slice(0, 4);
-    if (!opts.includes(correct)) opts[0] = correct;
+    // Richtige Antwort zuerst, dann die Ablenker nach Wichtigkeit; doppelte fallen weg,
+    // hinten angehängte Ersatz-Ablenker füllen auf, sodass es immer vier verschiedene sind.
+    const opts = [...new Set([correct, ...values])].filter((v) => v > 0).slice(0, 4);
     Phaser.Utils.Array.Shuffle(opts).forEach((v, i, arr) => {
       const x = 480 + (i - (arr.length - 1) / 2) * 200;
       this.area.add(
@@ -59,11 +62,11 @@ export class KubusScene extends BossScene {
     if (randInt(0, 1)) {
       this.prompt.setText(`„Mein Schild ist ${a} cm × ${b} cm groß!“ Wie groß ist sein Flächeninhalt?`);
       this.hint = 'Flächeninhalt eines Rechtecks: Länge mal Breite.';
-      this.options([a * b, 2 * (a + b), a + b, a * b + a], a * b, 'cm²', (v) => (v === 2 * (a + b) ? 'Das ist der Umfang, nicht die Fläche!' : `${a} · ${b} = ${a * b}`), 'M13');
+      this.options([a * b, 2 * (a + b), a + b, a * b + a, a * b - b, a * b + b], a * b, 'cm²', (v) => (v === 2 * (a + b) ? 'Das ist der Umfang, nicht die Fläche!' : `${a} · ${b} = ${a * b}`), 'M13');
     } else {
       this.prompt.setText(`„Mein Schild ist ${a} cm × ${b} cm groß!“ Wie lang ist sein Rand (Umfang)?`);
       this.hint = 'Umfang eines Rechtecks: 2 · Länge + 2 · Breite.';
-      this.options([2 * (a + b), a * b, a + b, 2 * a + b], 2 * (a + b), 'cm', (v) => (v === a * b ? 'Das ist der Flächeninhalt, nicht der Umfang!' : `2 · ${a} + 2 · ${b} = ${2 * (a + b)}`), 'M9');
+      this.options([2 * (a + b), a * b, a + b, 2 * a + b, a + 2 * b, 2 * (a + b) + 2], 2 * (a + b), 'cm', (v) => (v === a * b ? 'Das ist der Flächeninhalt, nicht der Umfang!' : `2 · ${a} + 2 · ${b} = ${2 * (a + b)}`), 'M9');
     }
   }
 
@@ -103,7 +106,7 @@ export class KubusScene extends BossScene {
     const c = randInt(2, 4);
     this.prompt.setText(`„Ich bestehe aus ${a} × ${b} × ${c} Würfeln!“ Wie viele Würfel sind das?`);
     this.hint = 'Volumen: Länge · Breite · Höhe.';
-    this.options([a * b * c, a * b + c, a + b + c, a * b * c + a * b], a * b * c, 'Würfel', () => `${a} · ${b} · ${c} = ${a * b * c}`, 'M15');
+    this.options([a * b * c, a * b + c, a + b + c, a * b * c + a * b, a * b * c - a * b, a * b * c + c], a * b * c, 'Würfel', () => `${a} · ${b} · ${c} = ${a * b * c}`, 'M15');
   }
 }
 

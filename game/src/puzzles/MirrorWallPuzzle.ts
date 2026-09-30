@@ -60,6 +60,28 @@ export class MirrorWallPuzzle extends PuzzleScene {
     return x > y;
   }
 
+  /** Abstand einer Zelle zur Achse in Kacheln (0 = liegt direkt an der Achse) */
+  private axisGap(x: number, y: number): number {
+    const n = this.tier.size;
+    if (this.tier.axis === 'senkrecht') return n / 2 - 1 - x;
+    if (this.tier.axis === 'waagerecht') return n / 2 - 1 - y;
+    return x - y - 1;
+  }
+
+  /**
+   * Zu leichte Figuren ausschließen: eine gerade Reihe (Spiegelbild nur „abschreiben“)
+   * und ab Stufe 2 eine Figur, die ganz an der Achse klebt (dann muss man nicht abzählen).
+   */
+  private tooEasy(tierIndex: number): boolean {
+    const cells = [...this.source].map((k) => k.split(',').map(Number) as [number, number]);
+    const xs = new Set(cells.map(([x]) => x));
+    const ys = new Set(cells.map(([, y]) => y));
+    if (xs.size === 1 || ys.size === 1) return true;
+    if (tierIndex >= 2 && cells.every(([x, y]) => this.axisGap(x, y) === 0)) return true;
+    if (tierIndex >= 3 && cells.some(([x, y]) => this.axisGap(x, y) === 0)) return true;
+    return false;
+  }
+
   protected buildRound(): void {
     this.tier = pickByLevel(getLevel('R13'), TIERS);
     const n = this.tier.size;
@@ -69,20 +91,25 @@ export class MirrorWallPuzzle extends PuzzleScene {
     this.cellViews.clear();
 
     // Zusammenhängende Figur auf der Vorlagenseite wachsen lassen
-    const want = randInt(this.tier.cells[0], this.tier.cells[1]);
     const candidates: [number, number][] = [];
     for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) if (this.onSourceSide(x, y)) candidates.push([x, y]);
-    let [sx, sy] = candidates[randInt(0, candidates.length - 1)];
-    this.source.add(key(sx, sy));
-    let guard = 0;
-    while (this.source.size < want && guard++ < 200) {
-      const [dx, dy] = [[1, 0], [-1, 0], [0, 1], [0, -1]][randInt(0, 3)];
-      const nx = sx + dx;
-      const ny = sy + dy;
-      if (nx < 0 || ny < 0 || nx >= n || ny >= n || !this.onSourceSide(nx, ny)) continue;
-      sx = nx;
-      sy = ny;
+    const tierIndex = TIERS.indexOf(this.tier);
+    for (let attempt = 0; attempt < 40; attempt++) {
+      this.source.clear();
+      const want = randInt(this.tier.cells[0], this.tier.cells[1]);
+      let [sx, sy] = candidates[randInt(0, candidates.length - 1)];
       this.source.add(key(sx, sy));
+      let guard = 0;
+      while (this.source.size < want && guard++ < 200) {
+        const [dx, dy] = [[1, 0], [-1, 0], [0, 1], [0, -1]][randInt(0, 3)];
+        const nx = sx + dx;
+        const ny = sy + dy;
+        if (nx < 0 || ny < 0 || nx >= n || ny >= n || !this.onSourceSide(nx, ny)) continue;
+        sx = nx;
+        sy = ny;
+        this.source.add(key(sx, sy));
+      }
+      if (!this.tooEasy(tierIndex)) break;
     }
     for (const k of this.source) {
       const [x, y] = k.split(',').map(Number);

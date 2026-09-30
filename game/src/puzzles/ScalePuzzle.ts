@@ -21,10 +21,21 @@ const kgLabel = (g: number) => {
   return kg && rest ? `${kg} kg ${rest} g` : kg ? `${kg} kg` : `${rest} g`;
 };
 
+/**
+ * Vielfaches von 50 g zwischen min·50 und max·50. Ausgeschlossen: glatte Kilogramm
+ * (2 kg = zwei Kilostücke) und Werte, die genau ein einzelnes Gewichtsstück sind.
+ */
+const pickGrams = (min: number, max: number, single: number[] = []) => {
+  let g: number;
+  do g = randInt(min, max) * 50;
+  while (g % 1000 === 0 || single.includes(g));
+  return g;
+};
+
 const TIERS: Tier[] = [
-  { weights: [500, 200, 100, 50], make: () => { const g = randInt(2, 19) * 50; return { grams: g, label: `${g} g` }; } },
-  { weights: [1000, 500, 200, 100, 50], make: () => { const g = randInt(21, 79) * 50; return { grams: g, label: kgLabel(g) }; } },
-  { weights: [1000, 500, 200, 100, 50], make: () => { const g = randInt(21, 79) * 50; return { grams: g, label: `${formatDecimal(g / 1000)} kg` }; } },
+  { weights: [500, 200, 100, 50], make: () => { const g = pickGrams(2, 19, [100, 200, 500]); return { grams: g, label: `${g} g` }; } },
+  { weights: [1000, 500, 200, 100, 50], make: () => { const g = pickGrams(21, 79); return { grams: g, label: kgLabel(g) }; } },
+  { weights: [1000, 500, 200, 100, 50], make: () => { const g = pickGrams(21, 79); return { grams: g, label: `${formatDecimal(g / 1000)} kg` }; } },
   {
     weights: [1_000_000, 500_000, 200_000, 100_000],
     make: () => {

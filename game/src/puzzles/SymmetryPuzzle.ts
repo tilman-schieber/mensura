@@ -26,6 +26,7 @@ export class SymmetryPuzzle extends PuzzleScene {
   private selected = new Set<number>();
   private axesLayer!: Phaser.GameObjects.Graphics;
   private choiceGraphics: Phaser.GameObjects.Graphics[] = [];
+  private lastShape = '';
 
   constructor() {
     super('SymmetryPuzzle');
@@ -72,7 +73,13 @@ export class SymmetryPuzzle extends PuzzleScene {
       return;
     }
 
-    this.shape = pool[randInt(0, pool.length - 1)];
+    // Nicht zweimal hintereinander dasselbe Siegel. Beim Zählen ab der mittleren Stufe kein
+    // unregelmäßiges Dreieck mehr: „0 Achsen“ sieht man dort sofort.
+    const single = pool.filter(
+      (s) => s.name !== this.lastShape && !(this.mode === 'zaehlen' && level >= 0.4 && s.name === 'unregelmäßige Dreieck'),
+    );
+    this.shape = single[randInt(0, single.length - 1)];
+    this.lastShape = this.shape.name;
     const g = this.add.graphics();
     drawShape(g, this.shape, 300, 250, 85);
     r.add(g);

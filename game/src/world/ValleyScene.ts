@@ -230,9 +230,11 @@ export class ValleyScene extends WorldScene {
   }
 
   private fightBeetle(): void {
+    if (getFlag('valley_boss')) return;
     this.startPuzzle('BeetleScene', (won) => {
       if (!won) return;
       setFlag('valley_boss');
+      if (this.beetle) this.removeInteractable(this.beetle);
       this.beetle?.destroy();
       this.beetle = undefined;
       this.unblock(14, 3, 16, 4);

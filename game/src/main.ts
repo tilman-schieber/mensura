@@ -43,6 +43,7 @@ import { DividePuzzle } from './puzzles/DividePuzzle';
 import { TermPuzzle } from './puzzles/TermPuzzle';
 import { AutomatonPuzzle } from './puzzles/AutomatonPuzzle';
 import { MineDeepScene } from './world/MineDeepScene';
+import { DECO_KEYS } from './world/deco';
 import { SurveyPuzzle } from './puzzles/SurveyPuzzle';
 import { MarketPuzzle } from './puzzles/MarketPuzzle';
 import { LightBridgePuzzle } from './puzzles/LightBridgePuzzle';
@@ -65,6 +66,7 @@ class BootScene extends Phaser.Scene {
     this.load.image('owl', 'assets/objects/owl.png');
     this.load.image('messbuch-page', 'assets/objects/messbuch-page.png');
     this.load.image('treasure', 'assets/objects/treasure.png');
+    for (const k of DECO_KEYS) this.load.image(k, `assets/objects/${k}.png`);
     this.load.spritesheet('npc-pimal', 'assets/npcs/pimal.png', { frameWidth: 68, frameHeight: 68 });
     this.load.json('dialog-voice-index', 'assets/audio/dialog/index.json');
   }

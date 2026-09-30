@@ -286,9 +286,11 @@ export class MineScene extends WorldScene {
   }
 
   private fightKoloss(): void {
+    if (getFlag('koloss_done')) return;
     this.startPuzzle('ColossusScene', (won) => {
         if (!won) return;
         setFlag('koloss_done');
+        if (this.koloss) this.removeInteractable(this.koloss);
         this.koloss?.destroy();
         this.koloss = undefined;
         this.unblock(11, 7, 14, 8);

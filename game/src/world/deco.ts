@@ -1,0 +1,93 @@
+// Dekoration je Ort: Büsche, Blumen, Steine, Fässer, Kristalle … (Bilder von PixelLab,
+// public/assets/objects/deco-*.png und mine-*.png). Jede Angabe: Bild, Zelle x, Zelle y,
+// blockiert (man läuft nicht hindurch), Größe. Blumen, Gras und Kiesel kann man überlaufen.
+// Die Zellen sind so gewählt, dass sie keine Wege, Stationen, Figuren oder Startplätze verdecken.
+
+export type DecoItem = [key: string, x: number, y: number, block?: boolean, scale?: number];
+
+export const DECO: Record<string, DecoItem[]> = {
+  Village: [
+    ['deco-well', 12, 7, true],
+    ['deco-bush-round', 17, 10, true],
+    ['deco-bush-flowering', 4, 4, true],
+    ['deco-bush-berry', 21, 17, true],
+    ['deco-bush-round', 13, 17, true],
+    ['deco-stump', 22, 4, true],
+    ['deco-rock-mossy', 19, 19, true],
+    ['deco-log', 19, 17, true],
+    ['deco-hay-bale', 13, 19, true],
+    ['deco-barrel', 7, 18, true],
+    ['deco-mushrooms', 21, 8],
+    ['deco-pebbles', 0, 5],
+    ['deco-flowers-poppy', 13, 5],
+    ['deco-flowers-daisy', 17, 6],
+    ['deco-flowers-cornflower', 3, 7],
+    ['deco-flowers-wild', 1, 8],
+    ['deco-flowers-daisy', 20, 15],
+    ['deco-flowers-poppy', 25, 19],
+    ['deco-flowers-wild', 12, 16],
+    ['deco-flowers-cornflower', 23, 5],
+    ['deco-flowers-poppy', 24, 8],
+    ['deco-grass-tall', 15, 5],
+    ['deco-grass-tall', 19, 16],
+    ['deco-grass-tall', 28, 14],
+    ['deco-grass-tall', 0, 17],
+  ],
+  Valley: [
+    ['deco-fence', 11, 19, true],
+    ['deco-fence', 18, 19, true],
+    ['deco-bush-round', 1, 7, true],
+    ['deco-bush-berry', 10, 7, true],
+    ['deco-bush-flowering', 19, 7, true],
+    ['deco-bush-round', 4, 18, true],
+    ['deco-rock-mossy', 21, 4, true],
+    ['deco-rock-mossy', 2, 14, true],
+    ['deco-stump', 9, 2, true],
+    ['deco-log', 24, 19, true],
+    ['deco-hay-bale', 19, 14, true],
+    ['deco-flowers-wild', 2, 4],
+    ['deco-flowers-poppy', 9, 6],
+    ['deco-flowers-daisy', 20, 6],
+    ['deco-flowers-cornflower', 26, 3],
+    ['deco-flowers-wild', 3, 18],
+    ['deco-flowers-daisy', 21, 17],
+    ['deco-flowers-poppy', 8, 13],
+    ['deco-mushrooms', 12, 16],
+    ['deco-grass-tall', 18, 12],
+    ['deco-grass-tall', 9, 17],
+    ['deco-pebbles', 25, 18],
+  ],
+  Mine: [
+    ['mine-crates', 3, 14, true, 0.8],
+    ['mine-barrel', 4, 14, true],
+    ['mine-lantern-post', 8, 5, true],
+    ['mine-lantern-post', 17, 5, true],
+    ['mine-crystal-blue', 22, 8, true],
+    ['mine-crystal-purple', 3, 8, true],
+    ['mine-rubble', 9, 14, true, 0.8],
+    ['mine-ore-gold', 7, 6, true],
+    ['mine-workbench', 6, 14, true, 0.8],
+    ['mine-coal-sack', 8, 14, true],
+    ['mine-rope-bucket', 10, 5],
+    ['mine-tools', 22, 14, true, 0.8],
+  ],
+  MineDeep: [
+    ['mine-lantern-post', 10, 5, true],
+    ['mine-lantern-post', 16, 5, true],
+    ['mine-crystal-blue', 3, 5, true],
+    ['mine-crystal-purple', 22, 5, true],
+    ['mine-crates', 22, 10, true, 0.8],
+    ['mine-barrel', 3, 10, true],
+    ['mine-coal-sack', 9, 7, true],
+    ['mine-workbench', 16, 14, true, 0.8],
+    ['mine-tools', 3, 14, true, 0.8],
+    ['mine-rubble', 22, 12, true, 0.8],
+    ['mine-rope-bucket', 9, 12],
+  ],
+};
+
+/** Größe je Ort: Im Riesental ist alles riesig, in der Mine etwas größer als die kleinen Bilder */
+export const DECO_SCALE: Record<string, number> = { Valley: 1.8, Mine: 1.25, MineDeep: 1.25 };
+
+/** Alle Bilder, einmal beim Start geladen */
+export const DECO_KEYS = [...new Set(Object.values(DECO).flatMap((list) => list.map(([k]) => k)))];

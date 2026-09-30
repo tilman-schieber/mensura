@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { digitsOf, formatNumber, interestingNumber, numberToWords, randInt } from '../learn/numbers';
+import { digitsOf, formatNumber, interestingNumber, nonTrivialNumber, numberToWords, randInt } from '../learn/numbers';
 import { getLevel, pickByLevel } from '../learn/progress';
 import type { SkillId } from '../learn/skills';
 import { createNumpad } from '../ui/numpad';
@@ -36,9 +36,10 @@ const valueOf = (c: Record<BlockValue, number>) => BLOCK_VALUES.reduce((sum, v) 
 
 function makeTask(level: number): Task {
   const tier = pickByLevel(level, [0, 1, 2, 3, 4]);
-  if (tier === 0) return { mode: 'laden', target: interestingNumber(3), asWords: false, supply: ALL(), start: EMPTY() };
-  if (tier === 1) return { mode: 'laden', target: interestingNumber(4), asWords: false, supply: ALL(), start: EMPTY() };
-  if (tier === 2) return { mode: 'laden', target: interestingNumber(4), asWords: true, supply: ALL(), start: EMPTY() };
+  // keine Zielzahlen wie 500 oder 3 000, die nur aus einer Blocksorte bestehen
+  if (tier === 0) return { mode: 'laden', target: nonTrivialNumber(3), asWords: false, supply: ALL(), start: EMPTY() };
+  if (tier === 1) return { mode: 'laden', target: nonTrivialNumber(4), asWords: false, supply: ALL(), start: EMPTY() };
+  if (tier === 2) return { mode: 'laden', target: nonTrivialNumber(4), asWords: true, supply: ALL(), start: EMPTY() };
   if (tier === 3) {
     // Bündeln: 1–2 Sorten mit 10–19 Stück
     const start = EMPTY();

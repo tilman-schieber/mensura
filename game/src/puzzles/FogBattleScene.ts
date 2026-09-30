@@ -1,3 +1,4 @@
+import { music } from '../audio/music';
 import Phaser from 'phaser';
 import { mentalTask, type MathTask } from '../learn/mentalMath';
 import { formatNumber, randInt } from '../learn/numbers';
@@ -34,6 +35,7 @@ export class FogBattleScene extends Phaser.Scene {
   private timer?: Phaser.Time.TimerEvent;
   private timeLimit = 0;
   private busy = false;
+  private asked = new Set<string>();
 
   constructor() {
     super('FogBattleScene');
@@ -47,6 +49,7 @@ export class FogBattleScene extends Phaser.Scene {
     this.options = [];
     this.heartIcons = [];
     this.busy = false;
+    this.asked = new Set();
   }
 
   preload(): void {
@@ -54,6 +57,10 @@ export class FogBattleScene extends Phaser.Scene {
   }
 
   create(): void {
+    // Im Kampf gegen Nebelwesen wird die Musik schief, danach wieder wie vorher
+    const fogBefore = music.fogLevel;
+    music.setFog(1, 0.6);
+    this.events.once('shutdown', () => music.setFog(fogBefore, 1));
     const bg = this.add.graphics();
     bg.fillGradientStyle(0x4a5a6b, 0x4a5a6b, 0x1a222b, 0x1a222b, 0.96).fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
     this.add.rectangle(0, 0, GAME_WIDTH, GAME_HEIGHT, 0, 0).setOrigin(0).setInteractive();
@@ -88,7 +95,12 @@ export class FogBattleScene extends Phaser.Scene {
     this.options = [];
     this.current = this.wisps.find((w) => w.active);
     if (!this.current) return;
-    this.task = mentalTask(getLevel('Z11'));
+    // Keine Aufgabe zweimal im selben Kampf (auch nicht als Tauschaufgabe 3 · 7 / 7 · 3)
+    const norm = (q: string) => q.replace(/^(\d+) ([+·]) (\d+)$/, (_m, a: string, op: string, b: string) => [a, b].sort().join(` ${op} `));
+    let tries = 0;
+    do this.task = mentalTask(getLevel('Z11'));
+    while (this.asked.has(norm(this.task.question)) && ++tries < 30);
+    this.asked.add(norm(this.task.question));
     this.question.setText(this.task.question);
     // Das Wesen, das gerade dran ist, leuchtet golden
     (this.current.list[0] as Phaser.GameObjects.Arc).setFillStyle(0xf0d78a, 0.45);
