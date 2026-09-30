@@ -118,7 +118,7 @@ export class MineScene extends WorldScene {
     // --- Nebenbei: Pi-mal-Daumen, eine Messbuch-Seite, ein Schild am Eingang
     this.addGoblin(GOBLIN, { x: 21, y: 6 }, 'west');
     this.addPage('page_mine', 4, 5);
-    this.addSign(17.5, 15.2, 'Stollen 1 · 350 m tief');
+    this.addSign(17.5, 15.2, 'Stellenstollen');
 
     // --- Vorarbeiter Brom am Eingang
     this.brom = this.addNpc('npc-brom', { x: 15, y: 13 }, 'west');
@@ -175,7 +175,6 @@ export class MineScene extends WorldScene {
     c.add(g);
     labels.forEach((l, i) => {
       const t = smooth(this.add.text(i * 64 + 16, 9, l, { fontFamily: FONT, fontSize: '11px', color: '#2a1a0c', resolution: 4 }).setOrigin(0.5));
-      if (this.fogDensity() > 0) this.fogFlicker(t, l);
       c.add(t);
     });
     c.setSize(110, 46);

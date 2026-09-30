@@ -124,7 +124,7 @@ Nebelkobold, und schummelt (`CheatPuzzle`, Thema je Region). Überall liegt eine
 **Vagors Messbuch** (`src/messbuch.ts`, `addPage()`), im Riesental im Mauseloch, das man nur mit der
 Skalenkappe erreicht. Im Menü unter „Messbuch“ liest man die Seiten und findet Vagors Rechenfehler.
 **Eichstadt** füllt sich mit jedem Splitter (Mira, Rudolf, Flora, Harald), erlöste Nebelwesen bleiben
-als Schaf, Fuchs und Laterne. Schilder zeigen im Nebel nur ungefähre Zahlen (`addSign()`).
+als Schaf, Fuchs und Laterne. Einfache Holzschilder mit Ortsnamen (`addSign()`), in Eichstadt ein Wegweiser.
 **Eule Pünktchen** bringt die Hinweise in allen Rätseln.
 
 Endgegner mit Phasen erben von `BossScene` (Herzen, Lebensbalken, Zeitbalken, Treffer, Sieg).
@@ -247,10 +247,20 @@ tools/tts/.venv/bin/python tools/tts/make_number_audio.py        # optional: Cod
 ### Dialoge
 
 Alle festen Dialogzeilen (`{ speaker: '…', text: '…' }` im Code) sind mit **Gemini-TTS** vertont
-(`tools/tts/make_dialog_audio.py`). Jede Figur hat eine eigene Stimme und eine Regieanweisung
-(`VOICES`: Elle warm und müde, Vagor leise und traurig mit Hall …). Nach Textänderungen einfach neu
-ausführen; es werden nur neue Zeilen aufgenommen, veraltete gelöscht. Zeilen mit eingesetzten Werten
-haben keine Aufnahme; dafür springt die Browser-Stimme ein.
+(`tools/tts/make_dialog_audio.py`, Modell `gemini-2.5-pro-preview-tts`). Damit jede Figur immer gleich
+klingt:
+
+1. **Feste Stimme und Charakter pro Figur** (`VOICES`), immer mit „Hochdeutsch ohne Akzent, natürliches
+   Tempo“. Das neuere `gemini-3.8-flash-tts` liest solche Anweisungen mit vor und taugt dafür nicht.
+2. **Prüfung durch ein zweites Modell** (`gemini-3.8-flash` hört zu): stimmt der gesprochene Text, gibt
+   es einen Akzent (Muttersprache 1–5, nur 5 gilt), ist das Tempo normal, wurde etwas dazugesprochen?
+   Fällt eine Aufnahme durch, wird sie neu gemacht (bis zu 4-mal), sonst bleibt die beste.
+   Ergebnis: `tools/tts/qc-report.json`, schlechteste zuerst.
+3. **Gleiches Tempo:** Jede Aufnahme wird per ffmpeg (`atempo`) auf das Zieltempo ihrer Figur gebracht
+   (Zeichen pro Sekunde, in `VOICES`), damit niemand quälend langsam oder gehetzt spricht.
+
+Nach Textänderungen einfach neu ausführen; es werden nur neue Zeilen aufgenommen, veraltete gelöscht.
+Zeilen mit eingesetzten Werten haben keine Aufnahme; dafür springt die Browser-Stimme ein.
 
 Schlüssel: `GEMINI_API_KEY=…` in `tools/tts/.env` (nicht im Git). Braucht nur Python 3 und ffmpeg.
 

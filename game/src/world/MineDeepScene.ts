@@ -116,7 +116,7 @@ export class MineDeepScene extends WorldScene {
     this.addInteractable({ target: this.gate, stand: { x: 12, y: 5 }, onInteract: () => this.openGate() });
 
     this.addPage('page_deep', 22, 14);
-    this.addSign(9.5, 15.2, 'Tiefe: 700 m');
+    this.addSign(9.5, 15.2, 'Rechenwerk');
 
     // Tüftlerin Grete in der Mitte der Halle
     this.grete = this.addNpc('npc-grete', { x: 15, y: 10 }, 'west');

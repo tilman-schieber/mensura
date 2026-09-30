@@ -9,3 +9,4 @@ __pycache__/
 # Gemini-Schlüssel und Hörproben für die Dialog-Aufnahmen
 game/tools/tts/.env
 game/tools/tts/probe/
+game/tools/tts/qc-report.json

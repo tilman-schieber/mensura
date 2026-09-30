@@ -114,7 +114,7 @@ export class FortressScene extends WorldScene {
 
     this.addGoblin(GOBLIN, { x: 15, y: 5 }, 'south');
     this.addPage('page_fortress', 3, 5);
-    this.addSign(9.5, 15.2, 'Mauerhöhe: 12 m');
+    this.addSign(9.5, 15.2, 'Würfelfestung');
 
     // Baumeister Quadro am Eingang
     this.quadro = this.addNpc('npc-quadro', { x: 14, y: 13 }, 'west');

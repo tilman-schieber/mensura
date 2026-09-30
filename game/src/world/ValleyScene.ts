@@ -125,7 +125,7 @@ export class ValleyScene extends WorldScene {
     this.addInteractable({ target: stone, stand: { x: 11, y: 15 }, onInteract: () => this.mouseHole(stone) });
 
     this.addGoblin(GOBLIN, { x: 21, y: 13 }, 'west');
-    this.addSign(13.5, 18.6, 'Fähre: 120 m');
+    this.addSign(13.5, 18.6, 'Zur Fähre');
 
     // Riesin Hanna auf dem Platz, dreimal so groß wie alle anderen
     this.hanna = this.addNpc('npc-hanna', { x: 15, y: 7 }, 'south');

@@ -68,8 +68,6 @@ export abstract class WorldScene extends Phaser.Scene {
   private keys!: Phaser.Types.Input.Keyboard.CursorKeys;
   private lastCell = { x: -1, y: -1 };
   private fog?: Phaser.Filters.ColorMatrix;
-  /** Schilder, deren Zahlen im Nebel flackern (siehe addSign) */
-  private fogSigns: { text: Phaser.GameObjects.Text; exact: string; timer: Phaser.Time.TimerEvent }[] = [];
 
   /** Szene bauen: Gelände, Objekte, Figuren. Gibt die Startposition (Zelle) zurück. */
   protected abstract buildWorld(entry?: string): Cell;
@@ -86,7 +84,6 @@ export abstract class WorldScene extends Phaser.Scene {
     this.blocked.clear();
     this.interactables = [];
     this.exits = [];
-    this.fogSigns = [];
     this.path = [];
     this.pending = null;
     this.frozen = false;
@@ -165,14 +162,6 @@ export abstract class WorldScene extends Phaser.Scene {
   /** Nebel langsam auf eine neue Dichte bringen, z. B. wenn ein Splitter geborgen ist. */
   protected clearFog(density = this.fogDensity(), duration = 2500): void {
     music.setFog(this.musicFog(density), duration / 1000);
-    if (density <= 0) {
-      // Schilder zeigen wieder genaue Zahlen
-      for (const s of this.fogSigns) {
-        s.timer.remove();
-        s.text.setText(s.exact).setAlpha(1);
-      }
-      this.fogSigns = [];
-    }
     if (!this.fog) return;
     const cm = this.fog.colorMatrix;
     this.tweens.addCounter({ from: cm.alpha, to: density, duration, ease: 'sine.inout', onUpdate: (t) => (cm.alpha = t.getValue() ?? density) });
@@ -246,10 +235,7 @@ export abstract class WorldScene extends Phaser.Scene {
     this.interactables = this.interactables.filter((i) => i.target !== target);
   }
 
-  /**
-   * Holzschild mit Text. Liegt über dem Ort noch Nebel, flackern die Zahlen darauf
-   * („≈ 4?0 m“), bis der Nebel weicht. So sieht man, was „Nebel des Ungefähren“ heißt.
-   */
+  /** Einfaches Holzschild mit dem Namen des Orts */
   protected addSign(cellX: number, cellY: number, exact: string, onTap?: () => void): Phaser.GameObjects.Container {
     const c = this.add.container(cellX * TILE, cellY * TILE);
     const t = smooth(this.add.text(0, -30, exact, { fontFamily: FONT, fontSize: '10px', color: '#2a1a0c', align: 'center', resolution: 4 }).setOrigin(0.5));
@@ -261,28 +247,12 @@ export abstract class WorldScene extends Phaser.Scene {
     g.fillStyle(0xc9a15a, 1).fillRoundedRect(-w / 2, -30 - h / 2, w, h, 3);
     c.add([g, t]).setDepth(cellY * TILE + 8);
     this.block(Math.floor(cellX), Math.floor(cellY) - 1, Math.floor(cellX), Math.floor(cellY) - 1);
-    if (this.fogDensity() > 0) this.fogFlicker(t, exact);
     if (onTap) {
       (c as unknown as { getBounds: () => Phaser.Geom.Rectangle }).getBounds = () =>
         new Phaser.Geom.Rectangle(c.x - w / 2, c.y - 30 - h / 2, w, h + 30);
       this.addInteractable({ target: c as Interactable['target'], stand: { x: Math.floor(cellX), y: Math.floor(cellY) }, onInteract: onTap });
     }
     return c;
-  }
-
-  /** Ziffern flackern und werden zu „≈ …“, solange der Nebel liegt. */
-  protected fogFlicker(t: Phaser.GameObjects.Text, exact: string): void {
-    const fuzzy = () =>
-      Math.random() < 0.4
-        ? `≈ ${exact.replace(/\d/g, (d) => (Math.random() < 0.5 ? '?' : d))}`
-        : exact.replace(/\d[\d ]*/g, () => '≈ ?? ');
-    t.setText(fuzzy());
-    const timer = this.time.addEvent({
-      delay: 650,
-      loop: true,
-      callback: () => t.setText(fuzzy()).setAlpha(0.65 + Math.random() * 0.35),
-    });
-    this.fogSigns.push({ text: t, exact, timer });
   }
 
   /** Versteckte Seite aus Vagors Messbuch; glitzert leise, verschwindet beim Aufheben. */

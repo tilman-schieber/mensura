@@ -101,7 +101,7 @@ export class TempleScene extends WorldScene {
 
     this.addGoblin(GOBLIN, { x: 21, y: 14 }, 'west');
     this.addPage('page_temple', 3, 13);
-    this.addSign(8.5, 15.2, 'Spiegeltempel · 4 Spiegel');
+    this.addSign(8.5, 15.2, 'Spiegeltempel');
 
     // Hüterin Lumen am Eingang
     this.lumen = this.addNpc('npc-lumen', { x: 15, y: 13 }, 'west');

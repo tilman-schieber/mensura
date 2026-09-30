@@ -208,12 +208,12 @@ const WISPS: { cell: Cell; count: number; becomes: string; freed: DialogLine[]; 
   },
 ];
 
-/** Wegweiser: genaue Entfernung erst, wenn der Nebel in dieser Richtung gelichtet ist */
-const SIGNPOST: { label: string; dist: string; clear: string; dx: number; dy: number }[] = [
-  { label: 'Mine', dist: '320 m', clear: 'mine_outer_done', dx: 1, dy: 0 },
-  { label: 'Riesental', dist: '250 m', clear: 'valley_done', dx: 0, dy: -1 },
-  { label: 'Spiegeltempel', dist: '180 m', clear: 'temple_done', dx: 0, dy: 1 },
-  { label: 'Ruine', dist: '140 m', clear: 'ruin_open', dx: -1, dy: 0 },
+/** Wegweiser an der Kreuzung: nur die Namen, Pfeil in die Richtung */
+const SIGNPOST: { label: string; dx: number; dy: number }[] = [
+  { label: 'Mine', dx: 1, dy: 0 },
+  { label: 'Riesental', dx: 0, dy: -1 },
+  { label: 'Tempel', dx: 0, dy: 1 },
+  { label: 'Ruine', dx: -1, dy: 0 },
 ];
 
 export class VillageScene extends WorldScene {
@@ -536,30 +536,24 @@ export class VillageScene extends WorldScene {
     SIGNPOST.forEach((s, i) => {
       const y = -52 + i * 12;
       const dir = s.dx || (s.dy < 0 ? 1 : -1);
-      const w = 92;
+      const t = smooth(this.add.text(0, y, s.label, { fontFamily: FONT, fontSize: '8px', color: '#2a1a0c', resolution: 4 }).setOrigin(0.5));
+      // Pfeil so lang wie der Name, nicht länger
+      const w = Math.ceil(t.width) + 8;
       const x0 = dir > 0 ? 2 : -w - 2;
+      t.setX(x0 + w / 2);
       const arrow = this.add.graphics();
       arrow.fillStyle(0x2a1a0c, 1).fillRect(x0 - 1, y - 6, w + 2, 12);
       arrow.fillStyle(0xc9a15a, 1).fillRect(x0, y - 5, w, 10);
       arrow.fillStyle(0xc9a15a, 1).fillTriangle(dir > 0 ? x0 + w : x0, y - 5, dir > 0 ? x0 + w + 6 : x0 - 6, y, dir > 0 ? x0 + w : x0, y + 5);
-      const exact = `${s.label} ${s.dist}`;
-      const t = smooth(this.add.text(x0 + w / 2, y, exact, { fontFamily: FONT, fontSize: '8px', color: '#2a1a0c', resolution: 4 }).setOrigin(0.5));
-      if (!getFlag(s.clear)) this.fogFlicker(t, exact);
       c.add([arrow, t]);
     });
     this.block(10, 10, 10, 10);
-    (c as unknown as { getBounds: () => Phaser.Geom.Rectangle }).getBounds = () => new Phaser.Geom.Rectangle(cx - 80, base - 64, 160, 64);
+    (c as unknown as { getBounds: () => Phaser.Geom.Rectangle }).getBounds = () => new Phaser.Geom.Rectangle(cx - 50, base - 64, 100, 64);
     this.addInteractable({
       target: c as unknown as Phaser.GameObjects.Image,
       stand: { x: 10, y: 11 },
-      onInteract: () => {
-        const foggy = SIGNPOST.some((s) => !getFlag(s.clear));
-        this.say([
-          foggy
-            ? { speaker: 'Wegweiser', text: 'Die Zahlen auf manchen Schildern flackern. Wo noch Nebel liegt, ist alles nur ungefähr.' }
-            : { speaker: 'Wegweiser', text: 'Alle Entfernungen sind wieder genau. Der Nebel hat hier nichts mehr zu sagen.' },
-        ]);
-      },
+      onInteract: () =>
+        this.say([{ speaker: 'Wegweiser', text: 'Nach Osten zur Mine, nach Norden ins Riesental, nach Süden zum Tempel, nach Westen zur Ruine.' }]),
     });
   }
 

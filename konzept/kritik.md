@@ -232,9 +232,9 @@ Nach Wirkung pro Aufwand sortiert:
 - **7 · Pi-mal-Daumen:** in jeder der vier Regionen, mit eigenem Rätsel (`CheatPuzzle`: stimmt oder
   geschummelt?), passend zum Thema der Region. Neuer Skill „Ergebnisse prüfen“ (2.2.13).
 - **8 · Werkzeug in der Oberwelt:** Mit der Skalenkappe schrumpft man und kriecht ins Mauseloch.
-- **Weitere Lücken:** Zahlen auf Schildern flackern im Nebel („≈ ?? m“) und werden mit dem Splitter
-  genau. Eule Pünktchen sitzt auf Elles Dach und bringt die Hinweise in jedem Rätsel. Elle geht am
-  Stock.
+- **Weitere Lücken:** Eule Pünktchen sitzt auf Elles Dach und bringt die Hinweise in jedem Rätsel.
+  Elle geht am Stock. (Flackernde Zahlen auf Schildern im Nebel waren kurz im Spiel, sahen aber
+  unruhig aus; die Schilder zeigen jetzt nur Namen. Der Nebel zeigt sich über Farbe und Musik.)
 
 **Bewusst offen:** Die Fragen der späteren Regionen (Bruchwald, Frostfeuerturm, Uhrwerk-Kloster,
 Finale) brauchen diese Regionen erst; sie stehen im Spielkonzept. Pi-mal-Daumens Seitenwechsel und
