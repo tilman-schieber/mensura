@@ -1,0 +1,39 @@
+{
+  "tilesets": {
+    "village": "1d8d0057-c5cc-487c-a157-4699a3f7ac0c",
+    "mine": "cb6a6882-ce45-4e49-8230-a76e94daadbd",
+    "temple": "d037ff01-8290-4b9a-906b-2cb51694f96d",
+    "valley": "994eb908-1d1c-4a71-8ca8-4b658f44a9f8",
+    "fortress": "243db4df-40c1-4567-8c51-3447fef0f811"
+  },
+  "objects": {
+    "house-elle": "02fa4b3c-e5c9-40f4-a8d6-41493bf92fe0",
+    "tree-oak": "d8536ea2-4a8f-42c2-a687-5f09160100f2",
+    "mine-cart": "ec28bc22-4ff0-455e-bdd4-fcf29b0f5fff",
+    "vault-door": "e58a4a1e-d771-477d-a74f-153ef283ebac",
+    "mine-entrance": "beea68cc-e5d7-44e0-8bdb-8d47de127159",
+    "koloss": "43714de7-1c85-458d-9226-c84702f70f53",
+    "splitter": "2889ffda-6977-419c-a9ba-cb25f33ef1b4",
+    "ruin": "8b5b955c-cb4b-4f71-808c-2628951f21e4",
+    "stele": "2a7f77a6-73aa-4b36-94f9-d5d1420b8ba1",
+    "rune-stones": "d652b2bf-829e-45d8-89c3-5705968ce4b0",
+    "nebelwesen": "c0b13d72-891c-4d7f-8534-c201dbdcf1cd",
+    "mirror": "7b1b171c-3bad-45c5-b5f7-a297c3318c47",
+    "temple-gate": "394460ed-3c86-47d5-a2c2-0dc2132e84f0",
+    "kaefer": "5ee96d3b-403f-4820-b43d-0fc0d89e875d",
+    "giant-boot": "15efd463-ea18-42ff-b9f1-c4e98bd6e835",
+    "giant-mushroom": "f9a760da-ced1-4671-8c9c-6ff6498f6419",
+    "balance": "42e15a1f-bbf5-4cbb-89e4-86e6a2576ce8",
+    "ferry-dock": "327d3e70-dc60-4eb2-b1d1-0eef1c4a647a",
+    "kubus": "2da5cc24-98af-48d5-872c-baaa2416f5b0",
+    "paint-bench": "d5ce4ec8-f962-4f3e-ac8e-ce34e57eccbc",
+    "boat": "94cf15eb-95ad-484b-9556-f72b7c46e47a"
+  },
+  "npcs": {
+    "elle": "be3e5d9c-ab8f-4ae3-b7e3-991b678f2b6e",
+    "brom": "a937becc-96ce-467e-a300-723710877968",
+    "lumen": "3f72f18c-6406-4773-b7a6-047c6376aace",
+    "hanna": "59cac9c7-fd7b-400a-8c29-97a774c355c9",
+    "quadro": "95c8eec2-600d-4330-81b7-b1cb4b40369b"
+  }
+}

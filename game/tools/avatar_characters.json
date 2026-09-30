@@ -1,0 +1,50 @@
+{
+  "kurz_hose": {
+    "id": "57e621c2-5c36-4273-9b84-8b812ebfdcf7",
+    "walk": "walksk"
+  },
+  "kurz_robe": {
+    "id": "c512a03c-3b31-4271-aef4-6def33e36f8b",
+    "walk": "walksk"
+  },
+  "lang_hose": {
+    "id": "1168b7f3-69cf-4000-8fc4-2506fea3f0df",
+    "walk": "walksk"
+  },
+  "lang_robe": {
+    "id": "4c5a62af-2498-411e-b371-6283ed4c5c7c",
+    "walk": "walksk"
+  },
+  "zoepfe_hose": {
+    "id": "1cab0af8-8912-4d15-ac78-c864e0266b1a",
+    "walk": "walksk"
+  },
+  "zoepfe_robe": {
+    "id": "ba9aecea-f129-4a55-b301-eedd1113bdae",
+    "walk": "walksk"
+  },
+  "locken_hose": {
+    "id": "773864e9-7a8f-4bd6-b27e-c26f6ba4a942",
+    "walk": "walksk"
+  },
+  "locken_robe": {
+    "id": "d7aa5da1-56bb-498e-a5a4-c3838910662b",
+    "walk": "walksk"
+  },
+  "strubbel_hose": {
+    "id": "78e594f5-3323-4a8a-9189-6e911d4418ff",
+    "walk": "walksk"
+  },
+  "strubbel_robe": {
+    "id": "3d296c30-1b92-4a0f-a27f-c1d0dc29586c",
+    "walk": "walksk"
+  },
+  "kurzlocken_hose": {
+    "id": "e9b7d05b-eac7-4a98-9091-9d74c44db4b0",
+    "walk": "walksk"
+  },
+  "kurzlocken_robe": {
+    "id": "52374825-38c8-4bfe-904d-bb9b5946f34b",
+    "walk": "walksk"
+  }
+}

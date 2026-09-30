@@ -1,0 +1,8 @@
+# Abhängigkeiten und Build
+node_modules/
+dist/
+# Python-Umgebung und Stimmenmodelle für die Sprachaufnahmen (neu erzeugbar, siehe game/README.md)
+.venv/
+game/tools/tts/models/
+__pycache__/
+*.pyc

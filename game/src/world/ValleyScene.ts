@@ -1,0 +1,232 @@
+import Phaser from 'phaser';
+import { getFlag, setFlag, topicDone } from '../save';
+import { TILE, WorldScene } from './WorldScene';
+import type { Cell } from './pathfind';
+import { Terrain, vertexGrid, type TilesetData } from './terrain';
+
+// Das Riesental (Klasse 5, Sommer): Längen, Gewichte, Zeitspannen, Schätzen.
+// Die Riesin Hanna leiht der Spielfigur ihre Skalenkappe. Vier Stationen, dann der
+// Riesenkäfer; danach der Splitter des Urmaßes der Größe.
+
+const COLS = 30;
+const ROWS = 20;
+const GRASS = 1;
+const PATH = 0;
+
+interface Station {
+  flag: string;
+  puzzle: string;
+}
+
+const ST = {
+  boot: { flag: 'valley_len', puzzle: 'LengthPuzzle' },
+  scale: { flag: 'valley_scale', puzzle: 'ScalePuzzle' },
+  mushroom: { flag: 'valley_est', puzzle: 'EstimatePuzzle' },
+  ferry: { flag: 'valley_ferry', puzzle: 'FerryPuzzle' },
+} satisfies Record<string, Station>;
+const STATIONS: Station[] = Object.values(ST);
+
+export class ValleyScene extends WorldScene {
+  private stars: Record<string, Phaser.GameObjects.Text> = {};
+  private hanna!: Phaser.GameObjects.Sprite;
+  private beetle?: Phaser.GameObjects.Image;
+
+  constructor() {
+    super('Valley');
+  }
+
+  preload(): void {
+    this.load.image('tiles-valley', 'assets/tiles/valley.png');
+    this.load.json('tiles-valley-data', 'assets/tiles/valley.json');
+    this.load.image('giant-boot', 'assets/objects/giant-boot.png');
+    this.load.image('giant-mushroom', 'assets/objects/giant-mushroom.png');
+    this.load.image('balance', 'assets/objects/balance.png');
+    this.load.image('ferry-dock', 'assets/objects/ferry-dock.png');
+    this.load.image('kaefer', 'assets/objects/kaefer.png');
+    this.load.image('boat', 'assets/objects/boat.png');
+    this.load.image('splitter', 'assets/objects/splitter.png');
+    this.load.spritesheet('npc-hanna', 'assets/npcs/hanna.png', { frameWidth: 68, frameHeight: 68 });
+  }
+
+  protected buildWorld(entry?: string): Cell {
+    // Sandwege durch hohes Gras: vom Eingang unten zum Platz, von dort zu den Stationen
+    const v = vertexGrid(COLS, ROWS, GRASS, [
+      [14, 10, 16, 20, PATH],
+      [5, 9, 25, 11, PATH],
+      [5, 5, 7, 16, PATH],
+      [23, 5, 25, 16, PATH],
+      [12, 3, 18, 6, PATH],
+      [13, 5, 17, 11, PATH],
+    ]);
+    this.blockUpper = false;
+    this.terrain = new Terrain(this, 'tiles-valley', this.cache.json.get('tiles-valley-data') as TilesetData, v);
+
+    // Fluss am rechten Rand
+    const river = this.add.graphics().setDepth(-900);
+    river.fillStyle(0x3b7fb8, 1).fillRect(27 * TILE, 0, 3 * TILE, ROWS * TILE);
+    river.fillStyle(0x6fb3e0, 0.5);
+    for (let y = 0; y < ROWS * TILE; y += 18) river.fillRect(27 * TILE + ((y * 7) % 60), y, 26, 3);
+    this.block(27, 0, 29, ROWS - 1);
+
+    this.addExit(14, 19, 15, 19, () => this.goTo('Village', 'valley'));
+
+    // Station 1: Riesenstiefel (Längen)
+    const boot = this.placeObject('giant-boot', 6, 8.2, 0.8);
+    this.block(4, 6, 7, 7);
+    this.stars[ST.boot.flag] = this.addStar(ST.boot.flag, 6 * TILE, 4.2 * TILE);
+    this.addInteractable({ target: boot, stand: { x: 6, y: 9 }, onInteract: () => this.station(ST.boot) });
+
+    // Station 2: Riesenwaage (Gewichte)
+    const bal = this.placeObject('balance', 24, 8.2);
+    this.block(23, 7, 24, 7);
+    this.stars[ST.scale.flag] = this.addStar(ST.scale.flag, 24 * TILE, 4.8 * TILE);
+    this.addInteractable({ target: bal, stand: { x: 24, y: 9 }, onInteract: () => this.station(ST.scale) });
+
+    // Station 3: Aussichtspilz (Schätzauge)
+    const mush = this.placeObject('giant-mushroom', 6, 16.4, 0.9);
+    this.block(5, 14, 6, 15);
+    this.stars[ST.mushroom.flag] = this.addStar(ST.mushroom.flag, 6 * TILE, 12.2 * TILE);
+    this.addInteractable({ target: mush, stand: { x: 6, y: 13 }, onInteract: () => this.station(ST.mushroom) });
+
+    // Station 4: Fähranleger (Zeitspannen)
+    const dock = this.placeObject('ferry-dock', 26.2, 15.6);
+    this.block(25, 14, 26, 15);
+    this.stars[ST.ferry.flag] = this.addStar(ST.ferry.flag, 26 * TILE, 12.4 * TILE);
+    this.addInteractable({ target: dock, stand: { x: 24, y: 14 }, onInteract: () => this.station(ST.ferry) });
+
+    // Fährboot hinüber zur Würfelfestung (mit dem Schulthema „Flächen und Körper“)
+    const boat = this.placeObject('boat', 28.4, 13.4, 0.9);
+    this.tweens.add({ targets: boat, y: boat.y + 3, duration: 1500, yoyo: true, repeat: -1, ease: 'sine.inout' });
+    this.addInteractable({ target: boat, stand: { x: 26, y: 13 }, onInteract: () => this.boat() });
+
+    // Deko: kleinere Pilze
+    for (const [x, y] of [[10, 15], [20, 16], [11, 3], [20, 2], [2, 11]] as [number, number][]) {
+      this.placeObject('giant-mushroom', x + 0.5, y + 1, 0.35);
+      this.block(x, y, x, y);
+    }
+
+    // Riesin Hanna auf dem Platz, dreimal so groß wie alle anderen
+    this.hanna = this.addNpc('npc-hanna', { x: 15, y: 7 }, 'south');
+    this.hanna.setScale(3);
+    this.hanna.setDepth(8 * TILE);
+    this.block(14, 5, 16, 7);
+    this.addInteractable({ target: this.hanna, stand: { x: 15, y: 9 }, onInteract: () => this.talkToHanna() });
+
+    if (this.stationsDone() === 4 && !getFlag('valley_boss')) this.spawnBeetle(false);
+
+    this.updateGoal();
+    if (!getFlag('valley_intro')) this.time.delayedCall(600, () => this.talkToHanna());
+    return entry === 'fortress' ? { x: 26, y: 13 } : { x: 15, y: 17 };
+  }
+
+  private boat(): void {
+    if (!topicDone('flaechen')) {
+      this.say([
+        { speaker: 'Riesin Hanna', text: 'Mit dem Boot kommst du zur Würfelfestung. Doch über dem Fluss hängt noch zu dichter Nebel.' },
+        { speaker: 'Riesin Hanna', text: 'Wenn ihr in der Schule Flächen und Körper durchnehmt, hakt das Thema im Menü ab. Dann setze ich dich über.' },
+      ]);
+      return;
+    }
+    this.goTo('Fortress', 'valley');
+  }
+
+  private stationsDone(): number {
+    return STATIONS.filter((s) => getFlag(s.flag)).length;
+  }
+
+  private talkToHanna(): void {
+    if (!getFlag('valley_intro')) {
+      this.say(
+        [
+          { speaker: 'Riesin Hanna', text: 'Hallo, Kleines! Pass auf, wo du hintrittst, sonst übersehe ich dich noch.' },
+          { speaker: 'Riesin Hanna', text: 'Ich bin Hanna. Seit Vagors Nebel im Tal liegt, stimmt hier kein Maß mehr. Meine Stiefel sind mal riesig, mal winzig!' },
+          { speaker: 'Riesin Hanna', text: 'Hilf mir: Miss meinen Stiefel, gleich die Waage aus, schätze vom Aussichtspilz aus und bring die Fährenuhr am Fluss in Ordnung.' },
+          { speaker: 'Riesin Hanna', text: 'Dafür leihe ich dir meine Skalenkappe. Damit wirst du so klein oder so groß, wie du willst.' },
+        ],
+        () => {
+          setFlag('valley_intro');
+          this.updateGoal();
+        },
+      );
+      return;
+    }
+    if (this.stationsDone() < 4) {
+      this.say([{ speaker: 'Riesin Hanna', text: 'Schau nach den Stellen, über denen noch kein goldener Stern schwebt.' }]);
+    } else if (!getFlag('valley_boss')) {
+      this.say([{ speaker: 'Riesin Hanna', text: 'Der Käfer! Setz die Skalenkappe auf und zeig ihm, dass du jedes Maß kennst!' }]);
+    } else if (!getFlag('valley_done')) {
+      this.say([{ speaker: 'Riesin Hanna', text: 'Da, wo der Käfer saß, glitzert etwas! Heb es auf.' }]);
+    } else {
+      this.say([{ speaker: 'Riesin Hanna', text: 'Komm jederzeit wieder, Kleines. Im Riesental gibt es immer etwas zu messen.' }]);
+    }
+  }
+
+  private station(s: Station): void {
+    if (!getFlag('valley_intro')) {
+      this.talkToHanna();
+      return;
+    }
+    this.startPuzzle(s.puzzle, (solved) => {
+      if (!solved) return;
+      const first = !getFlag(s.flag);
+      setFlag(s.flag);
+      this.stars[s.flag]?.setVisible(true);
+      this.updateGoal();
+      if (first && this.stationsDone() === 4) this.beetleAppears();
+      else if (first) this.say([{ speaker: 'Riesin Hanna', text: 'Wunderbar! Endlich stimmt hier wieder etwas.' }]);
+    });
+  }
+
+  private spawnBeetle(dramatic: boolean): void {
+    const b = this.placeObject('kaefer', 15, 4.6, 0.45);
+    this.block(14, 3, 16, 4);
+    this.tweens.add({ targets: b, angle: { from: -3, to: 3 }, duration: 700, yoyo: true, repeat: -1 });
+    this.addInteractable({ target: b, stand: { x: 13, y: 5 }, onInteract: () => this.fightBeetle() });
+    if (dramatic) {
+      b.setAlpha(0);
+      this.tweens.add({ targets: b, alpha: 1, duration: 1200 });
+      this.cameras.main.shake(900, 0.008);
+    }
+    this.beetle = b;
+  }
+
+  private beetleAppears(): void {
+    this.spawnBeetle(true);
+    this.updateGoal();
+    this.say([
+      { speaker: 'Riesin Hanna', text: 'Iiih! Der Riesenkäfer! Er frisst die Maße auf, deshalb stimmt hier nichts!' },
+      { speaker: 'Riesin Hanna', text: 'Er rechnet in großen Einheiten, du misst in kleinen. Zeig ihm, dass du beides kannst!' },
+    ]);
+  }
+
+  private fightBeetle(): void {
+    this.startPuzzle('BeetleScene', (won) => {
+      if (!won) return;
+      setFlag('valley_boss');
+      this.beetle?.destroy();
+      this.beetle = undefined;
+      this.unblock(14, 3, 16, 4);
+      this.showSplitter();
+      setFlag('valley_done');
+      this.updateGoal();
+      this.say([
+        { speaker: 'Riesin Hanna', text: 'Er ist weg! Und schau, was er zurückgelassen hat: ein Splitter, der in allen Größen gleichzeitig glänzt!' },
+        { speaker: 'Riesin Hanna', text: 'Das ist das Urmaß der Größe. Bring ihn deiner Meisterin, Kleines!' },
+      ]);
+    });
+  }
+
+  private showSplitter(): void {
+    const s = this.add.image(this.player.x, this.player.y - 60, 'splitter').setDepth(20_000).setScale(0.2).setTint(0xc8f0a8);
+    this.tweens.add({ targets: s, scale: 1, y: s.y - 20, duration: 900, ease: 'back.out' });
+    this.tweens.add({ targets: s, alpha: 0, scale: 0.3, y: this.player.y - 20, delay: 3200, duration: 700, onComplete: () => s.destroy() });
+  }
+
+  private updateGoal(): void {
+    if (!getFlag('valley_intro')) this.setGoal('Sprich mit der Riesin Hanna');
+    else if (this.stationsDone() < 4) this.setGoal(`Hilf Hanna an vier Stellen (${this.stationsDone()} von 4)`);
+    else if (!getFlag('valley_boss')) this.setGoal('Verjage den Riesenkäfer');
+    else if (!getFlag('elle_size')) this.setGoal('Bring den Splitter der Größe zu Meisterin Elle');
+    else this.setGoal('Weiter üben oder Fortsetzung abwarten …');
+  }
+}
