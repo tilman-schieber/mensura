@@ -87,9 +87,26 @@ dem Schulthema „Umfang, Flächen, Netze, Volumen“. Baumeister Quadro, vier S
 - **Endgegner Kubus-Wächter** (`KubusScene`): Schild-Fläche/Umfang, Schwachstelle gegenüber im Netz, Volumen
 - Belohnung: Splitter des Raums. Damit ist die Geschichte von Klasse 5 abgeschlossen.
 
-**Noch nicht im Spiel, obwohl Stoff von Klasse 5** (laut Spielkonzept, Abschnitt „Das Spiel wächst mit
-dem Schuljahr“): Umfragen im Rathaus mit Strichlisten und Diagrammen (Herbst), der Markt mit Geld und
-Überschlag, parallel und senkrecht im Spiegeltempel (Frühjahr), Kartieren der Oberwelt.
+**Eichstadt, Aufgaben im Dorf:**
+- **Dorfumfrage** bei Bürgermeister Rudolf (`SurveyPuzzle`, D1/D3/D4/D5): Strichliste aus der Urliste,
+  Häufigkeitstabelle, Säulendiagramm zeichnen, Diagramme lesen (auch Maximum/Minimum, Mittelwert).
+  Danach hängt eine ehrliche Umfrage neben Vagors Plakaten.
+- **Miras Marktstand** (`MarketPuzzle`, Z11/M5G): Reicht das Geld (Überschlag), Wechselgeld,
+  Stückpreise, Euro und Cent (Cent erst mit dem Schulthema „Größen“)
+- **Elles Kartentisch** (`MapTablePuzzle`, R12): Orte von Eichstadt ins Koordinatensystem eintragen
+  und ablesen; die Karte füllt sich nach und nach. Selbst vermessen und Maßstab kommen in Klasse 6.
+
+**Spiegeltempel:** Das **Prisma** in der Mitte ist die fünfte Station (`LightBridgePuzzle`, R1):
+Lichtbrücken parallel oder senkrecht ziehen und erkennen.
+
+**Schriftliche Subtraktion:** Der Bildungsplan der Grundschule BW (3.2.1.2 (9)) lässt „Abziehen oder
+Ergänzen“ offen. Das Rechenwerk kann beides; beim ersten Minus wählt das Kind an einem Beispiel,
+was es kennt (`settings.subtraction` im Spielstand, änderbar unter Einstellungen).
+
+**Klasse 5 laut Spielkonzept ist damit vollständig.** Aus dem Doppeljahrgang 5/6 des Bildungsplans
+fehlen noch unter anderem Potenzen und Quadratzahlen (3.1.1 (14)), Dreiecksarten (3.1.3 (5)),
+Körper benennen (3.1.3 (7)) und Kreise zeichnen; das Konzept legt sie in Klasse 6. Liegen sie an der
+Schule in Klasse 5, lassen sie sich vorziehen.
 
 **Nebel des Ungefähren** (`fogDensity()` / `clearFog()` in `WorldScene`): Jede Region ist grau
 (Farbfilter der Kamera), bis ihr Splitter geborgen ist; dann kehrt die Farbe langsam zurück.

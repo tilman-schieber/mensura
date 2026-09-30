@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { formatNumber, randInt } from '../learn/numbers';
 import { getLevel, pickByLevel } from '../learn/progress';
+import { loadSave, writeSave } from '../save';
 import type { SkillId } from '../learn/skills';
 import { COLORS, FONT, GAME_WIDTH, button, smooth, text } from '../ui/theme';
 import { PuzzleScene } from './PuzzleScene';
@@ -8,7 +9,10 @@ import { PuzzleScene } from './PuzzleScene';
 // Rätsel „Das Rechenwerk“ (schriftlich addieren und subtrahieren, Z12).
 // Die Zwergen-Rechenmaschine schiebt seit dem Nebel keine Überträge mehr: Man rechnet
 // Spalte für Spalte von rechts nach links, trägt die Ziffer unten ein und schiebt den
-// Übertrag selbst (Addition) bzw. entbündelt selbst (Subtraktion, wie bei den Erzloren).
+// Übertrag selbst.
+// Subtraktion in beiden Verfahren, die der Bildungsplan der Grundschule BW zulässt
+// (3.2.1.2 (9): „Abziehen oder Ergänzen“): Abziehen mit Entbündeln oder Ergänzen mit
+// Übertrag. Beim ersten Mal wählt das Kind, was es kennt (gespeichert im Spielstand).
 
 type Op = '+' | '−';
 
@@ -76,8 +80,17 @@ export class ColumnPuzzle extends PuzzleScene {
     super('ColumnPuzzle');
   }
 
+  /** Verfahren für die Subtraktion */
+  private method: 'abziehen' | 'ergaenzen' = 'abziehen';
+
   protected buildRound(): void {
     const t = (this.task = makeTask(getLevel('Z12')));
+    const chosen = loadSave().settings.subtraction;
+    if (t.op === '−' && !chosen) {
+      this.chooseMethod();
+      return;
+    }
+    this.method = chosen ?? 'abziehen';
     const answer = t.op === '+' ? t.a + t.b : t.a - t.b;
     // Addition: eine Spalte mehr, falls ganz links ein Übertrag entsteht
     this.len = Math.max(String(t.a).length, String(t.b).length);
@@ -103,8 +116,8 @@ export class ColumnPuzzle extends PuzzleScene {
     for (let d = 0; d <= 9; d++) {
       r.add(button(this, 230 + d * 58, 410, String(d), () => this.digit(d), { width: 52, height: 52, size: 26 }));
     }
-    if (t.op === '+') r.add(button(this, 830, 234, 'Übertrag ⟵', () => this.pushCarry(), { width: 170, height: 56, size: 19 }));
-    else r.add(button(this, 830, 234, 'Entbündeln', () => this.unbundle(), { width: 170, height: 56, size: 19 }));
+    if (t.op === '−' && this.method === 'abziehen') r.add(button(this, 830, 234, 'Entbündeln', () => this.unbundle(), { width: 170, height: 56, size: 19 }));
+    else r.add(button(this, 830, 234, 'Übertrag ⟵', () => this.pushCarry(), { width: 170, height: 56, size: 19 }));
 
     this.hints =
       t.op === '+'
@@ -113,11 +126,17 @@ export class ColumnPuzzle extends PuzzleScene {
             'Ergibt eine Spalte 10 oder mehr, kommt die Einerziffer nach unten und die 1 wandert als Übertrag in die Spalte links daneben.',
             'Vergiss nicht, den Übertrag in der nächsten Spalte mitzuzählen.',
           ]
-        : [
-            'Rechne von rechts nach links, Spalte für Spalte: oben minus unten.',
-            'Ist oben weniger als unten, entbündle: Nimm 1 aus der Spalte links. Hier werden daraus 10, die du oben dazuzählst.',
-            'Die Spalte links hat danach oben eine Ziffer weniger. Das ist beim Weiterrechnen wichtig.',
-          ];
+        : this.method === 'abziehen'
+          ? [
+              'Rechne von rechts nach links, Spalte für Spalte: oben minus unten.',
+              'Ist oben weniger als unten, entbündle: Nimm 1 aus der Spalte links. Hier werden daraus 10, die du oben dazuzählst.',
+              'Die Spalte links hat danach oben eine Ziffer weniger. Das ist beim Weiterrechnen wichtig.',
+            ]
+          : [
+              'Rechne von rechts nach links und ergänze: Unten plus wie viel ergibt oben?',
+              'Ist unten mehr als oben, ergänzt du bis zur Zahl mit einer 1 davor, zum Beispiel bis 12. Dann schiebst du eine 1 als Übertrag in die nächste Spalte.',
+              'Den Übertrag zählst du in der nächsten Spalte unten dazu.',
+            ];
     this.draw();
   }
 
@@ -147,6 +166,25 @@ export class ColumnPuzzle extends PuzzleScene {
         this.awaitingCarry = true;
         this.prompt.setText(`Die Spalte ergibt ${s}. Wohin mit der ${Math.floor(s / 10)}?`);
       } else this.col += 1;
+    } else if (this.method === 'ergaenzen') {
+      if (this.awaitingCarry) {
+        this.wrong('Übertrag vergessen! Du hast bis über 10 ergänzt. Schieb die 1 zuerst nach links.');
+        return;
+      }
+      const bottom = this.db[i] + this.carry[i];
+      const needCarry = bottom > this.da[i];
+      const upTo = needCarry ? this.da[i] + 10 : this.da[i];
+      if (d !== upTo - bottom) {
+        const b = this.carry[i] ? `${this.db[i]} + 1 (Übertrag) = ${bottom}` : String(bottom);
+        this.wrong(`Ergänze: ${b} plus wie viel ergibt ${upTo}?`);
+        return;
+      }
+      this.result[i] = d;
+      this.showOwl('');
+      if (needCarry) {
+        this.awaitingCarry = true;
+        this.prompt.setText(`Du hast bis ${upTo} ergänzt. Wohin mit der 1?`);
+      } else this.col += 1;
     } else {
       const top = this.top(i);
       if (top < this.db[i]) {
@@ -167,7 +205,8 @@ export class ColumnPuzzle extends PuzzleScene {
 
   private pushCarry(): void {
     if (!this.awaitingCarry) {
-      this.wrong(this.result[this.col] === null ? 'Trag zuerst unten die Ziffer ein. Gibt es dann einen Übertrag, schiebst du ihn.' : 'Hier gibt es keinen Übertrag: Die Spalte ist kleiner als 10.');
+      const none = this.task.op === '+' ? 'Hier gibt es keinen Übertrag: Die Spalte ist kleiner als 10.' : 'Hier gibt es keinen Übertrag: Unten ist nicht mehr als oben.';
+      this.wrong(this.result[this.col] === null ? 'Trag zuerst unten die Ziffer ein. Gibt es dann einen Übertrag, schiebst du ihn.' : none);
       return;
     }
     this.carry[this.col + 1] = 1;
@@ -193,6 +232,36 @@ export class ColumnPuzzle extends PuzzleScene {
     this.borrowedInto[i] = true;
     this.showOwl('');
     this.draw();
+  }
+
+  /** Beim ersten Minus: beide Verfahren an einem Beispiel zeigen, das Kind wählt, was es kennt. */
+  private chooseMethod(): void {
+    const r = this.round;
+    r.add(text(this, GAME_WIDTH / 2, 90, 'Wie rechnest du in der Schule minus?', 24, COLORS.text));
+    r.add(text(this, GAME_WIDTH / 2, 122, 'Beide Wege sind richtig. Tipp auf den, den du kennst. Beispiel: 52 − 17', 17, COLORS.muted));
+    const examples: [string, string, 'abziehen' | 'ergaenzen'][] = [
+      ['Abziehen (entbündeln)', '2 − 7 geht nicht.\nEinen Zehner entbündeln:\n12 − 7 = 5.\nOben bleiben 4 Zehner:\n4 − 1 = 3.\nErgebnis: 35', 'abziehen'],
+      ['Ergänzen', '7 plus wie viel ist 12?\n5, und 1 als Übertrag.\n1 + 1 = 2.\n2 plus wie viel ist 5?\n3.\nErgebnis: 35', 'ergaenzen'],
+    ];
+    examples.forEach(([title, body, m], i) => {
+      const x = GAME_WIDTH / 2 + (i ? 200 : -200);
+      const g = this.add.graphics();
+      g.fillStyle(0x0b1117, 1).fillRoundedRect(x - 180, 150, 360, 230, 10);
+      g.lineStyle(2, COLORS.panelEdge, 1).strokeRoundedRect(x - 180, 150, 360, 230, 10);
+      r.add(g);
+      r.add(text(this, x, 176, title, 21, COLORS.goldText));
+      r.add(text(this, x, 280, body, 18, COLORS.text).setAlign('center'));
+      r.add(button(this, x, 412, 'So rechne ich!', () => this.pick(m), { width: 220, height: 50, size: 20 }));
+    });
+    r.add(text(this, GAME_WIDTH / 2, 462, 'Ändern kannst du das später unter Einstellungen.', 15, COLORS.muted));
+  }
+
+  private pick(m: 'abziehen' | 'ergaenzen'): void {
+    const save = loadSave();
+    save.settings.subtraction = m;
+    writeSave(save);
+    this.round.removeAll(true);
+    this.buildRound();
   }
 
   private checkDone(): void {

@@ -35,7 +35,7 @@ const REGIONS: Region[] = [
     thanks: [
       { speaker: 'Meisterin Elle', text: 'Das ist er! Ein Splitter des Urmaßes der Zahl. Sieh nur, wie die Farben ins Dorf zurückkehren.' },
       { speaker: 'Meisterin Elle', text: 'Jedes Urmaß ist in zwei Hälften zerbrochen. Die andere Hälfte schläft tief unten in den Stollen. Dorthin gehen wir, wenn du in der Schule weitergekommen bist.' },
-      { speaker: 'Meisterin Elle', text: 'Und hörst du das? Unten auf dem Markt ruft wieder jemand. Mira ist zurück!' },
+      { speaker: 'Meisterin Elle', text: 'Und hörst du das? Unten auf dem Markt ruft wieder jemand. Mira ist zurück, und Bürgermeister Rudolf auch!' },
       { speaker: 'Meisterin Elle', text: 'Brom schreibt, das große Rechenwerk tief im Stollen steht still. Wenn ihr in der Schule schriftlich rechnet, fährst du mit dem Aufzug hinunter.' },
       { speaker: 'Meisterin Elle', text: 'Ruh dich aus, Lehrling. Deine Reise hat gerade erst begonnen.' },
     ],
@@ -62,7 +62,6 @@ const REGIONS: Region[] = [
       { speaker: 'Meisterin Elle', text: 'Der Splitter der Form! Zwei von vierzehn Splittern sind geborgen.' },
       { speaker: 'Meisterin Elle', text: 'Du siehst mich so seltsam an. Hat Lumen dir etwas in ihren Spiegeln gezeigt?' },
       { speaker: 'Meisterin Elle', text: 'Die Große Brücke. Ja, Vagor und ich waren einmal Freunde. Mehr will ich dazu jetzt nicht sagen.' },
-      { speaker: 'Meisterin Elle', text: 'Bürgermeister Rudolf ist auch wieder da. Er steht schon vor Vagors Plakaten und schimpft.' },
       { speaker: 'Meisterin Elle', text: 'Im Norden liegt das Riesental. Dort hütet eine Riesin das Urmaß der Größe.' },
     ],
   },
@@ -113,6 +112,8 @@ interface Villager {
   prop?: { key: string; x: number; y: number; block: [number, number, number, number] };
   first: DialogLine[];
   again: DialogLine[];
+  /** Aufgabe, die die Figur stellt (Markt, Umfrage); danach jederzeit zum Üben */
+  quest?: { puzzle: string; flag: string; intro: DialogLine[]; done: DialogLine[] };
 }
 
 const VILLAGERS: Villager[] = [
@@ -127,11 +128,17 @@ const VILLAGERS: Villager[] = [
       { speaker: 'Händlerin Mira', text: 'Du bist also Elles Lehrling! Ich bin Mira. Als der Nebel kam, bin ich zu meiner Schwester geflohen.' },
       { speaker: 'Händlerin Mira', text: 'Im Nebel stimmten nicht einmal meine Preise. Jetzt kann ich wieder rechnen und verkaufen.' },
     ],
-    again: [{ speaker: 'Händlerin Mira', text: 'Äpfel, Brot, Rüben! Alles genau abgewogen, nicht mehr ungefähr.' }],
+    again: [{ speaker: 'Händlerin Mira', text: 'Äpfel, Brot, Rüben! Alles genau abgewogen. Hilfst du mir wieder an der Kasse?' }],
+    quest: {
+      puzzle: 'MarketPuzzle',
+      flag: 'market_done',
+      intro: [{ speaker: 'Händlerin Mira', text: 'Hilfst du mir am Stand? Die Leute wollen wissen, ob ihr Geld reicht, und ich brauche jemanden fürs Wechselgeld.' }],
+      done: [{ speaker: 'Händlerin Mira', text: 'Du rechnest ja schneller als meine Waage! Komm wieder, wann du willst.' }],
+    },
   },
   {
     key: 'rudolf',
-    after: 'elle_form',
+    after: 'elle_splitter',
     cell: { x: 16, y: 8 },
     facing: 'west',
     stand: { x: 16, y: 9 },
@@ -140,7 +147,13 @@ const VILLAGERS: Villager[] = [
       { speaker: 'Bürgermeister Rudolf', text: 'Hast du die Plakate gesehen? „Seit es Maße gibt: 100 Prozent mehr Streit!“ Woher will Vagor das wissen?' },
       { speaker: 'Bürgermeister Rudolf', text: 'Irgendwann zählen wir nach. Mit echten Zahlen, nicht mit ungefähren.' },
     ],
-    again: [{ speaker: 'Bürgermeister Rudolf', text: 'Glaub nicht alles, was auf einem Plakat steht. Frag immer: Woher kommt die Zahl?' }],
+    again: [{ speaker: 'Bürgermeister Rudolf', text: 'Glaub nicht alles, was auf einem Plakat steht. Frag immer: Woher kommt die Zahl? Machen wir noch eine Umfrage?' }],
+    quest: {
+      puzzle: 'SurveyPuzzle',
+      flag: 'survey_done',
+      intro: [{ speaker: 'Bürgermeister Rudolf', text: 'Ich will wissen, was die Leute wirklich wollen. Mit einer echten Umfrage, nicht mit Vagors Fantasiezahlen. Hilfst du mir beim Zählen?' }],
+      done: [{ speaker: 'Bürgermeister Rudolf', text: 'Das ist eine ehrliche Umfrage! Ich hänge sie gleich neben Vagors Plakate. Mal sehen, wem die Leute glauben.' }],
+    },
   },
   {
     key: 'flora',
@@ -205,6 +218,7 @@ const SIGNPOST: { label: string; dist: string; clear: string; dx: number; dy: nu
 
 export class VillageScene extends WorldScene {
   private ruinStars: Record<string, Phaser.GameObjects.Text> = {};
+  private board?: Phaser.GameObjects.Image;
   private wisps: { index: number; cell: Cell; count: number; sprite: Phaser.GameObjects.Image; calmUntil: number }[] = [];
 
   constructor() {
@@ -230,7 +244,7 @@ export class VillageScene extends WorldScene {
     this.load.image('nebelwesen', 'assets/objects/nebelwesen.png');
     this.load.image('temple-gate', 'assets/objects/temple-gate.png');
     this.load.image('giant-mushroom', 'assets/objects/giant-mushroom.png');
-    for (const k of ['market-stall', 'notice-board', 'anvil', 'alchemy-table', 'fox', 'lantern', 'sheep']) {
+    for (const k of ['market-stall', 'notice-board', 'anvil', 'alchemy-table', 'fox', 'lantern', 'sheep', 'map-table']) {
       this.load.image(k, `assets/objects/${k}.png`);
     }
     for (const v of VILLAGERS) this.load.spritesheet(`npc-${v.key}`, `assets/npcs/${v.key}.png`, { frameWidth: 68, frameHeight: 68 });
@@ -277,6 +291,11 @@ export class VillageScene extends WorldScene {
     this.buildSignpost();
     this.buildVillagers();
     this.addPage('page_village', 10, 3);
+
+    // Elles Kartentisch vor dem Haus (Koordinaten, Klasse 5 Frühjahr)
+    const table = this.placeObject('map-table', 5.5, 9, 0.8);
+    this.block(5, 8, 5, 8);
+    this.addInteractable({ target: table, stand: { x: 5, y: 9 }, onInteract: () => this.mapTable() });
 
     // Eule Pünktchen sitzt auf Elles Dach
     const owl = this.placeObject('owl', 6.2, 3.4, 0.55).setDepth(8 * TILE);
@@ -448,7 +467,18 @@ export class VillageScene extends WorldScene {
       onInteract: () => {
         this.faceToPlayer(npc);
         const met = `met_${v.key}`;
-        this.say(getFlag(met) ? v.again : v.first, () => setFlag(met));
+        const q = v.quest;
+        const lines = getFlag(met) ? v.again : [...v.first, ...(q ? q.intro : [])];
+        this.say(lines, () => {
+          setFlag(met);
+          if (!q) return;
+          this.startPuzzle(q.puzzle, (solved) => {
+            if (!solved || getFlag(q.flag)) return;
+            setFlag(q.flag);
+            if (q.flag === 'survey_done') this.drawSurveyPoster();
+            this.say(q.done);
+          });
+        });
       },
     });
   }
@@ -467,6 +497,8 @@ export class VillageScene extends WorldScene {
       g.fillStyle(color, 1).fillRect(board.x + dx - 6, board.y + dy - 8, 12, 15);
       g.fillStyle(0x4a2a6a, 1).fillRect(board.x + dx - 4, board.y + dy - 5, 8, 2).fillRect(board.x + dx - 4, board.y + dy - 1, 6, 1).fillRect(board.x + dx - 4, board.y + dy + 2, 7, 1);
     }
+    this.board = board;
+    if (getFlag('survey_done')) this.drawSurveyPoster();
     this.addInteractable({
       target: board,
       stand: { x: 15, y: 8 },
@@ -478,6 +510,17 @@ export class VillageScene extends WorldScene {
           { speaker: 'Eule Pünktchen', text: 'Hm. Wer hat die Nebelwesen denn gefragt? Und wer hat den Streit gezählt? Das prüfen wir irgendwann nach.' },
         ]),
     });
+  }
+
+  /** Rudolfs ehrliche Umfrage hängt neben Vagors Plakaten: ein kleines Säulendiagramm */
+  private drawSurveyPoster(): void {
+    const b = this.board;
+    if (!b) return;
+    const g = this.add.graphics().setDepth(b.depth + 2);
+    const x = b.x + 22;
+    const y = b.y - 30;
+    g.fillStyle(0xf4f0e0, 1).fillRect(x - 8, y - 14, 17, 18);
+    [5, 9, 3, 7].forEach((h, i) => g.fillStyle(0x3a7ab0, 1).fillRect(x - 6 + i * 4, y + 2 - h, 3, h));
   }
 
   /** Wegweiser an der Kreuzung: im Nebel nur ungefähr, nach dem Splitter genau */
@@ -516,6 +559,25 @@ export class VillageScene extends WorldScene {
         ]);
       },
     });
+  }
+
+  private mapTable(): void {
+    if (!topicDone('geometrie')) {
+      this.say([{ speaker: 'Meisterin Elle', text: 'Mein Kartentisch. Wenn ihr in der Schule das Koordinatensystem durchnehmt, zeichnen wir zusammen eine Karte von Eichstadt.' }]);
+      return;
+    }
+    const first = !getFlag('map_done');
+    this.say(
+      first
+        ? [{ speaker: 'Meisterin Elle', text: 'Mein Kartentisch! Eine gute Karte zeichnet man selbst. Trag ein, wo die Orte von Eichstadt liegen.' }]
+        : [{ speaker: 'Meisterin Elle', text: 'Noch ein paar Orte eintragen? Eine Karte wird nie ganz fertig.' }],
+      () =>
+        this.startPuzzle('MapTablePuzzle', (solved) => {
+          if (!solved || getFlag('map_done')) return;
+          setFlag('map_done');
+          this.say([{ speaker: 'Meisterin Elle', text: 'Eine saubere Karte! Wer seine Welt vermisst, verirrt sich nicht im Nebel.' }]);
+        }),
+    );
   }
 
   private talkToOwl(): void {

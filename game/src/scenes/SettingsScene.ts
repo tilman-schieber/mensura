@@ -42,7 +42,7 @@ export class SettingsScene extends Phaser.Scene {
     }, { width: 150, height: 48, size: 20 });
 
     // Lautstärke in fünf Stufen
-    row += 72;
+    row += 62;
     label('Lautstärke');
     const bars = this.add.graphics();
     const drawBars = () => {
@@ -66,7 +66,7 @@ export class SettingsScene extends Phaser.Scene {
 
     // Vollbild
     if (this.scale.fullscreen.available) {
-      row += 72;
+      row += 62;
       label('Vollbild');
       const fsBtn = button(this, ctrlX, row, this.onOff(this.scale.isFullscreen), () => {
         if (this.scale.isFullscreen) this.scale.stopFullscreen();
@@ -77,7 +77,7 @@ export class SettingsScene extends Phaser.Scene {
 
     // Zeitdruck gehört zum Spielstand, darum nur im laufenden Spiel
     if (this.from === 'Menu' && activeSlot()) {
-      row += 72;
+      row += 62;
       label('Zeitdruck im Kampf');
       const timerBtn = button(this, ctrlX, row, this.onOff(loadSave().settings.battleTimer), () => {
         const save = loadSave();
@@ -88,7 +88,21 @@ export class SettingsScene extends Phaser.Scene {
       text(this, labelX, row + 26, 'Aus: Nebelwesen warten, bis du fertig gerechnet hast.', 14, COLORS.muted).setOrigin(0, 0.5);
     }
 
-    button(this, GAME_WIDTH / 2, GAME_HEIGHT - 88, 'Fertig', () => this.scene.stop(), { width: 200, height: 50, size: 21 });
+    // Wie in der Grundschule gelernt: Der Bildungsplan BW lässt „Abziehen oder Ergänzen“ offen
+    if (this.from === 'Menu' && activeSlot()) {
+      row += 62;
+      label('Minus schriftlich');
+      const names = { abziehen: 'Abziehen', ergaenzen: 'Ergänzen' } as const;
+      const current = () => names[loadSave().settings.subtraction ?? 'abziehen'];
+      const subBtn = button(this, ctrlX, row, current(), () => {
+        const save = loadSave();
+        save.settings.subtraction = save.settings.subtraction === 'ergaenzen' ? 'abziehen' : 'ergaenzen';
+        writeSave(save);
+        setButtonLabel(subBtn, current());
+      }, { width: 150, height: 48, size: 20 });
+    }
+
+    button(this, GAME_WIDTH / 2, GAME_HEIGHT - 72, 'Fertig', () => this.scene.stop(), { width: 200, height: 50, size: 21 });
     this.input.keyboard?.on('keydown-ESC', () => this.scene.stop());
   }
 

@@ -43,6 +43,10 @@ import { DividePuzzle } from './puzzles/DividePuzzle';
 import { TermPuzzle } from './puzzles/TermPuzzle';
 import { AutomatonPuzzle } from './puzzles/AutomatonPuzzle';
 import { MineDeepScene } from './world/MineDeepScene';
+import { SurveyPuzzle } from './puzzles/SurveyPuzzle';
+import { MarketPuzzle } from './puzzles/MarketPuzzle';
+import { LightBridgePuzzle } from './puzzles/LightBridgePuzzle';
+import { MapTablePuzzle } from './puzzles/MapTablePuzzle';
 import { COLORS, GAME_HEIGHT, GAME_WIDTH, text } from './ui/theme';
 
 class BootScene extends Phaser.Scene {
@@ -103,7 +107,8 @@ async function start() {
       MirrorWallPuzzle, SymmetryPuzzle, QuadPuzzle, CoordinatePuzzle, DoppelgangerScene,
       LengthPuzzle, ScalePuzzle, EstimatePuzzle, FerryPuzzle, BeetleScene,
       TilePuzzle, NetPuzzle, VolumePuzzle, PaintPuzzle, KubusScene, CheatPuzzle,
-      ColumnPuzzle, MultiplyPuzzle, DividePuzzle, TermPuzzle, AutomatonPuzzle],
+      ColumnPuzzle, MultiplyPuzzle, DividePuzzle, TermPuzzle, AutomatonPuzzle,
+      SurveyPuzzle, MarketPuzzle, LightBridgePuzzle, MapTablePuzzle],
   });
   // Zum Debuggen im Browser-Terminal erreichbar (nur im Entwicklungsmodus)
   if (import.meta.env.DEV) (window as unknown as { game: Phaser.Game }).game = game;

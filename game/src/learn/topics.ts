@@ -22,6 +22,7 @@ export const TOPICS: Topic[] = [
   { id: 'zahlenstrahl', name: 'Zahlenstrahl', term: 'Klasse 5, Herbst', skills: ['Z6'] },
   { id: 'runden', name: 'Runden', term: 'Klasse 5, Herbst', skills: ['Z18'] },
   { id: 'zahlsysteme', name: 'Römische Zahlen, Zweiersystem', term: 'Klasse 5, Herbst', skills: ['Z1S'] },
+  { id: 'daten', name: 'Strichlisten, Tabellen, Säulendiagramme', term: 'Klasse 5, Herbst', skills: ['D1', 'D3', 'D4', 'D5'] },
   { id: 'kopfrechnen', name: 'Kopfrechnen und Überschlag', term: 'Klasse 5, Winter', skills: ['Z11'] },
   {
     id: 'schriftlich',
@@ -38,16 +39,16 @@ export const TOPICS: Topic[] = [
   },
   {
     id: 'geometrie',
-    name: 'Figuren, Symmetrie, Koordinaten',
+    name: 'Figuren, Symmetrie, Parallelen, Koordinaten',
     term: 'Klasse 5, Frühjahr',
-    skills: ['R4', 'R6', 'R12', 'R13'],
+    skills: ['R1', 'R4', 'R6', 'R12', 'R13'],
     region: 'Spiegeltempel',
   },
   {
     id: 'groessen',
     name: 'Größen und Einheiten (Länge, Gewicht, Zeit)',
     term: 'Klasse 5, Sommer',
-    skills: ['M5', 'M5M', 'M5Z', 'M6'],
+    skills: ['M5', 'M5M', 'M5Z', 'M6', 'M5G'],
     region: 'Riesental',
   },
   {

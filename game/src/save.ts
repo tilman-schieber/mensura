@@ -30,6 +30,11 @@ export interface SaveGame {
     battleTimer: boolean;
     /** Schulmodus: Themen, die im Unterricht schon dran waren (Topic-IDs) */
     topics: Record<string, boolean>;
+    /**
+     * Schriftliche Subtraktion wie in der Grundschule gelernt. Der Bildungsplan BW (Grundschule 3/4,
+     * 3.2.1.2 (9)) lässt „Abziehen oder Ergänzen“ offen; unbekannt = beim ersten Mal fragen.
+     */
+    subtraction?: 'abziehen' | 'ergaenzen';
   };
   /** Gespielte Zeit in Sekunden (nur Zeit in der Welt) */
   playtime: number;

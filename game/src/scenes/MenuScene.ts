@@ -106,8 +106,11 @@ export class MenuScene extends Phaser.Scene {
     p.add(
       text(this, x, y + 28, 'Nicht abgehakte Themen gibt es im Spiel nur zum Reinschnuppern.', 14, COLORS.muted).setOrigin(0, 0.5),
     );
-    TOPICS.forEach((t, i) => {
-      const row = y + 60 + i * 31;
+    // Nur was schon im Spiel ist; Klasse 6 als eine Zeile darunter
+    const now = TOPICS.filter((t) => !t.later);
+    const later = TOPICS.filter((t) => t.later);
+    now.forEach((t, i) => {
+      const row = y + 58 + i * 29;
       const box = this.add.graphics();
       const draw = (checked: boolean) => {
         box.clear();
@@ -115,10 +118,9 @@ export class MenuScene extends Phaser.Scene {
         if (checked) box.fillStyle(COLORS.gold, 1).fillRoundedRect(x + 5, row - 6, 12, 12, 2);
       };
       draw(!!loadSave().settings.topics[t.id]);
-      const name = text(this, x + 34, row, t.name, 16, t.later ? '#5d6b76' : COLORS.text).setOrigin(0, 0.5);
-      const term = text(this, x + 380, row, t.later ? `${t.term} · kommt später` : t.term, 14, COLORS.muted).setOrigin(0, 0.5);
+      const name = text(this, x + 34, row, t.name, 16, COLORS.text).setOrigin(0, 0.5);
+      const term = text(this, x + 440, row, t.term.replace('Klasse ', 'Kl. '), 14, COLORS.muted).setOrigin(0, 0.5);
       p.add([box, name, term]);
-      if (t.later) return;
       const hit = this.add.zone(x - 6, row - 16, 560, 32).setOrigin(0).setInteractive({ useHandCursor: true });
       hit.on('pointerup', () => {
         const save = loadSave();
@@ -128,6 +130,13 @@ export class MenuScene extends Phaser.Scene {
       });
       p.add(hit);
     });
+    if (later.length) {
+      p.add(
+        text(this, x, y + 58 + now.length * 29 + 6, `Kommt später: ${later.map((t) => t.name).join(' · ')}`, 13, '#5d6b76')
+          .setOrigin(0, 0.5)
+          .setWordWrapWidth(560),
+      );
+    }
   }
 
   /** Vagors Messbuch: gefundene Seiten lesen und die Rechnungen prüfen */

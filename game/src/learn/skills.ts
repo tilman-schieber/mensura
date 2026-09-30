@@ -34,6 +34,12 @@ export const SKILLS = {
   R6: { id: 'R6', name: 'Vierecke und ihre Eigenschaften' },
   R12: { id: 'R12', name: 'Koordinatensystem' },
   R13: { id: 'R13', name: 'Achsen- und Punktspiegelung durchführen' },
+  R1: { id: 'R1', name: 'Parallel und senkrecht' },
+  M5G: { id: 'M5', name: 'Geld: Euro und Cent' },
+  D1: { id: 'D1', name: 'Strichliste und Häufigkeitstabelle' },
+  D3: { id: 'D3', name: 'Säulendiagramme zeichnen' },
+  D4: { id: 'D4', name: 'Minimum, Maximum, Mittelwert' },
+  D5: { id: 'D5', name: 'Daten aus Diagrammen ablesen' },
   PLAUS: { id: '2.2.13', name: 'Ergebnisse prüfen: Überschlag und Plausibilität' },
 } as const satisfies Record<string, Skill>;
 

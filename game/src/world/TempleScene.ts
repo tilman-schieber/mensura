@@ -19,6 +19,10 @@ interface Mirror {
   cell: [number, number];
 }
 
+/** Die Lichtbrücken am Prisma in der Mitte (parallel und senkrecht) */
+const PRISM = { flag: 'temple_light', puzzle: 'LightBridgePuzzle' };
+const TOTAL = 5;
+
 const MIRRORS: Mirror[] = [
   { flag: 'temple_wall', puzzle: 'MirrorWallPuzzle', cell: [5, 7] },
   { flag: 'temple_seal', puzzle: 'SymmetryPuzzle', cell: [20, 7] },
@@ -53,6 +57,7 @@ export class TempleScene extends WorldScene {
     this.load.image('tiles-temple', 'assets/tiles/temple.png');
     this.load.json('tiles-temple-data', 'assets/tiles/temple.json');
     this.load.image('mirror', 'assets/objects/mirror.png');
+    this.load.image('prism', 'assets/objects/prism.png');
     this.load.image('temple-gate', 'assets/objects/temple-gate.png');
     this.load.spritesheet('npc-lumen', 'assets/npcs/lumen.png', { frameWidth: 68, frameHeight: 68 });
   }
@@ -82,10 +87,16 @@ export class TempleScene extends WorldScene {
       this.addInteractable({ target: img, stand: { x, y: y + 1 }, onInteract: () => this.mirrorStation(m) });
     }
 
+    // Das Prisma in der Mitte des Läufers: Lichtbrücken
+    const prism = this.placeObject('prism', 13, 10.2, 0.9);
+    this.block(12, 9, 13, 9);
+    this.stars[PRISM.flag] = this.addStar(PRISM.flag, 13 * TILE, 7.4 * TILE);
+    this.addInteractable({ target: prism, stand: { x: 12, y: 10 }, onInteract: () => this.mirrorStation({ ...PRISM, cell: [12, 9] }) });
+
     // Heiligtum oben
     const gate = this.placeObject('temple-gate', 13, 4.6, 0.8);
     this.addInteractable({ target: gate, stand: { x: 12, y: 5 }, onInteract: () => this.sanctum() });
-    if (this.mirrorsDone() === 4 && !getFlag('temple_boss')) this.spawnShadow(false);
+    if (this.mirrorsDone() === TOTAL && !getFlag('temple_boss')) this.spawnShadow(false);
 
     this.addGoblin(GOBLIN, { x: 21, y: 14 }, 'west');
     this.addPage('page_temple', 3, 13);
@@ -102,8 +113,9 @@ export class TempleScene extends WorldScene {
     return { x: 12, y: 15 };
   }
 
+  /** Erledigte Stationen: vier Spiegel und das Prisma */
   private mirrorsDone(): number {
-    return MIRRORS.filter((m) => getFlag(m.flag)).length;
+    return MIRRORS.filter((m) => getFlag(m.flag)).length + (getFlag(PRISM.flag) ? 1 : 0);
   }
 
   private talkToLumen(): void {
@@ -113,6 +125,7 @@ export class TempleScene extends WorldScene {
           { speaker: 'Hüterin Lumen', text: 'Willkommen im Spiegeltempel, Lehrling. Ich bin Lumen, die Hüterin der Formen.' },
           { speaker: 'Hüterin Lumen', text: 'Seit der Nebel des Ungefähren hier liegt, zeigen die Spiegel nur noch ungefähre Bilder. Und ein ungefähres Bild ist kein Bild.' },
           { speaker: 'Hüterin Lumen', text: 'Bring die vier Spiegel wieder zum Leuchten: die Spiegelwand, die Siegel, das Haus der Vierecke und die Sternenkarte.' },
+          { speaker: 'Hüterin Lumen', text: 'Und in der Mitte steht das Prisma. Seine Lichtbrücken müssen wieder gerade laufen: parallel und senkrecht.' },
           { speaker: 'Hüterin Lumen', text: 'Dann öffnet sich das Heiligtum. Dort ruht der zweite Splitter, das Urmaß der Form.' },
         ],
         () => {
@@ -122,7 +135,7 @@ export class TempleScene extends WorldScene {
       );
       return;
     }
-    if (this.mirrorsDone() < 4) {
+    if (this.mirrorsDone() < TOTAL) {
       this.say([{ speaker: 'Hüterin Lumen', text: 'Ein Spiegel ohne Stern ist ein Spiegel ohne Licht. Such die Spiegel, über denen noch keiner leuchtet.' }]);
     } else if (!getFlag('temple_boss')) {
       this.say([{ speaker: 'Hüterin Lumen', text: 'Im Heiligtum wartet dein Spiegelbild aus Nebel. Sieh voraus, wo es erscheint!' }]);
@@ -142,7 +155,9 @@ export class TempleScene extends WorldScene {
       setFlag(m.flag);
       this.stars[m.flag]?.setVisible(true);
       this.updateGoal();
-      if (first && this.mirrorsDone() === 4) this.shadowAppears();
+      if (first && this.mirrorsDone() === TOTAL) this.shadowAppears();
+      else if (first && m.flag === PRISM.flag)
+        this.say([{ speaker: 'Hüterin Lumen', text: 'Die Lichtbrücken laufen wieder gerade. Was parallel ist, trifft sich nie, und was sich nie trifft, ist parallel.' }]);
       else if (first) this.say([{ speaker: 'Hüterin Lumen', text: 'Der Spiegel leuchtet wieder. Was wahr ist, ist klar, und was klar ist, ist wahr.' }]);
     });
   }
@@ -164,7 +179,7 @@ export class TempleScene extends WorldScene {
     this.spawnShadow(true);
     this.updateGoal();
     this.say([
-      { speaker: 'Hüterin Lumen', text: 'Alle vier Spiegel leuchten! Doch sieh … vor dem Heiligtum steht jemand.' },
+      { speaker: 'Hüterin Lumen', text: 'Alle Spiegel und das Prisma leuchten! Doch sieh … vor dem Heiligtum steht jemand.' },
       { speaker: 'Hüterin Lumen', text: 'Es sieht aus wie du! Der Splitter im Heiligtum zieht den Nebel an, und der Nebel hat sich dein Gesicht geliehen.' },
       { speaker: 'Hüterin Lumen', text: 'Es tut alles gespiegelt. Sieh voraus, wo es auftaucht!' },
     ]);
@@ -208,8 +223,8 @@ export class TempleScene extends WorldScene {
   }
 
   private sanctum(): void {
-    if (this.mirrorsDone() < 4) {
-      this.say([{ speaker: 'Hüterin Lumen', text: 'Das Heiligtum öffnet sich erst, wenn alle vier Spiegel leuchten.' }]);
+    if (this.mirrorsDone() < TOTAL) {
+      this.say([{ speaker: 'Hüterin Lumen', text: 'Das Heiligtum öffnet sich erst, wenn alle Spiegel und das Prisma leuchten.' }]);
       return;
     }
     if (!getFlag('temple_boss')) {
@@ -235,7 +250,7 @@ export class TempleScene extends WorldScene {
 
   private updateGoal(): void {
     if (!getFlag('temple_intro')) this.setGoal('Sprich mit Hüterin Lumen');
-    else if (this.mirrorsDone() < 4) this.setGoal(`Bring die Spiegel zum Leuchten (${this.mirrorsDone()} von 4)`);
+    else if (this.mirrorsDone() < TOTAL) this.setGoal(`Bring den Tempel zum Leuchten (${this.mirrorsDone()} von ${TOTAL})`);
     else if (!getFlag('temple_boss')) this.setGoal('Besiege den Spiegel-Doppelgänger');
     else if (!getFlag('temple_done')) this.setGoal('Betritt das Heiligtum');
     else if (!getFlag('elle_form')) this.setGoal('Bring den Splitter der Form zu Meisterin Elle');

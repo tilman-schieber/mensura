@@ -43,7 +43,9 @@
     "number-gate": "647f1208-d98f-4056-85a7-073bffa55c4b",
     "elevator": "1d2f0c1c-0887-41fa-b68d-7ff1b432268c",
     "rune-tablet": "b404c007-d78f-41f7-a5cd-4a6ebc573e43",
-    "freight-scale": "eb34d007-ff49-4006-961d-9b08488b6e89"
+    "freight-scale": "eb34d007-ff49-4006-961d-9b08488b6e89",
+    "prism": "c975e55d-140c-4873-a92b-70c2e71d99fc",
+    "map-table": "7fd34963-9f37-410b-a386-c84dab275252"
   },
   "npcs": {
     "elle": "24b889ec-93c4-47d5-961b-62567fc0f1f5",
