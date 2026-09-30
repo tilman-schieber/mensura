@@ -48,6 +48,8 @@ import { MarketPuzzle } from './puzzles/MarketPuzzle';
 import { LightBridgePuzzle } from './puzzles/LightBridgePuzzle';
 import { MapTablePuzzle } from './puzzles/MapTablePuzzle';
 import { COLORS, GAME_HEIGHT, GAME_WIDTH, text } from './ui/theme';
+import { music } from './audio/music';
+import './audio/songs';
 
 class BootScene extends Phaser.Scene {
   constructor() {
@@ -111,7 +113,12 @@ async function start() {
       SurveyPuzzle, MarketPuzzle, LightBridgePuzzle, MapTablePuzzle],
   });
   // Zum Debuggen im Browser-Terminal erreichbar (nur im Entwicklungsmodus)
-  if (import.meta.env.DEV) (window as unknown as { game: Phaser.Game }).game = game;
+  if (import.meta.env.DEV) Object.assign(window, { game, music });
 }
+
+// Browser spielen erst nach der ersten Berührung Ton ab
+const unlock = () => music.unlock();
+window.addEventListener('pointerdown', unlock);
+window.addEventListener('keydown', unlock);
 
 start();

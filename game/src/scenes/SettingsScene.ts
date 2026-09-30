@@ -1,3 +1,4 @@
+import { music } from '../audio/music';
 import Phaser from 'phaser';
 import { activeSlot, loadPrefs, loadSave, writePrefs, writeSave } from '../save';
 import { speakLine } from '../ui/dialogVoice';
@@ -42,8 +43,8 @@ export class SettingsScene extends Phaser.Scene {
     }, { width: 150, height: 48, size: 20 });
 
     // Lautstärke in fünf Stufen
-    row += 62;
-    label('Lautstärke');
+    row += 54;
+    label('Lautstärke Stimmen');
     const bars = this.add.graphics();
     const drawBars = () => {
       const steps = Math.round(loadPrefs().volume * 5);
@@ -64,9 +65,33 @@ export class SettingsScene extends Phaser.Scene {
     button(this, ctrlX + 90, row, '+', () => change(1), { width: 48, height: 48 });
     drawBars();
 
+    // Musik in fünf Stufen
+    row += 54;
+    label('Musik');
+    const mbars = this.add.graphics();
+    const mrow = row;
+    const drawMusic = () => {
+      const steps = Math.round(loadPrefs().music * 5);
+      mbars.clear();
+      for (let i = 0; i < 5; i++) {
+        const h = 10 + i * 5;
+        mbars.fillStyle(i < steps ? COLORS.gold : 0x2a3844, 1).fillRoundedRect(ctrlX - 42 + i * 18, mrow + 14 - h, 12, h, 3);
+      }
+    };
+    const changeMusic = (d: number) => {
+      const p = loadPrefs();
+      p.music = Math.min(1, Math.max(0, Math.round(p.music * 5 + d) / 5));
+      writePrefs(p);
+      music.setVolume(p.music);
+      drawMusic();
+    };
+    button(this, ctrlX - 90, row, '−', () => changeMusic(-1), { width: 48, height: 48 });
+    button(this, ctrlX + 90, row, '+', () => changeMusic(1), { width: 48, height: 48 });
+    drawMusic();
+
     // Vollbild
     if (this.scale.fullscreen.available) {
-      row += 62;
+      row += 54;
       label('Vollbild');
       const fsBtn = button(this, ctrlX, row, this.onOff(this.scale.isFullscreen), () => {
         if (this.scale.isFullscreen) this.scale.stopFullscreen();
@@ -77,7 +102,7 @@ export class SettingsScene extends Phaser.Scene {
 
     // Zeitdruck gehört zum Spielstand, darum nur im laufenden Spiel
     if (this.from === 'Menu' && activeSlot()) {
-      row += 62;
+      row += 54;
       label('Zeitdruck im Kampf');
       const timerBtn = button(this, ctrlX, row, this.onOff(loadSave().settings.battleTimer), () => {
         const save = loadSave();
@@ -85,12 +110,12 @@ export class SettingsScene extends Phaser.Scene {
         writeSave(save);
         setButtonLabel(timerBtn, this.onOff(save.settings.battleTimer));
       }, { width: 150, height: 48, size: 20 });
-      text(this, labelX, row + 26, 'Aus: Nebelwesen warten, bis du fertig gerechnet hast.', 14, COLORS.muted).setOrigin(0, 0.5);
+      text(this, labelX, row + 22, 'Aus: Nebelwesen warten, bis du fertig gerechnet hast.', 13, COLORS.muted).setOrigin(0, 0.5);
     }
 
     // Wie in der Grundschule gelernt: Der Bildungsplan BW lässt „Abziehen oder Ergänzen“ offen
     if (this.from === 'Menu' && activeSlot()) {
-      row += 62;
+      row += 54;
       label('Minus schriftlich');
       const names = { abziehen: 'Abziehen', ergaenzen: 'Ergänzen' } as const;
       const current = () => names[loadSave().settings.subtraction ?? 'abziehen'];

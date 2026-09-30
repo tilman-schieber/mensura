@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { music } from '../audio/music';
 import { URMASSE } from '../story';
 import { showDialog } from '../ui/dialog';
 import { stopLine } from '../ui/dialogVoice';
@@ -26,6 +27,7 @@ export class PrologueScene extends Phaser.Scene {
     this.done = false;
     fogBackdrop(this);
     this.cameras.main.fadeIn(800);
+    void music.play('prologue');
     // über dem Klick-Blocker des Dialogs, damit man auch mitten im Text überspringen kann
     button(this, GAME_WIDTH - 90, 34, 'Überspringen', () => this.finish(), { width: 160, height: 44, size: 17 }).setDepth(20_000);
 

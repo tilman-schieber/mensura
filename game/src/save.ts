@@ -46,8 +46,10 @@ export interface SaveGame {
 export interface Prefs {
   /** Dialoge vorlesen */
   voice: boolean;
-  /** Lautstärke 0–1 */
+  /** Lautstärke der Stimmen 0–1 */
   volume: number;
+  /** Lautstärke der Musik 0–1 */
+  music: number;
 }
 
 const empty = (): SaveGame => ({
@@ -182,7 +184,7 @@ export function importSlot(n: Slot, content: string): boolean {
 // ---------- Einstellungen für alle Spielstände ----------
 
 export function loadPrefs(): Prefs {
-  const defaults: Prefs = { voice: true, volume: 0.8 };
+  const defaults: Prefs = { voice: true, volume: 0.8, music: 0.5 };
   try {
     return { ...defaults, ...(JSON.parse(read(PREFS_KEY) ?? '{}') as Partial<Prefs>) };
   } catch {

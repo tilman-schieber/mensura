@@ -1,3 +1,4 @@
+import { music } from '../audio/music';
 import Phaser from 'phaser';
 import { drawCuboid } from '../puzzles/cuboid';
 import { getFlag, setFlag } from '../save';
@@ -203,6 +204,7 @@ export class FortressScene extends WorldScene {
       setFlag('fort_done');
       this.clearFog();
       this.updateGoal();
+      void music.sting('fanfare');
       const s = this.add.image(this.player.x, this.player.y - 60, 'splitter').setDepth(20_000).setScale(0.2).setTint(0xb8c8ff);
       this.tweens.add({ targets: s, scale: 1, y: s.y - 20, duration: 900, ease: 'back.out' });
       this.tweens.add({ targets: s, alpha: 0, scale: 0.3, y: this.player.y - 20, delay: 3200, duration: 700, onComplete: () => s.destroy() });

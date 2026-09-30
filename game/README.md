@@ -176,6 +176,21 @@ gespeicherten Können pro Skill (`src/learn/progress.ts`). Stationen lassen sich
 | `tools/build_avatar_sheets.py` + `avatar_characters.json` | Avatar-Spritesheets aus PixelLab bauen |
 | `tools/fetch_assets.py` + `assets.json` | Kachelsets, Objekte und NPCs von PixelLab holen |
 
+## Musik
+
+Eigener kleiner Sequenzer auf Web Audio (`src/audio/music.ts`) mit synthetisierten Instrumenten im
+Stil alter Konsolen (Rechteck-Lead, Flöte, Zupfen, Bass, Flächen, Glockenspiel, Schlagzeug, Amboss,
+Uhrwerk-Ticken). Die Lieder stehen als Notendaten in `src/audio/songs.ts`: Melodien von Hand,
+Begleitung, Bass und Schlagzeug aus der Akkordfolge. Jeder Ort hat ein eigenes Lied, dazu Titel,
+Vorspann, Endgegner und eine Fanfare für jeden Splitter. Die Melodie des Spiegeltempels ist ihr
+eigenes Spiegelbild (zweite Hälfte = erste Hälfte rückwärts).
+
+**Nebel des Ungefähren:** Solange er liegt, klingt die Musik verstimmt, wacklig und dumpf, Begleitung
+und Schlagzeug treten zurück. Mit dem Splitter wird sie wieder genau (`music.setFog`).
+
+**Eigene MIDI-Dateien:** `public/assets/music/<id>.mid` ersetzt das eingebaute Lied, siehe
+`public/assets/music/README.md`. Lautstärke der Musik: Einstellungen.
+
 ## Grafiken
 
 Alles Pixelart von PixelLab, außer den Stellenwert-Blöcken und der Schiene (im Code gezeichnet).

@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { buildAvatarTexture, type Direction } from '../avatar/avatar';
+import { music } from '../audio/music';
 import { PAGES, pageById } from '../messbuch';
 import { getFlag, loadSave, setFlag, writeSave } from '../save';
 import { COLORS, FONT, smooth } from '../ui/theme';
@@ -10,6 +11,9 @@ import { findPath, nearestWalkable, type Cell } from './pathfind';
 import type { Terrain } from './terrain';
 
 export const TILE = 32;
+
+/** Musik je Ort */
+const MUSIC: Record<string, string> = { Village: 'village', Mine: 'mine', MineDeep: 'deep', Temple: 'temple', Valley: 'valley', Fortress: 'fortress' };
 
 /** Ein Auftritt von Pi-mal-Daumen in einer Region */
 export interface GoblinVisit {
@@ -114,6 +118,8 @@ export abstract class WorldScene extends Phaser.Scene {
     cam.fadeIn(300);
     this.fog = undefined;
     this.setFog(this.fogDensity());
+    void music.play(MUSIC[this.scene.key] ?? 'village');
+    music.setFog(this.fogDensity());
 
     this.input.on('pointerup', (p: Phaser.Input.Pointer) => this.onTap(p));
     this.keys = this.input.keyboard!.createCursorKeys();
@@ -144,6 +150,7 @@ export abstract class WorldScene extends Phaser.Scene {
 
   /** Nebel langsam auf eine neue Dichte bringen, z. B. wenn ein Splitter geborgen ist. */
   protected clearFog(density = this.fogDensity(), duration = 2500): void {
+    music.setFog(density, duration / 1000);
     if (density <= 0) {
       // Schilder zeigen wieder genaue Zahlen
       for (const s of this.fogSigns) {
@@ -165,7 +172,9 @@ export abstract class WorldScene extends Phaser.Scene {
       .setDepth(30_000);
     this.cameras.main.shake(500, 0.004);
     this.tweens.add({ targets: veil, fillAlpha: 0.6, duration: 700 });
+    music.hush(true);
     this.say(lines, () => {
+      music.hush(false);
       this.tweens.add({ targets: veil, fillAlpha: 0, duration: 900, onComplete: () => veil.destroy() });
       onDone?.();
     });

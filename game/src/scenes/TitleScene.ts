@@ -4,6 +4,7 @@ import { URMASSE } from '../story';
 import { fogBackdrop } from '../ui/screens';
 import { COLORS, FONT_CARVED, GAME_HEIGHT, GAME_WIDTH, button, smooth, text } from '../ui/theme';
 import { enterGame } from './flow';
+import { music } from '../audio/music';
 
 /**
  * Titelbild: Die sieben Splitter kreisen um den Namen des Spiels; geborgene leuchten.
@@ -19,6 +20,8 @@ export class TitleScene extends Phaser.Scene {
   create(): void {
     fogBackdrop(this);
     this.cameras.main.fadeIn(500);
+    void music.play('title');
+    music.setFog(0);
 
     const current = activeSlot() ? loadSave() : null;
     const cx = GAME_WIDTH / 2;

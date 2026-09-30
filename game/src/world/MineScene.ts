@@ -1,3 +1,4 @@
+import { music } from '../audio/music';
 import Phaser from 'phaser';
 import { makeBlockTextures, blockKey } from '../puzzles/blocks';
 import { getFlag, setFlag, topicDone } from '../save';
@@ -366,6 +367,7 @@ export class MineScene extends WorldScene {
 
   /** Der Splitter schwebt über der Figur und verschwindet in der Tasche. */
   private showSplitter(): void {
+    void music.sting('fanfare');
     const s = this.add.image(this.player.x, this.player.y - 60, 'splitter').setDepth(20_000).setScale(0.2);
     this.tweens.add({ targets: s, scale: 1, y: s.y - 20, duration: 900, ease: 'back.out' });
     this.tweens.add({ targets: s, alpha: 0, scale: 0.3, y: this.player.y - 20, delay: 3200, duration: 700, onComplete: () => s.destroy() });

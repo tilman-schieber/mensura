@@ -1,3 +1,4 @@
+import { music } from '../audio/music';
 import Phaser from 'phaser';
 import { getFlag, setFlag } from '../save';
 import { TILE, WorldScene, type GoblinVisit } from './WorldScene';
@@ -239,6 +240,7 @@ export class TempleScene extends WorldScene {
     this.updateGoal();
     this.cameras.main.flash(700, 255, 250, 220);
     this.clearFog();
+    void music.sting('fanfare');
     const s = this.add.image(this.player.x, this.player.y - 60, 'splitter').setDepth(20_000).setScale(0.2).setTint(0xbfe6ff);
     this.tweens.add({ targets: s, scale: 1, y: s.y - 20, duration: 900, ease: 'back.out' });
     this.tweens.add({ targets: s, alpha: 0, scale: 0.3, y: this.player.y - 20, delay: 3200, duration: 700, onComplete: () => s.destroy() });

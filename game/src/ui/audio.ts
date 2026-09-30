@@ -8,7 +8,8 @@ const cache = new Map<string, Promise<AudioBuffer>>();
 let current: AudioBufferSourceNode | null = null;
 let gain: GainNode | null = null;
 
-function context(): AudioContext {
+/** Gemeinsamer AudioContext für Sprache und Musik */
+export function context(): AudioContext {
   ctx ??= new AudioContext();
   return ctx;
 }

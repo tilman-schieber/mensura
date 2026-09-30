@@ -1,3 +1,4 @@
+import { music } from '../audio/music';
 import Phaser from 'phaser';
 import { randInt } from '../learn/numbers';
 import { recordAttempt } from '../learn/progress';
@@ -63,6 +64,10 @@ export abstract class BossScene extends Phaser.Scene {
   }
 
   create(): void {
+    // Kampfmusik, danach wieder die Musik des Orts
+    const before = music.playing;
+    void music.play('boss');
+    this.events.once('shutdown', () => before && void music.play(before));
     const c = this.config;
     const bg = this.add.graphics();
     bg.fillGradientStyle(c.background[0], c.background[0], c.background[1], c.background[1], 1).fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
