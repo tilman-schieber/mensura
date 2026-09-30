@@ -4,6 +4,9 @@ Ein Zelda-artiges 2D-Abenteuer im Browser, in dem Mathe das Werkzeug ist, mit de
 verändert. Gedacht für ein Kind am Anfang von Klasse 5 (Gymnasium Baden-Württemberg); das Spiel
 wächst mit dem Schuljahr mit und soll Klasse 5 und 6 begleiten.
 
+**Online spielen:** <https://gh.tschieber.de/mensura/> (GitHub Pages, wird bei jedem Push auf `main`
+neu gebaut, siehe `.github/workflows/deploy.yml`).
+
 ## Spiel starten
 
 Voraussetzung: [Node.js](https://nodejs.org) 20.19 oder neuer (getestet mit Node 22).
