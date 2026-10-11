@@ -140,7 +140,7 @@ export class MineScene extends WorldScene {
 
     // --- Vorarbeiter Brom am Eingang
     this.brom = this.addNpc('npc-brom', { x: 15, y: 13 }, 'west');
-    this.addInteractable({ target: this.brom, stand: { x: 14, y: 13 }, onInteract: () => { this.faceToPlayer(this.brom); this.talkToBrom(); }, marker: () => (!getFlag('brom_intro') ? '!' : null) });
+    this.addInteractable({ target: this.brom, giver: 'Vorarbeiter Brom', stand: { x: 14, y: 13 }, onInteract: () => { this.faceToPlayer(this.brom); this.talkToBrom(); }, marker: () => (!getFlag('brom_intro') ? '!' : null) });
 
     this.updateGoal();
     if (!getFlag('brom_intro')) this.time.delayedCall(600, () => { this.faceToPlayer(this.brom); this.talkToBrom(); });

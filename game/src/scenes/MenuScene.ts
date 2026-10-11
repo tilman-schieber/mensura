@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { getLevel, getStat, isDue, now, recordAttempt } from '../learn/progress';
-import { funken } from '../learn/review';
+import { DAY_BONUS, SPOT_REWARD, funken, spotById, todaysReview } from '../learn/review';
 import { PAGES, type MessbuchPage } from '../messbuch';
 import { SKILLS, type SkillId } from '../learn/skills';
 import { activeSlot, getFlag, loadSave, setFlag } from '../save';
@@ -8,7 +8,7 @@ import { FONT, smooth } from '../ui/theme';
 import { COLORS, GAME_HEIGHT, GAME_WIDTH, button, text } from '../ui/theme';
 import { goToTitle } from './flow';
 
-type Page = 'lernstand' | 'messbuch';
+type Page = 'lernstand' | 'messbuch' | 'aufgaben';
 
 /**
  * Menü über der Welt: weiterspielen, Lernstand (welche Skills sitzen), Messbuch,
@@ -37,9 +37,10 @@ export class MenuScene extends Phaser.Scene {
     text(this, GAME_WIDTH - 60, 50, `Platz ${activeSlot() ?? '–'} · ${loadSave().avatar?.name ?? ''}`, 15, COLORS.muted).setOrigin(1, 0.5);
 
     const bx = 150;
-    const opts = { width: 210, height: 44, size: 18 };
+    const opts = { width: 210, height: 42, size: 18 };
     const items: [string, () => void][] = [
       ['Weiterspielen', () => this.close()],
+      ['Tagesaufgaben', () => this.show('aufgaben')],
       ['Lernstand', () => this.show('lernstand')],
       ['Messbuch', () => this.show('messbuch')],
       ['Figur ändern', () => this.editAvatar()],
@@ -48,10 +49,10 @@ export class MenuScene extends Phaser.Scene {
       ['Einstellungen', () => this.overlay('Settings', { from: 'Menu' })],
       ['Zum Titelbild', () => goToTitle(this)],
     ];
-    items.forEach(([label, action], i) => button(this, bx, 92 + i * 53, label, action, opts));
+    items.forEach(([label, action], i) => button(this, bx, 90 + i * 48, label, action, opts));
 
     this.page = this.add.container(0, 0);
-    this.show('lernstand');
+    this.show(todaysReview().spots.length ? 'aufgaben' : 'lernstand');
 
     this.input.keyboard?.on('keydown-ESC', () => {
       // Esc gehört dem obersten Fenster
@@ -68,6 +69,7 @@ export class MenuScene extends Phaser.Scene {
   private show(page: Page): void {
     this.page.removeAll(true);
     if (page === 'lernstand') this.learningReport(290, 100);
+    else if (page === 'aufgaben') this.dailies(290, 100);
     else this.messbuch(290, 100);
   }
 
@@ -115,6 +117,38 @@ export class MenuScene extends Phaser.Scene {
   private reportPage(n: number): void {
     this.page.removeAll(true);
     this.learningReport(290, 100, n);
+  }
+
+  /** Tagesaufgaben: wer heute um Hilfe bittet, was erledigt und abgegeben ist */
+  private dailies(x: number, y: number): void {
+    const p = this.page;
+    const r = todaysReview();
+    p.add(text(this, x, y, 'Tagesaufgaben', 22, COLORS.goldText).setOrigin(0, 0.5));
+    p.add(text(this, GAME_WIDTH - 70, y, `✦ ${funken()} Lichtfunken`, 17, '#fff1b0').setOrigin(1, 0.5));
+    if (!r.spots.length) {
+      p.add(
+        text(this, x, y + 50, 'Noch keine. Sobald du einen Ort ganz geschafft hast, bitten dich die Leute dort jeden Tag um Hilfe.', 17, COLORS.muted)
+          .setOrigin(0, 0.5)
+          .setWordWrapWidth(580),
+      );
+      return;
+    }
+    r.spots.forEach((id, i) => {
+      const s = spotById(id)!;
+      const row = y + 50 + i * 62;
+      const state = r.turnedIn.includes(id) ? '✓ abgegeben' : r.cleared.includes(id) ? '? zurück zur Figur' : '≈ Nebel liegt noch';
+      const color = r.turnedIn.includes(id) ? COLORS.goldText : r.cleared.includes(id) ? '#5ec8ff' : '#d6e4f0';
+      p.add(text(this, x, row, s.giver ? `${s.giver}` : 'Pi-mal-Daumen', 18, COLORS.text).setOrigin(0, 0.5));
+      p.add(text(this, x, row + 24, `Nebel ${s.place}`, 15, COLORS.muted).setOrigin(0, 0.5));
+      p.add(text(this, GAME_WIDTH - 70, row + 10, state, 16, color).setOrigin(1, 0.5));
+    });
+    const by = y + 60 + r.spots.length * 62;
+    p.add(
+      text(this, x, by, `Pro Aufgabe ${SPOT_REWARD} Lichtfunken, für alle zusammen ${DAY_BONUS} extra. Morgen gibt es neue.`, 15, COLORS.muted)
+        .setOrigin(0, 0.5)
+        .setWordWrapWidth(580),
+    );
+    if (r.streak > 1) p.add(text(this, x, by + 30, `${r.streak} Tage hintereinander alles erledigt!`, 16, COLORS.goldText).setOrigin(0, 0.5));
   }
 
   /** Vagors Messbuch: gefundene Seiten lesen und die Rechnungen prüfen */

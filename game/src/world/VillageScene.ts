@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { getFlag, loadSave, setFlag } from '../save';
-import { funken, isPending, markTold, pendingSpots, spendFunken, todaysReview } from '../learn/review';
+import { funken, isPending, markTold, spendFunken, spotById, todaysReview } from '../learn/review';
 import { PROJECTS, type BuildProject } from '../puzzles/BuildPuzzle';
 import { TILE, WorldScene } from './WorldScene';
 import { FONT, smooth } from '../ui/theme';
@@ -312,14 +312,14 @@ export class VillageScene extends WorldScene {
       target: owl,
       stand: { x: 6, y: 7 },
       onInteract: () => this.talkToOwl(),
-      marker: () => (!getFlag('met_owl') || (pendingSpots().length && !todaysReview().told) ? '!' : null),
+      marker: () => (!getFlag('met_owl') ? '!' : todaysReview().spots.length && !todaysReview().told ? 'daily' : this.giverMarker('Eule Pünktchen')),
     });
     this.buildTempleWay();
     this.buildValleyWay();
 
     // Meisterin Elle vor ihrem Haus
     const elle = this.addNpc('npc-elle', { x: 9, y: 8 }, 'south');
-    this.addInteractable({ target: elle, stand: { x: 9, y: 9 }, onInteract: () => { this.faceToPlayer(elle); this.talkToElle(); }, marker: () => this.elleMarker() });
+    this.addInteractable({ target: elle, giver: 'Meisterin Elle', stand: { x: 9, y: 9 }, onInteract: () => { this.faceToPlayer(elle); this.talkToElle(); }, marker: () => this.elleMarker() });
 
     this.updateGoal();
     if (!getFlag('elle_intro')) this.time.delayedCall(700, () => this.talkToElle());
@@ -484,6 +484,7 @@ export class VillageScene extends WorldScene {
       target: npc,
       stand: v.stand,
       review: v.quest?.puzzle,
+      giver: v.first[0].speaker,
       marker: () => (!getFlag(`met_${v.key}`) || (v.quest && !getFlag(v.quest.flag)) ? '!' : null),
       onInteract: () => {
         this.faceToPlayer(npc);
@@ -606,21 +607,21 @@ export class VillageScene extends WorldScene {
       );
       return;
     }
-    const spots = pendingSpots();
     const review = todaysReview();
-    if (spots.length) {
-      // Tagesüberblick: Wo ist der Nebel zurückgekrochen?
-      const places = spots.map((sp) => sp.place);
-      const list = places.length === 1 ? places[0] : `${places.slice(0, -1).join(', ')} und ${places[places.length - 1]}`;
+    const open = review.spots.filter((id) => !review.turnedIn.includes(id)).map((id) => spotById(id)!);
+    if (open.length && !review.told) {
+      // Tagesüberblick: Wer braucht heute Hilfe, und wo liegt der Nebel?
+      const who = open.map((sp) => (sp.giver && sp.giver !== 'Eule Pünktchen' ? `${sp.giver.split(' ').pop()} ${sp.place}` : `der Nebel ${sp.place}`));
+      const list = who.length === 1 ? who[0] : `${who.slice(0, -1).join(', ')} und ${who[who.length - 1]}`;
       const lines: DialogLine[] = [
         { speaker: 'Eule Pünktchen', text: 'Huhu! Ich bin heute früh über das Land geflogen. Der Nebel kriecht zurück, an Orte, an denen du schon warst.' },
-        { speaker: 'Eule Pünktchen', text: `Ich habe ihn gesehen: ${list}.` },
+        { speaker: 'Eule Pünktchen', text: `Heute brauchen dich: ${list}.` },
       ];
       if (!getFlag('owl_review_explained')) {
         lines.push(
-          { speaker: 'Eule Pünktchen', text: 'Wo der Nebel liegt, schwebt ein Wellenzeichen, das heißt ungefähr. Löse die Aufgabe dort noch einmal, dann ist er wieder weg.' },
-          { speaker: 'Eule Pünktchen', text: 'Wer Nebel vertreibt, bekommt Lichtfunken. Bürgermeister Rudolf weiß, was man damit bauen kann.' },
-          { speaker: 'Eule Pünktchen', text: 'Was du lange nicht geübt hast, holt sich der Nebel zuerst. Was du sicher kannst, lässt er länger in Ruhe.' },
+          { speaker: 'Eule Pünktchen', text: 'Wer Hilfe braucht, hat ein blaues Ausrufezeichen. Wo der Nebel liegt, schwebt ein Wellenzeichen, das heißt ungefähr.' },
+          { speaker: 'Eule Pünktchen', text: 'Löse die Aufgabe dort und geh zurück, wenn ein blaues Fragezeichen erscheint. Dafür gibt es Lichtfunken, und Bürgermeister Rudolf weiß, was man damit bauen kann.' },
+          { speaker: 'Eule Pünktchen', text: 'Jeden Tag hat jemand anderes eine Bitte. Was du lange nicht geübt hast, holt sich der Nebel zuerst.' },
         );
       }
       this.say(lines, () => {
@@ -630,9 +631,11 @@ export class VillageScene extends WorldScene {
       });
       return;
     }
+    // Eigene Bitten der Eule (Nebelfetzen im Dorf, Ruine der Alten)
+    if (this.dailyTalk('Eule Pünktchen')) return;
     this.say(
-      review.spots.length
-        ? [{ speaker: 'Eule Pünktchen', text: 'Heute hast du den Nebel überall vertrieben. Morgen fliege ich wieder los und schaue nach.' }]
+      review.spots.length && !open.length
+        ? [{ speaker: 'Eule Pünktchen', text: 'Heute ist alles erledigt. Morgen fliege ich wieder los und schaue, wer Hilfe braucht.' }]
         : [{ speaker: 'Eule Pünktchen', text: 'Huhu! Ich passe von hier oben auf dich auf.' }],
     );
   }

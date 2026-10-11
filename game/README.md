@@ -161,19 +161,27 @@ einlesen. `loadSave()`/`writeSave()` arbeiten immer auf dem aktiven Platz.
 auch Zeitdruck im Kampf (gehört zum Spielstand). Stimme und Lautstärke gelten für alle Spielstände
 (`mensura.prefs`).
 
-**Der Nebel kriecht zurück: verteilte Wiederholung** (`src/learn/progress.ts`, `src/learn/review.ts`):
-Jeder Skill hat einen Abstand in Tagen und ein Datum, an dem er wieder dran ist. Wer einen fälligen
-Skill ohne Hilfe löst, bekommt einen längeren Abstand (1 → 2 → 5 → 12 → 28 → 60 Tage); ein Fehler
-halbiert ihn, und der Skill ist morgen wieder dran. Was lange überfällig ist, verblasst: Die Aufgaben
-werden langsam leichter (bis auf 60 % des alten Stands). Jeden Tag wählt das Spiel bis zu drei Orte, an
-denen die am längsten überfälligen Skills geübt wurden (`SPOTS`, nur Stationen, die man schon geschafft
-hat; Z12 wechselt täglich zwischen den drei Rechenwerk-Stationen). Dort liegen Nebelschwaden und
-schwebt ein „≈“ (`Interactable.review` in `WorldScene`). Löst man die Station, ist der Nebel weg und es
-gibt 5 Lichtfunken extra. Für Kopfrechnen kommt ein Nebelwesen ins Dorf zurück. **Eule Pünktchen** auf
-Elles Dach erzählt, wo der Nebel heute liegt. Das Hud-Ziel zeigt die offenen Orte, sobald die Geschichte
-gerade nichts anderes zu tun hat. Die Auswahl steht für den Tag fest (`review` im Spielstand).
+**Tagesaufgaben (wie Daily Quests)** (`src/learn/review.ts`, Lernmodell in `src/learn/progress.ts`):
+Die Geschichte schaltet einen Ort einmal frei; danach haben die Leute dort jeden Tag etwas zu tun.
+Jeden Tag gibt es bis zu drei Aufgaben. Die Figur, die darum bittet, hat ein **blaues „!“**
+(`Interactable.giver` in `WorldScene`; Brom, Grete, Lumen, Hanna, Quadro, Elle, Mira, Rudolf, Flora,
+Harald, Pünktchen). Die Aufgabe liegt an einer Station: Dort ist der Nebel zurückgekrochen
+(Schwaden und „≈“, `Interactable.review`). Ist die Station gelöst, schwebt über der Figur ein
+**blaues „?“**; bei der Abgabe gibt es 5 Lichtfunken. Sind alle Aufgaben des Tages abgegeben,
+gibt es 5 extra, und Tage in Folge zählen mit. Flora und Harald schicken einen in andere Regionen
+(Riesenwaage, Malerwerkstatt). Pi-mal-Daumen belohnt sofort. Die Geschichte geht immer vor: Hat
+eine Figur ein eigenes „!“ oder „?“, redet sie zuerst darüber.
 
-**Lichtfunken** (✦, oben links): +1 für jede gelöste Station, +5 für vertriebenen Nebel.
+Welche Orte drankommen, entscheidet die verteilte Wiederholung: Jeder Skill hat einen Abstand in
+Tagen (1 → 2 → 5 → 12 → 28 → 60); gewusst heißt längerer Abstand, ein Fehler halbiert ihn. Zuerst
+kommen die am längsten überfälligen Skills dran; ist nichts fällig, füllt das Spiel mit anderen
+freigeschalteten Orten auf (möglichst bei verschiedenen Figuren). Was lange überfällig ist, verblasst:
+Die Aufgaben werden langsam leichter (bis auf 60 % des alten Stands). Die Auswahl steht für den Tag
+fest (`review` im Spielstand). **Eule Pünktchen** auf Elles Dach erzählt morgens, wer heute Hilfe
+braucht; das Hud-Ziel zeigt „Tagesaufgaben 1 von 3“, sobald die Geschichte nichts anderes zu tun
+hat; die Menüseite „Tagesaufgaben“ listet alles auf.
+
+**Lichtfunken** (✦, oben links): +1 für jede gelöste Station, +5 pro abgegebener Tagesaufgabe, +5 Tagesbonus.
 
 **Eichstadt ausbauen** (`BuildPuzzle`, Bauplätze in `VillageScene.plotOf()`): Wo Pflöcke und ein Seil
 stehen, ist ein Bauplatz; ein „!“ erscheint, sobald die Funken reichen. Bürgermeister Rudolf erklärt das

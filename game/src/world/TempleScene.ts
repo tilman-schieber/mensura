@@ -107,7 +107,7 @@ export class TempleScene extends WorldScene {
     this.lumen = this.addNpc('npc-lumen', { x: 15, y: 13 }, 'west');
     this.lumen.setAlpha(0.9);
     this.tweens.add({ targets: this.lumen, y: this.lumen.y - 3, duration: 1600, yoyo: true, repeat: -1, ease: 'sine.inout' });
-    this.addInteractable({ target: this.lumen, stand: { x: 14, y: 13 }, onInteract: () => { this.faceToPlayer(this.lumen); this.talkToLumen(); }, marker: () => (!getFlag('temple_intro') ? '!' : null) });
+    this.addInteractable({ target: this.lumen, giver: 'Hüterin Lumen', stand: { x: 14, y: 13 }, onInteract: () => { this.faceToPlayer(this.lumen); this.talkToLumen(); }, marker: () => (!getFlag('temple_intro') ? '!' : null) });
 
     this.updateGoal();
     if (!getFlag('temple_intro')) this.time.delayedCall(600, () => this.talkToLumen());

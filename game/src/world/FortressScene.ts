@@ -118,7 +118,7 @@ export class FortressScene extends WorldScene {
 
     // Baumeister Quadro am Eingang
     this.quadro = this.addNpc('npc-quadro', { x: 14, y: 13 }, 'west');
-    this.addInteractable({ target: this.quadro, stand: { x: 13, y: 13 }, onInteract: () => { this.faceToPlayer(this.quadro); this.talkToQuadro(); }, marker: () => (!getFlag('fort_intro') ? '!' : null) });
+    this.addInteractable({ target: this.quadro, giver: 'Baumeister Quadro', stand: { x: 13, y: 13 }, onInteract: () => { this.faceToPlayer(this.quadro); this.talkToQuadro(); }, marker: () => (!getFlag('fort_intro') ? '!' : null) });
 
     if (this.stationsDone() === 4 && !getFlag('fort_boss')) this.spawnKubus(false);
 

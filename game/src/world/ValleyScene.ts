@@ -132,7 +132,7 @@ export class ValleyScene extends WorldScene {
     this.hanna.setScale(3);
     this.hanna.setDepth(8 * TILE);
     this.block(14, 5, 16, 7);
-    this.addInteractable({ target: this.hanna, stand: { x: 15, y: 9 }, onInteract: () => this.talkToHanna(), marker: () => (!getFlag('valley_intro') ? '!' : null) });
+    this.addInteractable({ target: this.hanna, giver: 'Riesin Hanna', stand: { x: 15, y: 9 }, onInteract: () => this.talkToHanna(), marker: () => (!getFlag('valley_intro') ? '!' : null) });
 
     if (this.stationsDone() === 4 && !getFlag('valley_boss')) this.spawnBeetle(false);
     if (getFlag('valley_boss')) this.addLadybug();

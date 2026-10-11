@@ -4,7 +4,7 @@ import { music } from '../audio/music';
 import { DECO, DECO_SCALE } from './deco';
 import { PAGES, pageById } from '../messbuch';
 import { getFlag, loadSave, setFlag, writeSave } from '../save';
-import { addFunken, clearSpot, funken, isPending, pendingSpots, SPOT_REWARD } from '../learn/review';
+import { addFunken, askText, clearSpot, funken, giverState, isPending, markAsked, pendingSpots, spotById, todaysReview, turnIn } from '../learn/review';
 import { COLORS, FONT, smooth } from '../ui/theme';
 import type { HudScene } from '../scenes/HudScene';
 import type { DialogLine } from '../ui/dialog';
@@ -36,9 +36,10 @@ const NPC_FRAME: Record<Direction, number> = { south: 0, east: 1, north: 2, west
 
 /**
  * Markierung über einem Ding: „!“ = hier gibt es etwas zu tun, „?“ = etwas abgeben, boss = Endgegner,
- * fog = „≈“, hier ist heute der Nebel zurückgekrochen (verteilte Wiederholung, learn/review.ts)
+ * fog = „≈“, hier ist heute der Nebel zurückgekrochen (verteilte Wiederholung, learn/review.ts),
+ * daily / dailyDone = blaues „!“ / „?“: Tagesaufgabe annehmen / abgeben (wie Daily Quests)
  */
-export type Marker = '!' | '?' | 'boss' | 'fog';
+export type Marker = '!' | '?' | 'boss' | 'fog' | 'daily' | 'dailyDone';
 
 export interface Interactable {
   target: Phaser.GameObjects.GameObject & { getBounds(): Phaser.Geom.Rectangle };
@@ -52,11 +53,16 @@ export interface Interactable {
    * schweben Schwaden darum und ein „≈“ darüber; lösen vertreibt ihn.
    */
   review?: string;
+  /**
+   * Sprechername, wenn diese Figur Tagesaufgaben vergibt. Dann übernimmt die Welt
+   * Bitte und Abgabe (blaues „!“ und „?“), sonst redet die Figur wie immer.
+   */
+  giver?: string;
 }
 
-/** Ziele, die nur „nichts mehr zu tun“ bedeuten; dann zeigt das Hud lieber den Nebel von heute */
+/** Ziele, die nur „nichts mehr zu tun“ bedeuten; dann zeigt das Hud lieber die Tagesaufgaben */
 const IDLE_GOAL = /^(Weiter üben|Fortsetzung folgt)/;
-/** Lichtfunken für eine gelöste Station ohne Nebel */
+/** Lichtfunken für jede gelöste Station */
 const STATION_REWARD = 1;
 
 interface Exit {
@@ -237,12 +243,19 @@ export abstract class WorldScene extends Phaser.Scene {
 
   protected setGoal(message: string): void {
     this.lastGoal = message;
-    const left = pendingSpots().length;
-    if (left && IDLE_GOAL.test(message)) {
+    const r = todaysReview();
+    if (r.spots.length && IDLE_GOAL.test(message)) {
+      const done = r.turnedIn.length;
+      const toHandIn = r.cleared.length - done;
       const here = pendingSpots().filter((s) => s.id.startsWith(`${this.scene.key}:`)).length;
-      message = here
-        ? `Vertreibe den Nebel (≈) hier: noch ${here} ${here === 1 ? 'Ort' : 'Orte'}`
-        : `Der Nebel kriecht zurück: noch ${left} ${left === 1 ? 'Ort' : 'Orte'} (Pünktchen weiß, wo)`;
+      message =
+        done === r.spots.length
+          ? `Tagesaufgaben erledigt (${done} von ${done}). Morgen gibt es neue!`
+          : toHandIn > 0
+            ? `Tagesaufgaben ${done} von ${r.spots.length}: Gib ab, wo ein blaues ? schwebt`
+            : here
+              ? `Tagesaufgaben ${done} von ${r.spots.length}: Vertreibe den Nebel (≈) hier`
+              : `Tagesaufgaben ${done} von ${r.spots.length}: Wer Hilfe braucht, hat ein blaues !`;
     }
     this.hud().setGoal(message);
   }
@@ -290,10 +303,12 @@ export abstract class WorldScene extends Phaser.Scene {
     if (puzzle === 'BuildPuzzle') return;
     const id = this.spotId(puzzle);
     if (isPending(id)) {
-      clearSpot(id);
-      this.dissolveReviewFog(puzzle);
-      this.hud().gainFunken(SPOT_REWARD + STATION_REWARD, funken() + STATION_REWARD, 'Nebel vertrieben!');
       addFunken(STATION_REWARD);
+      const now = clearSpot(id);
+      this.dissolveReviewFog(puzzle);
+      const giver = spotById(id)?.giver;
+      const label = giver ? `Nebel vertrieben! Zurück zu ${giver.split(' ').pop()}` : 'Nebel vertrieben!';
+      this.hud().gainFunken(STATION_REWARD + now, funken(), label);
       this.setGoal(this.lastGoal);
     } else {
       addFunken(STATION_REWARD);
@@ -335,7 +350,69 @@ export abstract class WorldScene extends Phaser.Scene {
   }
 
   protected addInteractable(i: Interactable): void {
+    if (i.giver) {
+      const giver = i.giver;
+      const talk = i.onInteract;
+      const marker = i.marker;
+      i.onInteract = () => {
+        if (i.target instanceof Phaser.GameObjects.Sprite) this.faceToPlayer(i.target);
+        // Die Geschichte geht vor: Hat die Figur gerade ein eigenes „!“ oder „?“, redet sie zuerst darüber
+        if (marker?.() || !this.dailyTalk(giver)) talk();
+      };
+      i.marker = () => marker?.() ?? this.giverMarker(giver);
+    }
     this.interactables.push(i);
+  }
+
+  // ---------- Tagesaufgaben ----------
+
+  /** Blaues „?“, wenn etwas abzugeben ist, blaues „!“, wenn die Figur heute noch eine Bitte hat */
+  protected giverMarker(giver: string): Marker | null {
+    const st = giverState(giver);
+    return st.turnIn ? 'dailyDone' : st.ask ? 'daily' : null;
+  }
+
+  /** Bitte aussprechen oder Abgabe annehmen. false = die Figur hat heute nichts dazu zu sagen. */
+  protected dailyTalk(giver: string): boolean {
+    const st = giverState(giver);
+    if (st.turnIn) {
+      const spot = st.turnIn;
+      this.say([{ speaker: giver, text: spot.thanks ?? 'Danke dir!' }], () => {
+        const got = turnIn(spot.id);
+        this.hud().gainFunken(got.funken, funken(), 'Aufgabe abgegeben!');
+        this.setGoal(this.lastGoal);
+        if (got.bonus) {
+          this.time.delayedCall(1600, () =>
+            this.say([
+              {
+                speaker: 'Eule Pünktchen',
+                text:
+                  got.streak > 1
+                    ? `Alle Tagesaufgaben erledigt, schon ${got.streak} Tage hintereinander! Morgen hat jemand Neues eine Bitte.`
+                    : 'Alle Tagesaufgaben für heute erledigt! Morgen hat bestimmt jemand Neues eine Bitte.',
+              },
+            ]),
+          );
+        }
+      });
+      return true;
+    }
+    if (st.ask) {
+      const spot = st.ask;
+      const here = spot.id.startsWith(`${this.scene.key}:`);
+      this.say(
+        [
+          { speaker: giver, text: askText(spot) },
+          { speaker: 'Eule Pünktchen', text: here ? `Wo der Nebel liegt, schwebt ein Wellenzeichen: ${spot.place}.` : `Das ist ${spot.place}. Dort schwebt das Wellenzeichen über dem Nebel.` },
+        ],
+        () => {
+          markAsked(spot.id);
+          this.setGoal(this.lastGoal);
+        },
+      );
+      return true;
+    }
+    return false;
   }
 
   protected removeInteractable(target: Interactable['target']): void {
@@ -364,11 +441,11 @@ export abstract class WorldScene extends Phaser.Scene {
       if (!kind) continue;
       const b = i.target.getBounds();
       const t = smooth(
-        this.hud().add.text(0, 0, kind === '?' ? '?' : kind === 'fog' ? '≈' : '!', {
+        this.hud().add.text(0, 0, kind === '?' || kind === 'dailyDone' ? '?' : kind === 'fog' ? '≈' : '!', {
           fontFamily: FONT,
           fontSize: kind === 'boss' ? '38px' : '32px',
           fontStyle: 'bold',
-          color: kind === 'boss' ? '#ff5a4a' : kind === 'fog' ? '#d6e4f0' : '#ffd23f',
+          color: kind === 'boss' ? '#ff5a4a' : kind === 'fog' ? '#d6e4f0' : kind === 'daily' || kind === 'dailyDone' ? '#5ec8ff' : '#ffd23f',
           stroke: '#2a1804',
           strokeThickness: 6,
           resolution: 2,

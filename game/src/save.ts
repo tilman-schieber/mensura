@@ -42,8 +42,17 @@ export interface SaveGame {
   savedAt: number;
   /** Lichtfunken: bleiben übrig, wenn Nebel vertrieben wird; damit baut man Eichstadt aus */
   funken: number;
-  /** Der Nebel, der heute an alte Orte zurückkriecht (verteilte Wiederholung, siehe learn/review.ts) */
-  review: { day: string; spots: string[]; cleared: string[]; told: boolean } | null;
+  /** Tagesaufgaben: wo heute der Nebel zurückkriecht und was erledigt ist (siehe learn/review.ts) */
+  review: {
+    day: string;
+    spots: string[];
+    cleared: string[];
+    told: boolean;
+    turnedIn?: string[];
+    bonus?: boolean;
+    streak?: number;
+    lastFullDay?: string;
+  } | null;
 }
 
 /** Einstellungen für alle Spielstände */

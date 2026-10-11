@@ -121,7 +121,7 @@ export class MineDeepScene extends WorldScene {
 
     // Tüftlerin Grete in der Mitte der Halle
     this.grete = this.addNpc('npc-grete', { x: 15, y: 10 }, 'west');
-    this.addInteractable({ target: this.grete, stand: { x: 14, y: 10 }, onInteract: () => { this.faceToPlayer(this.grete); this.talkToGrete(); }, marker: () => (!getFlag('deep_intro') ? '!' : null) });
+    this.addInteractable({ target: this.grete, giver: 'Tüftlerin Grete', stand: { x: 14, y: 10 }, onInteract: () => { this.faceToPlayer(this.grete); this.talkToGrete(); }, marker: () => (!getFlag('deep_intro') ? '!' : null) });
 
     this.updateGoal();
     if (!getFlag('deep_intro')) this.time.delayedCall(600, () => { this.faceToPlayer(this.grete); this.talkToGrete(); });
