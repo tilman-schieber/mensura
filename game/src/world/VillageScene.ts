@@ -1,5 +1,7 @@
 import Phaser from 'phaser';
 import { getFlag, loadSave, setFlag } from '../save';
+import { funken, isPending, markTold, pendingSpots, spendFunken, todaysReview } from '../learn/review';
+import { PROJECTS, type BuildProject } from '../puzzles/BuildPuzzle';
 import { TILE, WorldScene } from './WorldScene';
 import { FONT, smooth } from '../ui/theme';
 import type { DialogLine } from '../ui/dialog';
@@ -146,6 +148,7 @@ const VILLAGERS: Villager[] = [
       { speaker: 'Bürgermeister Rudolf', text: 'Ah, der Lehrling! Rudolf, Bürgermeister von Eichstadt. Endlich bin ich wieder zu Hause.' },
       { speaker: 'Bürgermeister Rudolf', text: 'Hast du die Plakate gesehen? „Seit es Maße gibt: 100 Prozent mehr Streit!“ Woher will Vagor das wissen?' },
       { speaker: 'Bürgermeister Rudolf', text: 'Irgendwann zählen wir nach. Mit echten Zahlen, nicht mit ungefähren.' },
+      { speaker: 'Bürgermeister Rudolf', text: 'Und wir bauen Eichstadt wieder auf! Wo Pflöcke und ein Seil stehen, ist ein Bauplatz. Bezahlt wird mit Lichtfunken.' },
     ],
     again: [{ speaker: 'Bürgermeister Rudolf', text: 'Glaub nicht alles, was auf einem Plakat steht. Frag immer: Woher kommt die Zahl? Machen wir noch eine Umfrage?' }],
     quest: {
@@ -245,7 +248,7 @@ export class VillageScene extends WorldScene {
     this.load.image('nebelwesen', 'assets/objects/nebelwesen.png');
     this.load.image('temple-gate', 'assets/objects/temple-gate.png');
     this.load.image('giant-mushroom', 'assets/objects/giant-mushroom.png');
-    for (const k of ['market-stall', 'notice-board', 'anvil', 'alchemy-table', 'fox', 'lantern', 'sheep', 'map-table']) {
+    for (const k of ['market-stall', 'notice-board', 'anvil', 'alchemy-table', 'fox', 'lantern', 'sheep', 'map-table', 'mine-crates']) {
       this.load.image(k, `assets/objects/${k}.png`);
     }
     for (const v of VILLAGERS) this.load.spritesheet(`npc-${v.key}`, `assets/npcs/${v.key}.png`, { frameWidth: 68, frameHeight: 68 });
@@ -278,9 +281,11 @@ export class VillageScene extends WorldScene {
 
     // Bäume am Rand und verstreut
     const trees: [number, number][] = [
-      [2, 3], [3, 9], [12, 4], [16, 3], [14, 9], [22, 7],
-      [11, 18], [22, 18], [28, 17], [29, 9],
+      [3, 9], [12, 4], [16, 3], [14, 9], [22, 7],
+      [11, 18], [28, 17], [29, 9],
     ];
+    // Die alte Eiche oben links fällt Harald für das Vorratslager (Bauplatz ab dem Ende von Klasse 5)
+    if (!getFlag('elle_space')) trees.push([2, 3]);
     for (const [x, y] of trees) {
       this.placeObject('tree-oak', x + 0.5, y + 1);
       this.block(x, y, x, y);
@@ -288,6 +293,8 @@ export class VillageScene extends WorldScene {
 
     this.buildRuin();
     this.spawnWisps();
+    this.spawnReturningWisp();
+    this.buildPlots();
     this.buildBoard();
     this.buildSignpost();
     this.buildVillagers();
@@ -296,12 +303,17 @@ export class VillageScene extends WorldScene {
     // Elles Kartentisch vor dem Haus (Koordinaten, Klasse 5 Frühjahr)
     const table = this.placeObject('map-table', 5.5, 9, 0.8);
     this.block(5, 8, 5, 8);
-    this.addInteractable({ target: table, stand: { x: 5, y: 9 }, onInteract: () => this.mapTable(), marker: () => (getFlag('temple_done') && !getFlag('map_done') ? '!' : null) });
+    this.addInteractable({ target: table, stand: { x: 5, y: 9 }, onInteract: () => this.mapTable(), review: 'MapTablePuzzle', marker: () => (getFlag('temple_done') && !getFlag('map_done') ? '!' : null) });
 
     // Eule Pünktchen sitzt auf Elles Dach
     const owl = this.placeObject('owl', 6.2, 3.4, 0.55).setDepth(8 * TILE);
     this.tweens.add({ targets: owl, angle: { from: -4, to: 4 }, duration: 1600, yoyo: true, repeat: -1, ease: 'sine.inout' });
-    this.addInteractable({ target: owl, stand: { x: 6, y: 7 }, onInteract: () => this.talkToOwl(), marker: () => (!getFlag('met_owl') ? '!' : null) });
+    this.addInteractable({
+      target: owl,
+      stand: { x: 6, y: 7 },
+      onInteract: () => this.talkToOwl(),
+      marker: () => (!getFlag('met_owl') || (pendingSpots().length && !todaysReview().told) ? '!' : null),
+    });
     this.buildTempleWay();
     this.buildValleyWay();
 
@@ -435,6 +447,10 @@ export class VillageScene extends WorldScene {
         this.wisps = this.wisps.filter((it) => it !== w);
         this.cameras.main.flash(400, 240, 240, 220);
         this.tweens.add({ targets: w.sprite, alpha: 0, scale: 1.8, duration: 700, onComplete: () => w.sprite.destroy() });
+        if (w.index < 0) {
+          this.time.delayedCall(900, () => this.say([{ speaker: 'Eule Pünktchen', text: 'Weg ist er! Es war nur ein Nebelfetzen, der zurückgekrochen war. Sein Licht ist jetzt bei dir.' }]));
+          return;
+        }
         setFlag(`wisp_freed_${w.index}`);
         this.placeFreed(w.index, true);
         this.time.delayedCall(900, () => this.say(WISPS[w.index].freed));
@@ -467,6 +483,7 @@ export class VillageScene extends WorldScene {
     this.addInteractable({
       target: npc,
       stand: v.stand,
+      review: v.quest?.puzzle,
       marker: () => (!getFlag(`met_${v.key}`) || (v.quest && !getFlag(v.quest.flag)) ? '!' : null),
       onInteract: () => {
         this.faceToPlayer(npc);
@@ -579,15 +596,214 @@ export class VillageScene extends WorldScene {
   }
 
   private talkToOwl(): void {
-    const met = getFlag('met_owl');
+    if (!getFlag('met_owl')) {
+      this.say(
+        [
+          { speaker: 'Eule Pünktchen', text: 'Huhu! Ich bin Pünktchen, Meisterin Elles Eule. Mir entgeht kein Komma.' },
+          { speaker: 'Eule Pünktchen', text: 'Wenn du bei einem Rätsel nicht weiterkommst, tipp auf „Hinweis“. Dann flattere ich herbei.' },
+        ],
+        () => setFlag('met_owl'),
+      );
+      return;
+    }
+    const spots = pendingSpots();
+    const review = todaysReview();
+    if (spots.length) {
+      // Tagesüberblick: Wo ist der Nebel zurückgekrochen?
+      const places = spots.map((sp) => sp.place);
+      const list = places.length === 1 ? places[0] : `${places.slice(0, -1).join(', ')} und ${places[places.length - 1]}`;
+      const lines: DialogLine[] = [
+        { speaker: 'Eule Pünktchen', text: 'Huhu! Ich bin heute früh über das Land geflogen. Der Nebel kriecht zurück, an Orte, an denen du schon warst.' },
+        { speaker: 'Eule Pünktchen', text: `Ich habe ihn gesehen: ${list}.` },
+      ];
+      if (!getFlag('owl_review_explained')) {
+        lines.push(
+          { speaker: 'Eule Pünktchen', text: 'Wo der Nebel liegt, schwebt ein Wellenzeichen, das heißt ungefähr. Löse die Aufgabe dort noch einmal, dann ist er wieder weg.' },
+          { speaker: 'Eule Pünktchen', text: 'Wer Nebel vertreibt, bekommt Lichtfunken. Bürgermeister Rudolf weiß, was man damit bauen kann.' },
+          { speaker: 'Eule Pünktchen', text: 'Was du lange nicht geübt hast, holt sich der Nebel zuerst. Was du sicher kannst, lässt er länger in Ruhe.' },
+        );
+      }
+      this.say(lines, () => {
+        setFlag('owl_review_explained');
+        markTold();
+        this.updateGoal();
+      });
+      return;
+    }
     this.say(
-      met
-        ? [{ speaker: 'Eule Pünktchen', text: 'Huhu! Ich passe von hier oben auf dich auf.' }]
-        : [
-            { speaker: 'Eule Pünktchen', text: 'Huhu! Ich bin Pünktchen, Meisterin Elles Eule. Mir entgeht kein Komma.' },
-            { speaker: 'Eule Pünktchen', text: 'Wenn du bei einem Rätsel nicht weiterkommst, tipp auf „Hinweis“. Dann flattere ich herbei.' },
-          ],
-      () => setFlag('met_owl'),
+      review.spots.length
+        ? [{ speaker: 'Eule Pünktchen', text: 'Heute hast du den Nebel überall vertrieben. Morgen fliege ich wieder los und schaue nach.' }]
+        : [{ speaker: 'Eule Pünktchen', text: 'Huhu! Ich passe von hier oben auf dich auf.' }],
+    );
+  }
+
+  // ---------- Nebel kriecht zurück: ein Nebelwesen im Dorf (Kopfrechnen) ----------
+
+  private spawnReturningWisp(): void {
+    if (!isPending('Village:FogBattleScene')) return;
+    const cell = { x: 12, y: 13 };
+    const sprite = this.add.image((cell.x + 0.5) * TILE, (cell.y + 0.4) * TILE, 'nebelwesen').setAlpha(0.85).setDepth((cell.y + 1) * TILE);
+    this.tweens.add({ targets: sprite, y: sprite.y - 5, duration: 1400, yoyo: true, repeat: -1, ease: 'sine.inout' });
+    const wisp = { index: -1, cell, count: 3, sprite, calmUntil: 0 };
+    this.wisps.push(wisp);
+    this.addInteractable({ target: sprite, stand: { x: cell.x - 1, y: cell.y }, review: 'FogBattleScene', onInteract: () => this.fightWisp(wisp) });
+  }
+
+  // ---------- Eichstadt ausbauen: Bauplätze ----------
+
+  /** Wo jedes Bauprojekt entsteht und wie es aussieht, wenn es fertig ist */
+  private plotOf(id: string): { area: [number, number, number, number]; stand: Cell; build: (appear: boolean) => void } {
+    const pop = (img: Phaser.GameObjects.Image | Phaser.GameObjects.Graphics, appear: boolean, delay = 0) => {
+      if (!appear) return;
+      const sx = img.scaleX;
+      img.setAlpha(0).setScale(sx * 0.2);
+      this.tweens.add({ targets: img, alpha: 1, scale: sx, duration: 700, delay, ease: 'back.out' });
+    };
+    switch (id) {
+      case 'beet':
+        return {
+          area: [0, 5, 2, 7],
+          stand: { x: 1, y: 8 },
+          build: (appear) => {
+            const soil = this.add.graphics().setDepth(5 * TILE);
+            soil.fillStyle(0x5a3a1e, 1).fillRoundedRect(4, 5 * TILE + 6, 3 * TILE - 8, 3 * TILE - 10, 8);
+            pop(soil, appear);
+            const kinds = ['deco-flowers-poppy', 'deco-flowers-daisy', 'deco-flowers-cornflower', 'deco-flowers-wild'];
+            let k = 0;
+            for (let y = 5; y <= 7; y++) for (let x = 0; x <= 2; x++) pop(this.placeObject(kinds[(x + y) % 4], x + 0.5, y + 0.95, 0.9), appear, 100 + 60 * k++);
+          },
+        };
+      case 'garten':
+        return {
+          area: [18, 16, 21, 18],
+          stand: { x: 19, y: 15 },
+          build: (appear) => {
+            const g = this.add.graphics().setDepth(16 * TILE);
+            const x0 = 18 * TILE + 4;
+            const y0 = 16 * TILE + 4;
+            const w = 4 * TILE - 8;
+            const h = 3 * TILE - 8;
+            g.fillStyle(0x5a3a1e, 1).fillRect(x0, y0, w, h);
+            // Gemüsereihen
+            for (let r = 0; r < 4; r++) for (let c = 0; c < 7; c++) g.fillStyle(c % 2 ? 0x5fa83a : 0x7cc24a, 1).fillCircle(x0 + 10 + c * 17, y0 + 12 + r * 21, 5);
+            // Zaun: Pfosten und zwei Latten rundherum
+            g.lineStyle(2, 0xc9a15a, 1).strokeRect(x0, y0, w, h).strokeRect(x0 + 3, y0 + 3, w - 6, h - 6);
+            g.fillStyle(0x6b4520, 1);
+            for (let x = x0; x <= x0 + w; x += 16) g.fillRect(x - 2, y0 - 4, 4, 8).fillRect(x - 2, y0 + h - 4, 4, 8);
+            for (let y = y0; y <= y0 + h; y += 16) g.fillRect(x0 - 2, y - 4, 4, 8).fillRect(x0 + w - 2, y - 4, 4, 8);
+            pop(g, appear);
+          },
+        };
+      case 'laternen':
+        return {
+          area: [11, 11, 13, 11],
+          stand: { x: 12, y: 12 },
+          build: (appear) => {
+            // auf beiden Seiten des Wegs gleich, wie im Spiegel
+            const spots: [number, number][] = [[11, 11], [13, 11], [21, 11], [23, 11], [11, 15], [13, 15], [21, 15], [23, 15]];
+            spots.forEach(([x, y], i) => {
+              pop(this.placeObject('lantern', x + 0.5, y + 1, 0.55), appear, i * 120);
+              this.block(x, y, x, y);
+            });
+          },
+        };
+      case 'obstwiese':
+        return {
+          area: [28, 4, 29, 11],
+          stand: { x: 27, y: 7 },
+          build: (appear) => {
+            ([[28, 5], [28, 7], [28, 11]] as [number, number][]).forEach(([x, y], i) => {
+              pop(this.placeObject('tree-oak', x + 0.5, y + 1, 0.5), appear, i * 200);
+              this.block(x, y, x, y);
+            });
+          },
+        };
+      default:
+        return {
+          area: [1, 1, 3, 3],
+          stand: { x: 2, y: 4 },
+          build: (appear) => {
+            const g = this.add.graphics().setDepth(1 * TILE);
+            g.fillStyle(0x8a6a3a, 0.5).fillRect(1 * TILE + 2, 1 * TILE + 8, 3 * TILE - 4, 3 * TILE - 10);
+            pop(g, appear);
+            const items: [string, number, number, number][] = [
+              ['deco-hay-bale', 1.5, 2, 0.9],
+              ['deco-hay-bale', 2.5, 2, 0.9],
+              ['mine-crates', 3.5, 2.2, 0.55],
+              ['deco-barrel', 1.5, 3.9, 0.9],
+              ['deco-barrel', 2.5, 3.9, 0.9],
+              ['mine-crates', 3.5, 3.9, 0.55],
+            ];
+            items.forEach(([key, x, y, sc], i) => pop(this.placeObject(key, x, y, sc), appear, i * 120));
+          },
+        };
+    }
+  }
+
+  private buildPlots(): void {
+    for (const p of PROJECTS) {
+      if (!getFlag(p.after)) continue;
+      const plot = this.plotOf(p.id);
+      const [x0, y0, x1, y1] = plot.area;
+      if (getFlag(`built_${p.id}`)) {
+        plot.build(false);
+        if (p.id !== 'laternen' && p.id !== 'obstwiese') this.block(x0, y0, x1, y1);
+        continue;
+      }
+      // Bauplatz: Pflöcke und ein Seil
+      const g = this.add.graphics().setDepth(y0 * TILE);
+      const L = x0 * TILE + 6;
+      const T = y0 * TILE + 6;
+      const R = (x1 + 1) * TILE - 6;
+      const B = (y1 + 1) * TILE - 6;
+      g.lineStyle(1.5, 0xe8d8a8, 0.9).strokeRect(L, T, R - L, B - T);
+      g.fillStyle(0x6b4520, 1);
+      for (const [px, py] of [[L, T], [R, T], [L, B], [R, B]]) g.fillRect(px - 2, py - 8, 4, 12);
+      const zone = this.add.rectangle((L + R) / 2, (T + B) / 2, R - L, B - T, 0xffffff, 0.001).setDepth(y0 * TILE);
+      this.addInteractable({
+        target: zone,
+        stand: plot.stand,
+        onInteract: () => this.atPlot(p, g, zone),
+        marker: () => (funken() >= p.cost ? '!' : null),
+      });
+    }
+  }
+
+  private atPlot(p: BuildProject, stakes: Phaser.GameObjects.Graphics, zone: Phaser.GameObjects.Rectangle): void {
+    const have = funken();
+    const intro: DialogLine[] = [
+      { speaker: 'Bürgermeister Rudolf', text: p.pitch },
+      { speaker: 'Bürgermeister Rudolf', text: `Das kostet ${p.cost} Lichtfunken. Du hast ${have}.` },
+    ];
+    if (have < p.cost) {
+      this.say([
+        ...intro,
+        { speaker: 'Bürgermeister Rudolf', text: 'Lichtfunken bleiben übrig, wenn du Nebel vertreibst. Pünktchen auf Elles Dach weiß, wo er heute liegt.' },
+      ]);
+      return;
+    }
+    this.say([...intro, { speaker: 'Bürgermeister Rudolf', text: 'Erst rechnen, dann bauen. So wird es genau und nicht ungefähr!' }], () =>
+      this.startPuzzle(
+        'BuildPuzzle',
+        (solved) => {
+          if (!solved || !spendFunken(p.cost)) return;
+          setFlag(`built_${p.id}`);
+          this.removeInteractable(zone);
+          zone.destroy();
+          stakes.destroy();
+          const plot = this.plotOf(p.id);
+          plot.build(true);
+          const [x0, y0, x1, y1] = plot.area;
+          if (p.id !== 'laternen' && p.id !== 'obstwiese') this.block(x0, y0, x1, y1);
+          this.hud().setFunken(funken());
+          this.cameras.main.flash(400, 255, 240, 200);
+          this.time.delayedCall(1200, () =>
+            this.say([{ speaker: 'Bürgermeister Rudolf', text: `${p.name} ist fertig! Eichstadt wird jeden Tag ein bisschen schöner.` }]),
+          );
+        },
+        p.tasks.length,
+        { project: p.id },
+      ),
     );
   }
 
@@ -603,11 +819,11 @@ export class VillageScene extends WorldScene {
     const stele = this.placeObject('stele', 1.5, 12, 0.9);
     this.block(1, 11, 1, 11);
     this.ruinStars.ruin_roman = this.addStar('ruin_roman', 1.5 * TILE, 9.6 * TILE);
-    this.addInteractable({ target: stele, stand: { x: 2, y: 12 }, onInteract: () => this.ruinStation('RomanPuzzle', 'ruin_roman'), marker: () => (getFlag('elle_intro') && !getFlag('ruin_roman') ? '!' : null) });
+    this.addInteractable({ target: stele, stand: { x: 2, y: 12 }, onInteract: () => this.ruinStation('RomanPuzzle', 'ruin_roman'), review: 'RomanPuzzle', marker: () => (getFlag('elle_intro') && !getFlag('ruin_roman') ? '!' : null) });
 
     const stones = this.placeObject('rune-stones', 4.6, 11.9, 0.7);
     this.ruinStars.ruin_binary = this.addStar('ruin_binary', 4.6 * TILE, 10.4 * TILE);
-    this.addInteractable({ target: stones, stand: { x: 4, y: 12 }, onInteract: () => this.ruinStation('BinaryPuzzle', 'ruin_binary'), marker: () => (getFlag('elle_intro') && !getFlag('ruin_binary') ? '!' : null) });
+    this.addInteractable({ target: stones, stand: { x: 4, y: 12 }, onInteract: () => this.ruinStation('BinaryPuzzle', 'ruin_binary'), review: 'BinaryPuzzle', marker: () => (getFlag('elle_intro') && !getFlag('ruin_binary') ? '!' : null) });
   }
 
   private ruinStation(puzzle: string, flag: string): void {

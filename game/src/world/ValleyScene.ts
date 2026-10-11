@@ -88,25 +88,25 @@ export class ValleyScene extends WorldScene {
     const boot = this.placeObject('giant-boot', 6, 8.2, 0.8);
     this.block(4, 6, 7, 7);
     this.stars[ST.boot.flag] = this.addStar(ST.boot.flag, 6 * TILE, 4.2 * TILE);
-    this.addInteractable({ target: boot, stand: { x: 6, y: 9 }, onInteract: () => this.station(ST.boot), marker: () => (getFlag('valley_intro') && !getFlag(ST.boot.flag) ? '!' : null) });
+    this.addInteractable({ target: boot, stand: { x: 6, y: 9 }, onInteract: () => this.station(ST.boot), review: ST.boot.puzzle, marker: () => (getFlag('valley_intro') && !getFlag(ST.boot.flag) ? '!' : null) });
 
     // Station 2: Riesenwaage (Gewichte)
     const bal = this.placeObject('balance', 24, 8.2);
     this.block(23, 7, 24, 7);
     this.stars[ST.scale.flag] = this.addStar(ST.scale.flag, 24 * TILE, 4.8 * TILE);
-    this.addInteractable({ target: bal, stand: { x: 24, y: 9 }, onInteract: () => this.station(ST.scale), marker: () => (getFlag('valley_intro') && !getFlag(ST.scale.flag) ? '!' : null) });
+    this.addInteractable({ target: bal, stand: { x: 24, y: 9 }, onInteract: () => this.station(ST.scale), review: ST.scale.puzzle, marker: () => (getFlag('valley_intro') && !getFlag(ST.scale.flag) ? '!' : null) });
 
     // Station 3: Aussichtspilz (Schätzauge)
     const mush = this.placeObject('giant-mushroom', 6, 16.4, 0.9);
     this.block(5, 14, 6, 15);
     this.stars[ST.mushroom.flag] = this.addStar(ST.mushroom.flag, 6 * TILE, 12.2 * TILE);
-    this.addInteractable({ target: mush, stand: { x: 6, y: 13 }, onInteract: () => this.station(ST.mushroom), marker: () => (getFlag('valley_intro') && !getFlag(ST.mushroom.flag) ? '!' : null) });
+    this.addInteractable({ target: mush, stand: { x: 6, y: 13 }, onInteract: () => this.station(ST.mushroom), review: ST.mushroom.puzzle, marker: () => (getFlag('valley_intro') && !getFlag(ST.mushroom.flag) ? '!' : null) });
 
     // Station 4: Fähranleger (Zeitspannen)
     const dock = this.placeObject('ferry-dock', 26.2, 15.6);
     this.block(25, 14, 26, 15);
     this.stars[ST.ferry.flag] = this.addStar(ST.ferry.flag, 26 * TILE, 12.4 * TILE);
-    this.addInteractable({ target: dock, stand: { x: 24, y: 14 }, onInteract: () => this.station(ST.ferry), marker: () => (getFlag('valley_intro') && !getFlag(ST.ferry.flag) ? '!' : null) });
+    this.addInteractable({ target: dock, stand: { x: 24, y: 14 }, onInteract: () => this.station(ST.ferry), review: ST.ferry.puzzle, marker: () => (getFlag('valley_intro') && !getFlag(ST.ferry.flag) ? '!' : null) });
 
     // Fährboot hinüber zur Würfelfestung, sobald im Tal wieder jedes Maß stimmt
     const boat = this.placeObject('boat', 28.4, 13.4, 0.9);

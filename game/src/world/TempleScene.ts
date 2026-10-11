@@ -85,14 +85,14 @@ export class TempleScene extends WorldScene {
       const img = this.placeObject('mirror', x + 0.5, y + 1);
       this.block(x, y, x, y);
       this.stars[m.flag] = this.addStar(m.flag, (x + 0.5) * TILE, (y - 2.2) * TILE);
-      this.addInteractable({ target: img, stand: { x, y: y + 1 }, onInteract: () => this.mirrorStation(m), marker: () => (getFlag('temple_intro') && !getFlag(m.flag) ? '!' : null) });
+      this.addInteractable({ target: img, stand: { x, y: y + 1 }, onInteract: () => this.mirrorStation(m), review: m.puzzle, marker: () => (getFlag('temple_intro') && !getFlag(m.flag) ? '!' : null) });
     }
 
     // Das Prisma in der Mitte des Läufers: Lichtbrücken
     const prism = this.placeObject('prism', 13, 10.2, 0.9);
     this.block(12, 9, 13, 9);
     this.stars[PRISM.flag] = this.addStar(PRISM.flag, 13 * TILE, 7.4 * TILE);
-    this.addInteractable({ target: prism, stand: { x: 12, y: 10 }, onInteract: () => this.mirrorStation({ ...PRISM, cell: [12, 9] }), marker: () => (getFlag('temple_intro') && !getFlag(PRISM.flag) ? '!' : null) });
+    this.addInteractable({ target: prism, stand: { x: 12, y: 10 }, onInteract: () => this.mirrorStation({ ...PRISM, cell: [12, 9] }), review: PRISM.puzzle, marker: () => (getFlag('temple_intro') && !getFlag(PRISM.flag) ? '!' : null) });
 
     // Heiligtum oben
     const gate = this.placeObject('temple-gate', 13, 4.6, 0.8);

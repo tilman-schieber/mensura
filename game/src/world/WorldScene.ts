@@ -4,6 +4,7 @@ import { music } from '../audio/music';
 import { DECO, DECO_SCALE } from './deco';
 import { PAGES, pageById } from '../messbuch';
 import { getFlag, loadSave, setFlag, writeSave } from '../save';
+import { addFunken, clearSpot, funken, isPending, pendingSpots, SPOT_REWARD } from '../learn/review';
 import { COLORS, FONT, smooth } from '../ui/theme';
 import type { HudScene } from '../scenes/HudScene';
 import type { DialogLine } from '../ui/dialog';
@@ -33,8 +34,11 @@ const SPEED = 105; // Weltpixel pro Sekunde
 const PLAYER_KEY = 'avatar-player';
 const NPC_FRAME: Record<Direction, number> = { south: 0, east: 1, north: 2, west: 3 };
 
-/** Markierung über einem Ding: „!“ = hier gibt es etwas zu tun, „?“ = etwas abgeben, boss = Endgegner */
-export type Marker = '!' | '?' | 'boss';
+/**
+ * Markierung über einem Ding: „!“ = hier gibt es etwas zu tun, „?“ = etwas abgeben, boss = Endgegner,
+ * fog = „≈“, hier ist heute der Nebel zurückgekrochen (verteilte Wiederholung, learn/review.ts)
+ */
+export type Marker = '!' | '?' | 'boss' | 'fog';
 
 export interface Interactable {
   target: Phaser.GameObjects.GameObject & { getBounds(): Phaser.Geom.Rectangle };
@@ -43,7 +47,17 @@ export interface Interactable {
   onInteract: () => void;
   /** Welche Markierung gerade darüber schweben soll (wird laufend neu abgefragt) */
   marker?: () => Marker | null;
+  /**
+   * Rätsel dieser Station (z. B. „RailPuzzle“). Liegt heute Nebel darauf (Wiederholung),
+   * schweben Schwaden darum und ein „≈“ darüber; lösen vertreibt ihn.
+   */
+  review?: string;
 }
+
+/** Ziele, die nur „nichts mehr zu tun“ bedeuten; dann zeigt das Hud lieber den Nebel von heute */
+const IDLE_GOAL = /^(Weiter üben|Fortsetzung folgt)/;
+/** Lichtfunken für eine gelöste Station ohne Nebel */
+const STATION_REWARD = 1;
 
 interface Exit {
   x0: number;
@@ -81,6 +95,9 @@ export abstract class WorldScene extends Phaser.Scene {
   /** das nächste antippbare Ding leuchtet, dazu ein kleiner Pfeil */
   private near?: { i: Interactable; glow?: Phaser.Filters.Glow; tween?: Phaser.Tweens.Tween };
   private nearArrow?: Phaser.GameObjects.Text;
+  /** Nebelschwaden um Stationen, an denen heute Wiederholung dran ist */
+  private reviewFog = new Map<string, Phaser.GameObjects.Ellipse[]>();
+  private lastGoal = '';
 
   /** Szene bauen: Gelände, Objekte, Figuren. Gibt die Startposition (Zelle) zurück. */
   protected abstract buildWorld(entry?: string): Cell;
@@ -145,6 +162,9 @@ export abstract class WorldScene extends Phaser.Scene {
       this.markers.clear();
       this.nearArrow?.destroy();
     });
+    this.reviewFog = new Map();
+    this.drawReviewFog();
+    hud.setFunken(funken());
     this.refreshMarkers();
     this.time.addEvent({ delay: 400, loop: true, callback: () => this.refreshMarkers() });
     this.time.addEvent({ delay: 150, loop: true, callback: () => this.refreshNear() });
@@ -216,7 +236,69 @@ export abstract class WorldScene extends Phaser.Scene {
   }
 
   protected setGoal(message: string): void {
+    this.lastGoal = message;
+    const left = pendingSpots().length;
+    if (left && IDLE_GOAL.test(message)) {
+      const here = pendingSpots().filter((s) => s.id.startsWith(`${this.scene.key}:`)).length;
+      message = here
+        ? `Vertreibe den Nebel (≈) hier: noch ${here} ${here === 1 ? 'Ort' : 'Orte'}`
+        : `Der Nebel kriecht zurück: noch ${left} ${left === 1 ? 'Ort' : 'Orte'} (Pünktchen weiß, wo)`;
+    }
     this.hud().setGoal(message);
+  }
+
+  // ---------- Nebel kriecht zurück (verteilte Wiederholung) ----------
+
+  private spotId(puzzle: string): string {
+    return `${this.scene.key}:${puzzle}`;
+  }
+
+  /** Graue Schwaden um jede Station, an der heute Nebel liegt */
+  private drawReviewFog(): void {
+    for (const i of this.interactables) {
+      if (!i.review || !isPending(this.spotId(i.review)) || this.reviewFog.has(i.review)) continue;
+      const b = i.target.getBounds();
+      const puffs: Phaser.GameObjects.Ellipse[] = [];
+      for (let k = 0; k < 6; k++) {
+        const e = this.add
+          .ellipse(b.centerX + Phaser.Math.Between(-22, 22), b.bottom - Phaser.Math.Between(0, 26), Phaser.Math.Between(34, 60), Phaser.Math.Between(14, 22), 0xc9d4de, 0.5)
+          .setDepth(b.bottom + 2);
+        this.tweens.add({ targets: e, x: e.x + Phaser.Math.Between(-10, 10), alpha: 0.25, duration: 1500 + k * 170, yoyo: true, repeat: -1, ease: 'sine.inout' });
+        puffs.push(e);
+      }
+      this.reviewFog.set(i.review, puffs);
+    }
+  }
+
+  /** Nebel vertrieben: Schwaden lösen sich in Licht auf */
+  private dissolveReviewFog(puzzle: string): void {
+    const puffs = this.reviewFog.get(puzzle);
+    this.reviewFog.delete(puzzle);
+    for (const e of puffs ?? []) {
+      this.tweens.killTweensOf(e);
+      this.tweens.add({ targets: e, alpha: 0, scaleX: 1.8, scaleY: 1.8, y: e.y - 20, duration: 1200, onComplete: () => e.destroy() });
+      for (let k = 0; k < 3; k++) {
+        const p = this.add.circle(e.x + Phaser.Math.Between(-12, 12), e.y, Phaser.Math.Between(1, 3), 0xfff1b0, 0.95).setDepth(e.depth + 1);
+        this.tweens.add({ targets: p, y: p.y - Phaser.Math.Between(25, 60), alpha: 0, duration: Phaser.Math.Between(700, 1300), onComplete: () => p.destroy() });
+      }
+    }
+  }
+
+  /** Nach einem gelösten Rätsel: Lichtfunken, und war hier Nebel, ist er jetzt weg. */
+  private rewardPuzzle(puzzle: string): void {
+    // Bauen kostet Funken, dafür gibt es keine
+    if (puzzle === 'BuildPuzzle') return;
+    const id = this.spotId(puzzle);
+    if (isPending(id)) {
+      clearSpot(id);
+      this.dissolveReviewFog(puzzle);
+      this.hud().gainFunken(SPOT_REWARD + STATION_REWARD, funken() + STATION_REWARD, 'Nebel vertrieben!');
+      addFunken(STATION_REWARD);
+      this.setGoal(this.lastGoal);
+    } else {
+      addFunken(STATION_REWARD);
+      this.hud().gainFunken(STATION_REWARD, funken());
+    }
   }
 
   /** Blockiert ein Rechteck von Zellen (inklusive). */
@@ -274,7 +356,7 @@ export abstract class WorldScene extends Phaser.Scene {
   private refreshMarkers(): void {
     if (!this.hudReady()) return;
     for (const i of this.interactables) {
-      const kind = i.target.active ? (i.marker?.() ?? null) : null;
+      const kind = i.target.active ? (i.marker?.() ?? (i.review && this.reviewFog.has(i.review) ? 'fog' : null)) : null;
       const old = this.markers.get(i);
       if (old && old.kind === kind) continue;
       old?.text.destroy();
@@ -282,11 +364,11 @@ export abstract class WorldScene extends Phaser.Scene {
       if (!kind) continue;
       const b = i.target.getBounds();
       const t = smooth(
-        this.hud().add.text(0, 0, kind === '?' ? '?' : '!', {
+        this.hud().add.text(0, 0, kind === '?' ? '?' : kind === 'fog' ? '≈' : '!', {
           fontFamily: FONT,
           fontSize: kind === 'boss' ? '38px' : '32px',
           fontStyle: 'bold',
-          color: kind === 'boss' ? '#ff5a4a' : '#ffd23f',
+          color: kind === 'boss' ? '#ff5a4a' : kind === 'fog' ? '#d6e4f0' : '#ffd23f',
           stroke: '#2a1804',
           strokeThickness: 6,
           resolution: 2,
@@ -449,6 +531,7 @@ export abstract class WorldScene extends Phaser.Scene {
     this.addInteractable({
       target: sprite,
       stand,
+      review: 'CheatPuzzle',
       marker: () => (getFlag(g.flag) ? null : '!'),
       onInteract: () => {
         this.faceToPlayer(sprite);
@@ -498,7 +581,11 @@ export abstract class WorldScene extends Phaser.Scene {
     this.scene.launch(key, {
       ...extra,
       rounds,
-      onDone: (solved: boolean) => this.thaw(() => onDone(solved)),
+      onDone: (solved: boolean) =>
+        this.thaw(() => {
+          if (solved) this.rewardPuzzle(key);
+          onDone(solved);
+        }),
     });
     this.scene.bringToTop(key);
   }

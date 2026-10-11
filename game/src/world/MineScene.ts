@@ -90,23 +90,23 @@ export class MineScene extends WorldScene {
     this.block(5, 11, 5, 11);
     this.orePile(5.6, 10.3);
     this.stationStar(STATIONS[0], 5.5 * TILE, 8.9 * TILE);
-    this.addInteractable({ target: ore, stand: { x: 5, y: 12 }, onInteract: () => this.station(STATIONS[0]), marker: () => (getFlag('brom_intro') && !getFlag(STATIONS[0].flag) ? '!' : null) });
+    this.addInteractable({ target: ore, stand: { x: 5, y: 12 }, onInteract: () => this.station(STATIONS[0]), review: STATIONS[0].puzzle, marker: () => (getFlag('brom_intro') && !getFlag(STATIONS[0].flag) ? '!' : null) });
 
     // --- Station 2: Lorenbahn, Lore in der Mitte (die Schiene ist der Zahlenstrahl)
     const railCart = this.placeObject('mine-cart', 12.5, 12.35, 1);
     this.block(12, 11, 12, 11);
     this.stationStar(STATIONS[1], 12.5 * TILE, 10 * TILE);
-    this.addInteractable({ target: railCart, stand: { x: 12, y: 12 }, onInteract: () => this.station(STATIONS[1]), marker: () => (getFlag('brom_intro') && !getFlag(STATIONS[1].flag) ? '!' : null) });
+    this.addInteractable({ target: railCart, stand: { x: 12, y: 12 }, onInteract: () => this.station(STATIONS[1]), review: STATIONS[1].puzzle, marker: () => (getFlag('brom_intro') && !getFlag(STATIONS[1].flag) ? '!' : null) });
 
     // --- Station 3: Haltestellen-Schilder rechts an der Schiene
     const signs = this.haltSigns(18, 10);
     this.stationStar(STATIONS[2], 19.5 * TILE, 9 * TILE);
-    this.addInteractable({ target: signs, stand: { x: 19, y: 12 }, onInteract: () => this.station(STATIONS[2]), marker: () => (getFlag('brom_intro') && !getFlag(STATIONS[2].flag) ? '!' : null) });
+    this.addInteractable({ target: signs, stand: { x: 19, y: 12 }, onInteract: () => this.station(STATIONS[2]), review: STATIONS[2].puzzle, marker: () => (getFlag('brom_intro') && !getFlag(STATIONS[2].flag) ? '!' : null) });
 
     // --- Tresor von König Durin (oben in der Nische)
     const vault = this.placeObject('vault-door', 13, 5.2, 0.85);
     this.block(11, 3, 13, 4);
-    this.addInteractable({ target: vault, stand: { x: 12, y: 6 }, onInteract: () => this.vault(), marker: () => (getFlag('koloss_done') && !getFlag('mine_outer_done') ? '!' : null) });
+    this.addInteractable({ target: vault, stand: { x: 12, y: 6 }, onInteract: () => this.vault(), review: 'VaultPuzzle', marker: () => (getFlag('koloss_done') && !getFlag('mine_outer_done') ? '!' : null) });
 
     // --- Der Erzkoloss bewacht den Tresor, sobald die Stationen geschafft sind
     if (this.stationsDone() === 3 && !getFlag('koloss_done')) this.spawnKoloss(false);

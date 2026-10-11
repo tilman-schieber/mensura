@@ -48,8 +48,10 @@ import { SurveyPuzzle } from './puzzles/SurveyPuzzle';
 import { MarketPuzzle } from './puzzles/MarketPuzzle';
 import { LightBridgePuzzle } from './puzzles/LightBridgePuzzle';
 import { MapTablePuzzle } from './puzzles/MapTablePuzzle';
+import { BuildPuzzle } from './puzzles/BuildPuzzle';
 import { COLORS, GAME_HEIGHT, GAME_WIDTH, text } from './ui/theme';
 import { music } from './audio/music';
+import { setClockOffset } from './learn/progress';
 import './audio/songs';
 
 class BootScene extends Phaser.Scene {
@@ -84,6 +86,8 @@ class BootScene extends Phaser.Scene {
 }
 
 const TEST_MODE = import.meta.env.DEV && new URLSearchParams(location.search).has('test');
+// Entwickler-Einstieg: ?tage=3 stellt die Uhr drei Tage vor (verteilte Wiederholung testen)
+if (import.meta.env.DEV) setClockOffset(Number(new URLSearchParams(location.search).get('tage') ?? 0) || 0);
 
 async function start() {
   // Schrift laden, bevor Phaser Texte rendert
@@ -112,7 +116,7 @@ async function start() {
       LengthPuzzle, ScalePuzzle, EstimatePuzzle, FerryPuzzle, BeetleScene,
       TilePuzzle, NetPuzzle, VolumePuzzle, PaintPuzzle, KubusScene, CheatPuzzle,
       ColumnPuzzle, MultiplyPuzzle, DividePuzzle, TermPuzzle, AutomatonPuzzle,
-      SurveyPuzzle, MarketPuzzle, LightBridgePuzzle, MapTablePuzzle],
+      SurveyPuzzle, MarketPuzzle, LightBridgePuzzle, MapTablePuzzle, BuildPuzzle],
   });
   // Zum Debuggen im Browser-Terminal erreichbar (nur im Entwicklungsmodus)
   if (import.meta.env.DEV) Object.assign(window, { game, music });

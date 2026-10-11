@@ -92,7 +92,7 @@ Nebenfiguren geben, zum Beispiel bei Händlern oder Zwergen.
 
 **Kein Blut:** Nebelwesen bestehen aus Nebel. Wer sie mit dem richtigen Maß trifft, erlöst sie: Der
 Nebel zerfällt in Licht, zurück bleibt das Tier oder Ding, das darin gefangen war, und ein paar
-Nebelsplitter als Ressource.
+Lichtfunken als Ressource.
 
 ---
 
@@ -352,8 +352,9 @@ steckenbleiben.
 - **Können pro Skill:** Jeder Versuch aktualisiert einen Wert (richtig, falsch, wie viele Hinweise, wie schnell)
 - **Anpassung:**
   - Die Schwierigkeit innerhalb eines Bauplans wächst mit dem Können (größere Zahlen, andere Nenner, zusammengesetzte Figuren)
-  - Die Oberwelt streut **verteilte Wiederholung** ein: Skills, die länger nicht dran waren oder unsicher sind, tauchen öfter in Kämpfen, am Markt und in Rezepten auf
-- **Eltern-/Lehrer-Ansicht (optional):** eine einfache Übersicht „Welche Skills sitzen, welche wackeln?", direkt an den Lernziel-Dateien ausgerichtet
+  - **Verteilte Wiederholung: Der Nebel kriecht zurück.** Jeder Skill hat einen Abstand in Tagen (1 → 2 → 5 → 12 → 28 → 60); wer ihn gewusst hat, bekommt einen längeren, wer sich irrt, einen kürzeren. Jeden Tag kriecht an bis zu drei Orte, an denen fällige Skills geübt wurden, Nebel zurück (Markierung „≈“). Vertreibt man ihn, gibt es Lichtfunken, mit denen man Eichstadt ausbaut. So ist Wiederholung ein Teil der Geschichte und kein Pflichtprogramm
+  - **Verblassen:** Was lange nicht geübt wurde, wird langsam wieder leichter gestellt, damit man nach den Ferien nicht mit den schwersten Aufgaben anfängt
+- **Eltern-/Lehrer-Ansicht (optional):** eine einfache Übersicht „Welche Skills sitzen, welche wackeln?", direkt an den Lernziel-Dateien ausgerichtet. Ein erster Schritt ist der Lernstand im Menü (richtig, Hinweise, wann wieder dran)
 - **Schulmodus:** Man wählt das aktuelle Schulthema, die passende Region wird hervorgehoben und die Wiederholung gewichtet dieses Thema stärker
 
 ---

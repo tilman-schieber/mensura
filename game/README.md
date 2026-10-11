@@ -15,6 +15,7 @@ npm run build      # Typprüfung + Produktions-Build nach dist/
 Entwickler-Einstiege (nur im Entwicklungsmodus):
 
 - `?puzzle=OreCartPuzzle` (oder `RailPuzzle`, `RoundingPuzzle`, `VaultPuzzle`, `ColossusScene`, `RomanPuzzle`, `BinaryPuzzle`, `FogBattleScene`, `MirrorWallPuzzle`, `SymmetryPuzzle`, `QuadPuzzle`, `CoordinatePuzzle`, `DoppelgangerScene`, `LengthPuzzle`, `ScalePuzzle`, `EstimatePuzzle`, `FerryPuzzle`, `BeetleScene`, `TilePuzzle`, `NetPuzzle`, `VolumePuzzle`, `PaintPuzzle`, `KubusScene`) startet ein Rätsel direkt, endlos viele Runden
+- `?tage=3` stellt die Uhr drei Tage vor, um die verteilte Wiederholung zu testen (lässt sich mit `?test` kombinieren: `?test&tage=3`)
 - `?test` lässt die Spielschleife auch in einem unsichtbaren Browser-Tab laufen (für automatisierte Tests)
 - `window.game` ist die Phaser-Instanz
 
@@ -160,6 +161,31 @@ einlesen. `loadSave()`/`writeSave()` arbeiten immer auf dem aktiven Platz.
 auch Zeitdruck im Kampf (gehört zum Spielstand). Stimme und Lautstärke gelten für alle Spielstände
 (`mensura.prefs`).
 
+**Der Nebel kriecht zurück: verteilte Wiederholung** (`src/learn/progress.ts`, `src/learn/review.ts`):
+Jeder Skill hat einen Abstand in Tagen und ein Datum, an dem er wieder dran ist. Wer einen fälligen
+Skill ohne Hilfe löst, bekommt einen längeren Abstand (1 → 2 → 5 → 12 → 28 → 60 Tage); ein Fehler
+halbiert ihn, und der Skill ist morgen wieder dran. Was lange überfällig ist, verblasst: Die Aufgaben
+werden langsam leichter (bis auf 60 % des alten Stands). Jeden Tag wählt das Spiel bis zu drei Orte, an
+denen die am längsten überfälligen Skills geübt wurden (`SPOTS`, nur Stationen, die man schon geschafft
+hat; Z12 wechselt täglich zwischen den drei Rechenwerk-Stationen). Dort liegen Nebelschwaden und
+schwebt ein „≈“ (`Interactable.review` in `WorldScene`). Löst man die Station, ist der Nebel weg und es
+gibt 5 Lichtfunken extra. Für Kopfrechnen kommt ein Nebelwesen ins Dorf zurück. **Eule Pünktchen** auf
+Elles Dach erzählt, wo der Nebel heute liegt. Das Hud-Ziel zeigt die offenen Orte, sobald die Geschichte
+gerade nichts anderes zu tun hat. Die Auswahl steht für den Tag fest (`review` im Spielstand).
+
+**Lichtfunken** (✦, oben links): +1 für jede gelöste Station, +5 für vertriebenen Nebel.
+
+**Eichstadt ausbauen** (`BuildPuzzle`, Bauplätze in `VillageScene.plotOf()`): Wo Pflöcke und ein Seil
+stehen, ist ein Bauplatz; ein „!“ erscheint, sobald die Funken reichen. Bürgermeister Rudolf erklärt das
+Projekt, dann kommen zwei Rechenaufgaben, danach wird gebaut. Projekte öffnen sich mit den Splittern:
+Blumenbeet (5 ✦, Kopfrechnen), Gemüsegarten mit Zaun (10 ✦, Rand des Gartens, schriftlich rechnen),
+Laternen auf beiden Seiten des Wegs (15 ✦, Zaunpfahl-Problem: Laternen = Abstände + 1), Obstwiese
+(20 ✦, Längen umrechnen), Vorratslager (25 ✦, Volumen und Oberfläche ohne Deckel). Für die alte Eiche
+oben links fällt Harald den Baum, sobald er zurück ist.
+
+**Lernstand im Menü** zeigt alle geübten Skills (zum Blättern), wie oft richtig, wie oft mit Hinweis und
+wann jeder Skill wieder dran ist.
+
 Jede Station besteht aus 3 Aufgaben mit zufälligen Zahlen. Die Schwierigkeit richtet sich nach dem
 gespeicherten Können pro Skill (`src/learn/progress.ts`). Stationen lassen sich jederzeit wiederholen.
 
@@ -181,7 +207,7 @@ gespeicherten Können pro Skill (`src/learn/progress.ts`). Stationen lassen sich
 | `src/puzzles/BossScene.ts`, `*Scene.ts` | Endgegner (Erzkoloss, Doppelgänger, Riesenkäfer, Kubus-Wächter) und Nebelwesen-Kampf |
 | `src/puzzles/blocks.ts` | Stellenwert-Blöcke (im Code gezeichnet, damit jedes Kästchen stimmt) |
 | `src/puzzles/rail.ts` | Lorenschiene als Zahlenstrahl |
-| `src/learn/` | Skill-Katalog, Könnensstand, Zahl-Hilfen (Zahlwörter, Runden, Formatierung) |
+| `src/learn/` | Skill-Katalog, Könnensstand mit verteilter Wiederholung (`progress.ts`), Nebel-Orte und Lichtfunken (`review.ts`), Zahl-Hilfen (Zahlwörter, Runden, Formatierung) |
 | `src/avatar/` | Avatar-Varianten, Palettentausch |
 | `src/ui/` | Schrift/Farben/Knöpfe, Dialogbox, Ziffernfeld, Sprachausgabe |
 | `src/save.ts` | Spielstände im Browser: drei Plätze, Export/Import, Einstellungen |

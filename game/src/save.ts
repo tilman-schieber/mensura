@@ -40,6 +40,10 @@ export interface SaveGame {
   playtime: number;
   /** Zeitpunkt der letzten Speicherung (ms seit 1970) */
   savedAt: number;
+  /** Lichtfunken: bleiben übrig, wenn Nebel vertrieben wird; damit baut man Eichstadt aus */
+  funken: number;
+  /** Der Nebel, der heute an alte Orte zurückkriecht (verteilte Wiederholung, siehe learn/review.ts) */
+  review: { day: string; spots: string[]; cleared: string[]; told: boolean } | null;
 }
 
 /** Einstellungen für alle Spielstände */
@@ -61,6 +65,8 @@ const empty = (): SaveGame => ({
   settings: { battleTimer: true, topics: {} },
   playtime: 0,
   savedAt: 0,
+  funken: 0,
+  review: null,
 });
 
 function read(key: string): string | null {

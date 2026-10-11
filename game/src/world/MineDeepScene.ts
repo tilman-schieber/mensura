@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { getFlag, setFlag } from '../save';
+import { isPending } from '../learn/review';
 import type { DialogLine } from '../ui/dialog';
 import { TILE, WorldScene } from './WorldScene';
 import type { Cell } from './pathfind';
@@ -88,32 +89,32 @@ export class MineDeepScene extends WorldScene {
     const machine = this.placeObject('rechenwerk', 6.5, 8.4, 0.75);
     this.block(5, 6, 8, 7);
     this.stars[ST.rechenwerk.flag] = this.addStar(ST.rechenwerk.flag, 6.5 * TILE, 4.6 * TILE);
-    this.addInteractable({ target: machine, stand: { x: 6, y: 8 }, onInteract: () => this.station(ST.rechenwerk), marker: () => (getFlag('deep_intro') && !getFlag(ST.rechenwerk.flag) ? '!' : null) });
+    this.addInteractable({ target: machine, stand: { x: 6, y: 8 }, onInteract: () => this.station(ST.rechenwerk), review: ST.rechenwerk.puzzle, marker: () => (getFlag('deep_intro') && !getFlag(ST.rechenwerk.flag) ? '!' : null) });
 
     // Station 2: Frachtwaage (rechts oben)
     const scale = this.placeObject('freight-scale', 19.5, 8.2, 0.9);
     this.block(19, 7, 20, 7);
     this.stars[ST.waage.flag] = this.addStar(ST.waage.flag, 19.5 * TILE, 5.6 * TILE);
-    this.addInteractable({ target: scale, stand: { x: 19, y: 8 }, onInteract: () => this.station(ST.waage), marker: () => (getFlag('deep_intro') && !getFlag(ST.waage.flag) ? '!' : null) });
+    this.addInteractable({ target: scale, stand: { x: 19, y: 8 }, onInteract: () => this.station(ST.waage), review: ST.waage.puzzle, marker: () => (getFlag('deep_intro') && !getFlag(ST.waage.flag) ? '!' : null) });
 
     // Station 3: Beute teilen (links unten)
     const chest = this.placeObject('treasure', 5.5, 13.3, 0.8);
     this.block(5, 12, 6, 12);
     this.stars[ST.beute.flag] = this.addStar(ST.beute.flag, 5.5 * TILE, 10.6 * TILE);
-    this.addInteractable({ target: chest, stand: { x: 6, y: 13 }, onInteract: () => this.station(ST.beute), marker: () => (getFlag('deep_intro') && !getFlag(ST.beute.flag) ? '!' : null) });
+    this.addInteractable({ target: chest, stand: { x: 6, y: 13 }, onInteract: () => this.station(ST.beute), review: ST.beute.puzzle, marker: () => (getFlag('deep_intro') && !getFlag(ST.beute.flag) ? '!' : null) });
 
     // Station 4: Runentafel (rechts unten)
     const tablet = this.placeObject('rune-tablet', 19.5, 13.2, 0.9);
     this.block(19, 12, 19, 12);
     this.stars[ST.runen.flag] = this.addStar(ST.runen.flag, 19.5 * TILE, 10.4 * TILE);
-    this.addInteractable({ target: tablet, stand: { x: 19, y: 13 }, onInteract: () => this.station(ST.runen), marker: () => (getFlag('deep_intro') && !getFlag(ST.runen.flag) ? '!' : null) });
+    this.addInteractable({ target: tablet, stand: { x: 19, y: 13 }, onInteract: () => this.station(ST.runen), review: ST.runen.puzzle, marker: () => (getFlag('deep_intro') && !getFlag(ST.runen.flag) ? '!' : null) });
 
     // Das alte Tor in der Nische oben: Zahlenautomat
     this.gate = this.placeObject('number-gate', 13, 4.8, 0.8);
     this.block(11, 3, 14, 4);
     if (getFlag('deep_done')) this.gate.setAlpha(0.35);
     else if (this.stationsDone() === 4) this.gateGlow();
-    this.addInteractable({ target: this.gate, stand: { x: 12, y: 5 }, onInteract: () => this.openGate(), marker: () => (this.stationsDone() === 4 && !getFlag('deep_done') ? '!' : null) });
+    this.addInteractable({ target: this.gate, stand: { x: 12, y: 5 }, onInteract: () => this.openGate(), review: 'AutomatonPuzzle', marker: () => (this.stationsDone() === 4 && !getFlag('deep_done') ? '!' : null) });
 
     this.addPage('page_deep', 22, 14);
     this.addPlaque(6.5, 3.95, 'Rechenwerk');
@@ -188,7 +189,9 @@ export class MineDeepScene extends WorldScene {
 
   private openGate(): void {
     if (getFlag('deep_done')) {
-      this.say([{ speaker: 'Tüftlerin Grete', text: 'Dahinter geht es noch tiefer hinab. Aber das ist etwas fürs nächste Schuljahr.' }]);
+      // Liegt heute Nebel auf dem Automaten, rechnet man noch einmal rückwärts
+      if (isPending('MineDeep:AutomatonPuzzle')) this.startPuzzle('AutomatonPuzzle', () => {});
+      else this.say([{ speaker: 'Tüftlerin Grete', text: 'Dahinter geht es noch tiefer hinab. Aber das ist etwas fürs nächste Schuljahr.' }]);
       return;
     }
     if (this.stationsDone() < 4) {

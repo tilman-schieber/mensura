@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
-import { getStat, recordAttempt } from '../learn/progress';
+import { getLevel, getStat, isDue, now, recordAttempt } from '../learn/progress';
+import { funken } from '../learn/review';
 import { PAGES, type MessbuchPage } from '../messbuch';
 import { SKILLS, type SkillId } from '../learn/skills';
 import { activeSlot, getFlag, loadSave, setFlag } from '../save';
@@ -70,29 +71,50 @@ export class MenuScene extends Phaser.Scene {
     else this.messbuch(290, 100);
   }
 
-  /** Lernstand: pro Skill ein Balken (0–5 Kristalle) und wie oft richtig. */
-  private learningReport(x: number, y: number): void {
+  /**
+   * Lernstand: pro Skill ein Balken (0–5 Kristalle), wie oft richtig, und wann er wieder dran ist
+   * (verteilte Wiederholung). Blättern, wenn es mehr als eine Seite ist.
+   */
+  private learningReport(x: number, y: number, pageNo = 0): void {
     const p = this.page;
+    const PER_PAGE = 6;
     p.add(text(this, x, y, 'Was du schon kannst', 22, COLORS.goldText).setOrigin(0, 0.5));
-    // Nur Skills zeigen, die schon geübt wurden oder zu einem abgehakten Thema gehören
-    const ids = (Object.keys(SKILLS) as SkillId[]).filter((id) => getStat(id).attempts > 0).slice(0, 7);
+    p.add(text(this, GAME_WIDTH - 70, y, `✦ ${funken()} Lichtfunken`, 17, '#fff1b0').setOrigin(1, 0.5));
+    const ids = (Object.keys(SKILLS) as SkillId[]).filter((id) => getStat(id).attempts > 0);
     if (!ids.length) {
       p.add(text(this, x, y + 50, 'Noch nichts geübt. Auf ins Abenteuer!', 17, COLORS.muted).setOrigin(0, 0.5));
+      return;
     }
-    ids.forEach((id, i) => {
+    const pages = Math.ceil(ids.length / PER_PAGE);
+    const shown = ids.slice(pageNo * PER_PAGE, (pageNo + 1) * PER_PAGE);
+    const t = now();
+    shown.forEach((id, i) => {
       const s = getStat(id);
-      const row = y + 44 + i * 52;
+      const row = y + 44 + i * 56;
       p.add(text(this, x, row, SKILLS[id].name, 17, COLORS.text).setOrigin(0, 0.5));
       const seg = 5;
-      const filled = Math.round(s.level * seg);
+      const filled = Math.round(getLevel(id) * seg);
       const g = this.add.graphics();
       for (let k = 0; k < seg; k++) {
         g.fillStyle(k < filled ? 0xe0a93a : 0x2a3844, 1).fillRoundedRect(x + k * 30, row + 13, 24, 12, 4);
       }
       p.add(g);
-      let info = s.attempts === 0 ? 'noch nicht geübt' : `${s.correct} von ${s.attempts} Aufgaben richtig`;
-      p.add(text(this, x + 170, row + 19, info, 14, COLORS.muted).setOrigin(0, 0.5));
+      const days = Math.ceil((s.due - t) / 86_400_000);
+      const when = isDue(id) ? '≈ heute wieder dran' : days <= 1 ? 'morgen wieder dran' : `wieder dran in ${days} Tagen`;
+      const hints = s.hints ? ` · ${s.hints}× Hinweis` : '';
+      p.add(text(this, x + 170, row + 19, `${s.correct} von ${s.attempts} richtig${hints} · ${when}`, 14, isDue(id) ? '#d6e4f0' : COLORS.muted).setOrigin(0, 0.5));
     });
+    if (pages > 1) {
+      const by = GAME_HEIGHT - 62;
+      p.add(text(this, x + 330, by, `Seite ${pageNo + 1} von ${pages}`, 15, COLORS.muted));
+      if (pageNo > 0) p.add(button(this, x + 200, by, '◀', () => this.reportPage(pageNo - 1), { width: 60, height: 40, size: 18 }));
+      if (pageNo < pages - 1) p.add(button(this, x + 460, by, '▶', () => this.reportPage(pageNo + 1), { width: 60, height: 40, size: 18 }));
+    }
+  }
+
+  private reportPage(n: number): void {
+    this.page.removeAll(true);
+    this.learningReport(290, 100, n);
   }
 
   /** Vagors Messbuch: gefundene Seiten lesen und die Rechnungen prüfen */
