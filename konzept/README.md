@@ -6,7 +6,7 @@ Die Kürzel in Klammern verweisen auf die Standards im Bildungsplan: Z = Zahl/Op
 M = Messen (3.1.2), R = Raum und Form (3.1.3), F = Funktionaler Zusammenhang (3.1.4),
 D = Daten (3.1.5). `Z3` heißt also 3.1.1 Punkt (3).
 
-**Nächster Schritt:** [Spielkonzept „Mensura – Die sieben Urmaße"](spielkonzept.md) ·
+**Nächster Schritt:** [Spielkonzept „Mensura – Die fünf Urmaße"](spielkonzept.md) ·
 [Abdeckungsmatrix Skill → Spielmechanik](spiel-abdeckung.md) ·
 [Kritischer Pass: Trägt die Spielwelt?](kritik.md)
 

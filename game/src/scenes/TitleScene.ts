@@ -158,7 +158,7 @@ export class TitleScene extends Phaser.Scene {
 
     // Untertitel mit Zierlinien
     const SUB_Y = 182;
-    const sub = text(this, GAME_WIDTH / 2, SUB_Y, 'Die sieben Urmaße', 28, '#fff6dc').setDepth(2).setAlpha(0);
+    const sub = text(this, GAME_WIDTH / 2, SUB_Y, 'Die fünf Urmaße', 28, '#fff6dc').setDepth(2).setAlpha(0);
     sub.setShadow(0, 2, '#000000', 8, true, true);
     const w = sub.width / 2 + 24;
     const deco = this.add.graphics().setDepth(2).setAlpha(0);

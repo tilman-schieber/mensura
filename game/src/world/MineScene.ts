@@ -56,6 +56,7 @@ export class MineScene extends WorldScene {
   preload(): void {
     this.load.image('tiles-mine', 'assets/tiles/mine.png');
     this.load.json('tiles-mine-data', 'assets/tiles/mine.json');
+    this.load.image('mine-rail', 'assets/objects/mine-rail.png');
     this.load.image('vault-door', 'assets/objects/vault-door.png');
     this.load.spritesheet('npc-brom', 'assets/npcs/brom.png', { frameWidth: 68, frameHeight: 68 });
     this.load.image('koloss', 'assets/objects/koloss.png');
@@ -149,12 +150,10 @@ export class MineScene extends WorldScene {
 
   // ---------- Dekoration ----------
 
+  /** Die Schiene aus Kachelbildern (PixelLab `mine-rail`, 32 px, nahtlos von links nach rechts) */
   private drawRail(x0: number, x1: number, y: number): void {
-    const g = this.add.graphics().setDepth(y * TILE - 20);
     const py = y * TILE - 10;
-    for (let x = x0 * TILE + 2; x < x1 * TILE; x += 8) g.fillStyle(0x5a3a1e, 1).fillRect(x, py - 7, 4, 16);
-    g.fillStyle(0x8a8f96, 1).fillRect(x0 * TILE, py - 5, (x1 - x0) * TILE, 2);
-    g.fillStyle(0x8a8f96, 1).fillRect(x0 * TILE, py + 5, (x1 - x0) * TILE, 2);
+    for (let x = x0; x < x1; x++) this.add.image(x * TILE + TILE / 2, py, 'mine-rail').setDepth(y * TILE - 20);
   }
 
   /** Die Schiene verschwindet links und rechts im Dunkel der Stollen. */

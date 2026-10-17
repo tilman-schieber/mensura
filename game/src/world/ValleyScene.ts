@@ -50,8 +50,10 @@ export class ValleyScene extends WorldScene {
   }
 
   preload(): void {
-    this.load.image('tiles-valley', 'assets/tiles/valley.png');
-    this.load.json('tiles-valley-data', 'assets/tiles/valley.json');
+    for (const k of ['valley', 'valley-river', 'valley-cliff']) {
+      this.load.image(`tiles-${k}`, `assets/tiles/${k}.png`);
+      this.load.json(`tiles-${k}-data`, `assets/tiles/${k}.json`);
+    }
     this.load.image('giant-boot', 'assets/objects/giant-boot.png');
     this.load.image('giant-mushroom', 'assets/objects/giant-mushroom.png');
     this.load.image('balance', 'assets/objects/balance.png');
@@ -75,12 +77,18 @@ export class ValleyScene extends WorldScene {
     this.blockUpper = false;
     this.terrain = new Terrain(this, 'tiles-valley', this.cache.json.get('tiles-valley-data') as TilesetData, v);
 
-    // Fluss am rechten Rand
-    const river = this.add.graphics().setDepth(-900);
-    river.fillStyle(0x3b7fb8, 1).fillRect(27 * TILE, 0, 3 * TILE, ROWS * TILE);
-    river.fillStyle(0x6fb3e0, 0.5);
-    for (let y = 0; y < ROWS * TILE; y += 18) river.fillRect(27 * TILE + ((y * 7) % 60), y, 26, 3);
+    // Fluss am rechten Rand (Auflage: unten Wasser, oben das Gras) und Felshänge oben und links,
+    // die das Tal zum Tal machen (Auflage mit Wandfläche wie im Stollen)
+    const data = (k: string) => this.cache.json.get(`tiles-${k}-data`) as TilesetData;
+    // dazu ein Bach, der unten rechts in den Fluss mündet, mit einer Brücke (Zellen 20–21)
+    new Terrain(this, 'tiles-valley-river', data('valley-river'), vertexGrid(COLS, ROWS, GRASS, [[27, 0, 30, 20, PATH], [26, 8, 30, 12, PATH], [17, 17, 27, 18, PATH]]), { depth: -999, skip: GRASS });
     this.block(27, 0, 29, ROWS - 1);
+    this.block(26, 8, 26, 11);
+    this.block(17, 17, 19, 17);
+    this.block(22, 17, 26, 17);
+    new Terrain(this, 'tiles-valley-cliff', data('valley-cliff'), vertexGrid(COLS, ROWS, 0, [[0, 0, 30, 2, 1], [0, 0, 2, 20, 1]]), { depth: -998, skip: 0 });
+    this.block(0, 0, COLS - 1, 2);
+    this.block(0, 0, 2, ROWS - 1);
 
     this.addExit(14, 19, 15, 19, () => this.goTo('Village', 'valley'));
 
@@ -114,7 +122,7 @@ export class ValleyScene extends WorldScene {
     this.addInteractable({ target: boat, stand: { x: 26, y: 13 }, onInteract: () => this.boat(), marker: () => (getFlag('valley_done') && !getFlag('fort_done') ? '!' : null) });
 
     // Deko: kleinere Pilze
-    for (const [x, y] of [[10, 15], [20, 16], [11, 3], [20, 2], [2, 11]] as [number, number][]) {
+    for (const [x, y] of [[10, 15], [20, 16], [11, 3], [20, 3], [3, 11]] as [number, number][]) {
       this.placeObject('giant-mushroom', x + 0.5, y + 1, 0.35);
       this.block(x, y, x, y);
     }

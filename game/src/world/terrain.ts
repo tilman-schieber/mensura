@@ -11,6 +11,12 @@ import Phaser from 'phaser';
 // Ein unterer Eckpunkt direkt unter einem oberen ist „Übergang“, dort sitzt die
 // Wandfläche. Die Auswahl läuft über ein 4×4-Muster (Zeile darüber, die 2 Zeilen
 // der Kachel, Zeile darunter), wie in den Metadaten von PixelLab beschrieben.
+//
+// Mehr Geländearten je Ort entstehen durch Stapeln: Ein zweites Set, dessen eines
+// Gelände die Wiese des ersten ist (bei PixelLab über `base_tile_id` verkettet,
+// darum pixelgleich), wird als Auflage darübergelegt (`depth` über -1000).
+// Kacheln, deren vier Ecken alle `skip` sind, bleiben leer, dort scheint das
+// Grundgelände durch.
 
 export interface TileDef {
   p: number[]; // 16 Werte, 255 = egal
@@ -37,6 +43,7 @@ export class Terrain {
     tilesetKey: string,
     data: TilesetData,
     vertices: number[][],
+    opts: { depth?: number; skip?: number } = {},
   ) {
     this.rows = vertices.length - 1;
     this.cols = vertices[0].length - 1;
@@ -53,11 +60,16 @@ export class Terrain {
 
     for (let y = 0; y < this.rows; y++) {
       for (let x = 0; x < this.cols; x++) {
+        if (opts.skip !== undefined && this.corners(x, y).every((c) => c === opts.skip)) continue;
         const t = this.pick(data.tiles, x, y);
         this.layer.putTileAt((t.y / size) * sheetCols + t.x / size, x, y);
       }
     }
-    this.layer.setDepth(-1000);
+    this.layer.setDepth(opts.depth ?? -1000);
+  }
+
+  private corners(x: number, y: number): number[] {
+    return [this.v[y][x], this.v[y][x + 1], this.v[y + 1][x], this.v[y + 1][x + 1]];
   }
 
   private at(x: number, y: number): number {

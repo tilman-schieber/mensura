@@ -61,8 +61,10 @@ export class MineDeepScene extends WorldScene {
   }
 
   preload(): void {
-    this.load.image('tiles-mine', 'assets/tiles/mine.png');
-    this.load.json('tiles-mine-data', 'assets/tiles/mine.json');
+    for (const k of ['mine', 'mine-water']) {
+      this.load.image(`tiles-${k}`, `assets/tiles/${k}.png`);
+      this.load.json(`tiles-${k}-data`, `assets/tiles/${k}.json`);
+    }
     for (const k of ['rechenwerk', 'freight-scale', 'rune-tablet', 'number-gate', 'elevator']) {
       this.load.image(k, `assets/objects/${k}.png`);
     }
@@ -77,6 +79,10 @@ export class MineDeepScene extends WorldScene {
     ]);
     this.terrain = new Terrain(this, 'tiles-mine', this.cache.json.get('tiles-mine-data') as TilesetData, v);
     this.cameras.main.setBackgroundColor(0x0b0d10);
+    // Grundwassertümpel mitten in der Halle (Auflage: unten Wasser, oben der Stollenboden)
+    const pool = this.cache.json.get('tiles-mine-water-data') as TilesetData;
+    new Terrain(this, 'tiles-mine-water', pool, vertexGrid(COLS, ROWS, 1, [[10, 11, 14, 14, 0]]), { depth: -999, skip: 1 }); // 0 = Wasser, 1 = Boden
+    this.block(10, 11, 13, 13);
     // tiefer im Berg: etwas wärmeres, dunkleres Licht
     this.add.rectangle(0, 0, COLS * TILE, ROWS * TILE, 0xd8bc90, 1).setOrigin(0).setDepth(-950).setBlendMode(Phaser.BlendModes.MULTIPLY);
 

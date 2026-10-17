@@ -89,7 +89,7 @@ Die **Ruine der Alten** ist die einzige optionale Entdeckung und prompt der atmo
 |---|---|---|
 | Ruine, Stimme der Alten: „Vagor war einer von uns.“ | Die Alten haben die Urmaße vor langer Zeit geschmiedet; Vagor ist Elles Zeitgenosse. | „Vagor war der Einzige, der unsere Zeichen noch lesen konnte.“ |
 | Durin: „Darin lag, was Vagor uns nicht nehmen konnte.“ | Laut Geschichte hat Vagor die Splitter selbst verstreut. | Splitter sind beim Zerbrechen durchs Land geflogen; einer fiel in Durins Stollen, und Durin hat ihn weggeschlossen (siehe unten). |
-| Elle: „Zwei von sieben Urmaßen sind wieder vereint.“ | Man hat je *einen* Splitter; die tiefen Ebenen sollen später mehr enthalten („Tief unten schläft noch mehr“). | Jedes Urmaß ist in **zwei Hälften** zerbrochen (äußere und tiefe Ebene). Elle zählt Splitter: „Zwei von vierzehn.“ Das passt zum Schuljahr-Aufbau. |
+| Elle: „Zwei von sieben Urmaßen sind wieder vereint.“ | Man hat je *einen* Splitter; die tiefen Ebenen sollen später mehr enthalten („Tief unten schläft noch mehr“). | Jedes Urmaß ist in **zwei Hälften** zerbrochen (äußere und tiefe Ebene). Elle zählt Splitter: „Zwei von zehn.“ Das passt zum Schuljahr-Aufbau. |
 | Konzept: „Trugwesen“ und „Goblin-Ruinen“ | Das Spiel sagt „Nebelwesen“ und „Ruine der Alten“. | Im Konzept angeglichen. |
 | Urmaße ↔ Regionen | Welche Region welches Urmaß hütet, stand nirgends. Das Finale hat keins. | Jetzt in [spielkonzept.md](spielkonzept.md) festgelegt. |
 | Hanna erklärt den Schulmodus („hakt das Thema im Menü ab“) | Eine Riesin, die Menüs erklärt, bricht die Welt. | Nur Elle erwähnt die Schule, alle anderen bleiben in der Welt: „Der Nebel über dem Fluss ist noch zu dicht. Frag Meisterin Elle.“ |

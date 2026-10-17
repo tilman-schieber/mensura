@@ -2,15 +2,17 @@ import type { SaveGame } from './save';
 
 // Überblick über den Spielfortschritt, für Titelbild und Spielstände.
 
-/** Die sieben Urmaße, mit Merker für die geborgene Hälfte (null = noch nicht im Spiel) */
+/**
+ * Die fünf Urmaße, mit Merker für die geborgene Hälfte (null = noch nicht im Spiel).
+ * Zahl, Form, Größe und Raum sind die vier Orte von Klasse 5; Teil (Brüche, Dezimalzahlen,
+ * Prozent) kommt in Klasse 6. Zeit gehört zur Größe, Zeichen und Dezimalschreibweise zur Zahl.
+ */
 export const URMASSE: { name: string; tint: number; flag: string | null }[] = [
   { name: 'Zahl', tint: 0xffffff, flag: 'mine_outer_done' },
-  { name: 'Zeichen', tint: 0xffb08a, flag: null },
-  { name: 'Teil', tint: 0xf0e08a, flag: null },
-  { name: 'Größe', tint: 0xc8f0a8, flag: 'valley_done' },
   { name: 'Form', tint: 0xbfe6ff, flag: 'temple_done' },
+  { name: 'Größe', tint: 0xc8f0a8, flag: 'valley_done' },
   { name: 'Raum', tint: 0xb8c8ff, flag: 'fort_done' },
-  { name: 'Takt', tint: 0xe0b8ff, flag: null },
+  { name: 'Teil', tint: 0xf0e08a, flag: null },
 ];
 
 /** Jedes Urmaß ist in zwei Hälften zerbrochen. */

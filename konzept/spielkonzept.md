@@ -1,4 +1,4 @@
-# Spielkonzept: „Mensura – Die sieben Urmaße" (Arbeitstitel)
+# Spielkonzept: „Mensura – Die fünf Urmaße" (Arbeitstitel)
 
 ← [Lernziele-Übersicht](README.md) · [Abdeckungsmatrix: jeder Skill → Mechanik](spiel-abdeckung.md) ·
 [Kritischer Pass](kritik.md)
@@ -10,8 +10,8 @@ Mathe **das Werkzeug** ist, mit dem man die Welt verändert, und nicht die Prüf
 
 ## 1 · Die Idee
 
-Vor langer Zeit schmiedeten die Alten die sieben **Urmaße**: Zahl, Zeichen, Teil, Größe, Form, Raum
-und Takt. Solange sie in der Halle der Alten ruhten, hatte alles in Mensura sein Maß: Flüsse, Wege, Brücken
+Vor langer Zeit schmiedeten die Alten die fünf **Urmaße**: Zahl, Form, Größe, Raum und Teil.
+Solange sie in der Halle der Alten ruhten, hatte alles in Mensura sein Maß: Flüsse, Wege, Brücken
 und Versprechen.
 
 **Vagor**, einst der begabteste Vermesser des Landes, hat die Urmaße zerbrochen. Jedes zerbrach in
@@ -52,17 +52,20 @@ einer Rechnung aus der Brückenzeit, manche mit einem Fehler zum Finden.
 - **Nebelwesen werden erlöst, nicht getötet.** Wer sie mit dem richtigen Maß trifft, gibt ihnen ihre
   Gestalt zurück: Übrig bleibt ein Fuchs, eine Laterne, ein Schaf.
 
-### Die sieben Urmaße und wo sie liegen
+### Die fünf Urmaße und wo sie liegen
+
+Fünf statt sieben (Stand Oktober 2026): Sieben Namen waren für ein Kind zu viel auf einmal. Die vier
+Urmaße von Klasse 5 bleiben, wie sie im Spiel schon erzählt sind. Die drei Regionen von Klasse 6 teilen
+sich ein fünftes Urmaß und die zweiten Hälften: Jedes Urmaß ist in **zwei Hälften** zerbrochen, zehn
+Splitter insgesamt.
 
 | Urmaß | Region | Endgegner (äußere / tiefe Ebene) |
 |---|---|---|
-| **Zahl** | ① Stellenstollen | Erzkoloss / Primgolem |
-| **Zeichen** (Vorzeichen) | ② Frostfeuerturm | Thermodrache |
-| **Teil** | ③ Bruchwald | Hydra |
-| **Größe** | ④ Riesental | Riesenkäfer |
+| **Zahl** | ① Stellenstollen (beide Hälften: Stollen und Rechenwerk) | Erzkoloss / Primgolem |
 | **Form** | ⑤ Spiegeltempel | Spiegel-Doppelgänger |
+| **Größe** | ④ Riesental; zweite Hälfte im ⑦ Uhrwerk-Kloster (Zeit ist eine Größe) | Riesenkäfer / Chronowächter |
 | **Raum** | ⑥ Würfelfestung | Kubus-Wächter |
-| **Takt** | ⑦ Uhrwerk-Kloster | Chronowächter |
+| **Teil** | ③ Bruchwald (Brüche); zweite Hälfte im ② Frostfeuerturm (Dezimalzahlen, Vorzeichen) | Hydra / Thermodrache |
 
 Das Finale in der **Nebelzitadelle** hat kein eigenes Urmaß: Dort geht es um die Wahrheit (Daten und
 Diagramme), und die Zitadelle steht auf den Trümmern der Brücke.

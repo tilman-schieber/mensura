@@ -11,7 +11,7 @@ import { Terrain, vertexGrid, type TilesetData } from './terrain';
 // Eichstadt, das Heimatdorf. Meisterin Elle schickt die Spielfigur in die Mine.
 // Im Westen liegt die Ruine der Alten (Nebenaufgabe: römische Zahlen, Zweiersystem).
 
-const COLS = 30;
+const COLS = 34;
 const ROWS = 20;
 const GRASS = 1;
 const DIRT = 0;
@@ -61,7 +61,7 @@ const REGIONS: Region[] = [
     goGoal: 'Folge dem Weg nach Süden zum Spiegeltempel',
     lockedGoal: 'Bring zuerst das Rechenwerk in Gang',
     thanks: [
-      { speaker: 'Meisterin Elle', text: 'Der Splitter der Form! Zwei von vierzehn Splittern sind geborgen.' },
+      { speaker: 'Meisterin Elle', text: 'Der Splitter der Form! Zwei von zehn Splittern sind geborgen.' },
       { speaker: 'Meisterin Elle', text: 'Du siehst mich so seltsam an. Hat Lumen dir etwas in ihren Spiegeln gezeigt?' },
       { speaker: 'Meisterin Elle', text: 'Die Große Brücke. Ja, Vagor und ich waren einmal Freunde. Mehr will ich dazu jetzt nicht sagen.' },
       { speaker: 'Meisterin Elle', text: 'Im Norden liegt das Riesental. Dort hütet eine Riesin das Urmaß der Größe.' },
@@ -74,7 +74,7 @@ const REGIONS: Region[] = [
     goGoal: 'Folge dem Weg nach Norden ins Riesental',
     lockedGoal: 'Hol zuerst den Splitter aus dem Spiegeltempel',
     thanks: [
-      { speaker: 'Meisterin Elle', text: 'Der Splitter der Größe! Drei von vierzehn.' },
+      { speaker: 'Meisterin Elle', text: 'Der Splitter der Größe! Drei von zehn.' },
       { speaker: 'Meisterin Elle', text: 'Vagor hat wieder mit dir gesprochen? Hanna hat recht, er klingt traurig. Er war nicht immer so.' },
       { speaker: 'Meisterin Elle', text: 'Flora, die Alchemistin, ist zurückgekommen. Hoffentlich explodiert diesmal nichts.' },
       { speaker: 'Meisterin Elle', text: 'Hinter dem Fluss im Riesental steht die Würfelfestung. Dort ruht das Urmaß des Raums.' },
@@ -87,7 +87,7 @@ const REGIONS: Region[] = [
     goGoal: 'Fahr im Riesental mit dem Boot zur Würfelfestung',
     lockedGoal: 'Hilf zuerst der Riesin Hanna',
     thanks: [
-      { speaker: 'Meisterin Elle', text: 'Der Splitter des Raums! Vier von vierzehn. Das ganze erste Jahr hast du gemeistert.' },
+      { speaker: 'Meisterin Elle', text: 'Der Splitter des Raums! Vier von zehn. Das ganze erste Jahr hast du gemeistert.' },
       { speaker: 'Meisterin Elle', text: 'Hörst du den Hammer? Harald, der Schmied, ist wieder da. Jetzt ist Eichstadt fast wie früher.' },
       { speaker: 'Meisterin Elle', text: 'Und was ist das? Ein Grundriss von Quadro … Die Zitadelle steht dort, wo die Brücke war.' },
       { speaker: 'Meisterin Elle', text: 'Setz dich, Lehrling. Es ist Zeit, dass du die Wahrheit erfährst.' },
@@ -112,6 +112,8 @@ interface Villager {
   facing: 'south' | 'east' | 'north' | 'west';
   stand: Cell;
   prop?: { key: string; x: number; y: number; block: [number, number, number, number] };
+  /** Haus der Figur, erscheint mit ihr (Fußpunkt und gesperrte Zellen) */
+  house?: { key: string; x: number; y: number; block: [number, number, number, number] };
   first: DialogLine[];
   again: DialogLine[];
   /** Aufgabe, die die Figur stellt (Markt, Umfrage); danach jederzeit zum Üben */
@@ -126,6 +128,7 @@ const VILLAGERS: Villager[] = [
     facing: 'east',
     stand: { x: 7, y: 15 },
     prop: { key: 'market-stall', x: 9.4, y: 18.2, block: [8, 16, 10, 17] },
+    house: { key: 'house-cottage', x: 32, y: 12, block: [30, 8, 33, 11] },
     first: [
       { speaker: 'Händlerin Mira', text: 'Du bist also Elles Lehrling! Ich bin Mira. Als der Nebel kam, bin ich zu meiner Schwester geflohen.' },
       { speaker: 'Händlerin Mira', text: 'Im Nebel stimmten nicht einmal meine Preise. Jetzt kann ich wieder rechnen und verkaufen.' },
@@ -144,6 +147,7 @@ const VILLAGERS: Villager[] = [
     cell: { x: 16, y: 8 },
     facing: 'west',
     stand: { x: 16, y: 9 },
+    house: { key: 'house-townhall', x: 15.5, y: 7, block: [13, 3, 17, 6] },
     first: [
       { speaker: 'Bürgermeister Rudolf', text: 'Ah, der Lehrling! Rudolf, Bürgermeister von Eichstadt. Endlich bin ich wieder zu Hause.' },
       { speaker: 'Bürgermeister Rudolf', text: 'Hast du die Plakate gesehen? „Seit es Maße gibt: 100 Prozent mehr Streit!“ Woher will Vagor das wissen?' },
@@ -166,6 +170,7 @@ const VILLAGERS: Villager[] = [
     facing: 'south',
     stand: { x: 22, y: 11 },
     prop: { key: 'alchemy-table', x: 24, y: 11, block: [23, 10, 24, 10] },
+    house: { key: 'house-alchemist', x: 22, y: 10, block: [20, 6, 23, 9] },
     first: [
       { speaker: 'Alchemistin Flora', text: 'Hallo! Ich bin Flora, die Alchemistin. Im Nebel wurden meine Rezepte zu: ein bisschen hiervon, ein bisschen davon.' },
       { speaker: 'Alchemistin Flora', text: 'Da ist mir ein Trank explodiert! Jetzt nehme ich wieder genau 250 Gramm, nicht ungefähr eine Handvoll.' },
@@ -175,10 +180,11 @@ const VILLAGERS: Villager[] = [
   {
     key: 'harald',
     after: 'elle_space',
-    cell: { x: 26, y: 16 },
+    cell: { x: 25, y: 18 },
     facing: 'west',
-    stand: { x: 26, y: 15 },
-    prop: { key: 'anvil', x: 24.6, y: 17, block: [24, 16, 24, 16] },
+    stand: { x: 24, y: 18 },
+    prop: { key: 'anvil', x: 26.6, y: 19, block: [26, 18, 26, 18] },
+    house: { key: 'house-forge', x: 27.6, y: 18, block: [26, 14, 29, 17] },
     first: [
       { speaker: 'Schmied Harald', text: 'Tag! Harald, der Schmied. Ohne Länge, Breite und Höhe kann ich keine Hufeisen schmieden.' },
       { speaker: 'Schmied Harald', text: 'Jetzt, wo das Urmaß des Raums zurück ist, stimmt wieder jedes Maß. Danke, Lehrling!' },
@@ -236,8 +242,10 @@ export class VillageScene extends WorldScene {
   }
 
   preload(): void {
-    this.load.image('tiles-village', 'assets/tiles/village.png');
-    this.load.json('tiles-village-data', 'assets/tiles/village.json');
+    for (const k of ['village', 'village-water', 'village-flowers', 'village-cobble']) {
+      this.load.image(`tiles-${k}`, `assets/tiles/${k}.png`);
+      this.load.json(`tiles-${k}-data`, `assets/tiles/${k}.json`);
+    }
     this.load.image('house-elle', 'assets/objects/house-elle.png');
     this.load.image('tree-oak', 'assets/objects/tree-oak.png');
     this.load.image('mine-entrance', 'assets/objects/mine-entrance.png');
@@ -248,7 +256,7 @@ export class VillageScene extends WorldScene {
     this.load.image('nebelwesen', 'assets/objects/nebelwesen.png');
     this.load.image('temple-gate', 'assets/objects/temple-gate.png');
     this.load.image('giant-mushroom', 'assets/objects/giant-mushroom.png');
-    for (const k of ['market-stall', 'notice-board', 'anvil', 'alchemy-table', 'fox', 'lantern', 'sheep', 'map-table', 'mine-crates']) {
+    for (const k of ['market-stall', 'notice-board', 'anvil', 'alchemy-table', 'fox', 'lantern', 'sheep', 'map-table', 'mine-crates', 'house-townhall', 'house-alchemist', 'house-forge', 'house-cottage', 'tree-birch', 'tree-pine', 'tree-apple', 'tree-autumn', 'fountain']) {
       this.load.image(k, `assets/objects/${k}.png`);
     }
     for (const v of VILLAGERS) this.load.spritesheet(`npc-${v.key}`, `assets/npcs/${v.key}.png`, { frameWidth: 68, frameHeight: 68 });
@@ -258,7 +266,7 @@ export class VillageScene extends WorldScene {
     // Wiese mit Wegen: vom Haus nach Süden, dann nach Osten, dann hoch zur Mine
     const v = vertexGrid(COLS, ROWS, GRASS, [
       [7, 7, 9, 13, DIRT],
-      [7, 12, 27, 14, DIRT],
+      [7, 12, 31, 14, DIRT],
       [25, 4, 27, 13, DIRT],
       [1, 12, 7, 14, DIRT],
       [15, 14, 17, 20, DIRT],
@@ -266,6 +274,7 @@ export class VillageScene extends WorldScene {
     ]);
     this.blockUpper = false;
     this.terrain = new Terrain(this, 'tiles-village', this.cache.json.get('tiles-village-data') as TilesetData, v);
+    this.buildGround();
 
     // Haus von Meisterin Elle
     this.placeObject('house-elle', 7, 7);
@@ -273,23 +282,27 @@ export class VillageScene extends WorldScene {
 
     // Mineneingang oben rechts
     const mine = this.placeObject('mine-entrance', 26, 4);
-    this.block(23, 0, 29, 2);
+    this.block(23, 0, COLS - 1, 2);
     this.block(23, 3, 24, 3);
     this.block(28, 3, 29, 3);
     this.addExit(25, 3, 27, 3, () => this.enterMine());
     this.addInteractable({ target: mine, stand: { x: 26, y: 4 }, onInteract: () => this.enterMine(), marker: () => (getFlag('elle_intro') && (!getFlag('mine_outer_done') || !getFlag('deep_done')) ? '!' : null) });
 
-    // Bäume am Rand und verstreut
-    const trees: [number, number][] = [
-      [3, 9], [12, 4], [16, 3], [14, 9], [22, 7],
-      [11, 18], [28, 17], [29, 9],
+    // Bäume am Rand und verstreut, verschiedene Arten
+    const trees: [number, number, string][] = [
+      [3, 9, 'tree-oak'], [10, 5, 'tree-birch'], [14, 9, 'tree-autumn'], [29, 9, 'tree-autumn'],
+      [16, 0, 'tree-pine'], [24, 16, 'tree-apple'], [31, 16, 'tree-autumn'], [32, 3, 'tree-pine'], [30, 6, 'tree-oak'],
     ];
     // Die alte Eiche oben links fällt Harald für das Vorratslager (Bauplatz ab dem Ende von Klasse 5)
-    if (!getFlag('elle_space')) trees.push([2, 3]);
-    for (const [x, y] of trees) {
-      this.placeObject('tree-oak', x + 0.5, y + 1);
+    if (!getFlag('elle_space')) trees.push([2, 3, 'tree-oak']);
+    for (const [x, y, key] of trees) {
+      this.placeObject(key, x + 0.5, y + 1);
       this.block(x, y, x, y);
     }
+
+    // Brunnen auf dem Marktplatz
+    this.placeObject('fountain', 12.5, 18);
+    this.block(12, 16, 12, 17);
 
     this.buildRuin();
     this.spawnWisps();
@@ -330,6 +343,25 @@ export class VillageScene extends WorldScene {
     const place = loadSave().place;
     if (!entry && place?.scene === 'Village') return { x: place.x, y: place.y };
     return { x: 8, y: 10 };
+  }
+
+  /**
+   * Mehr als Wiese und Weg: Teich oben, Pflaster auf dem Marktplatz und, sobald der erste Splitter
+   * die Farben zurückbringt, Blumenwiesen. Alles Auflagen über dem Grundgelände (siehe terrain.ts).
+   */
+  private buildGround(): void {
+    const data = (k: string) => this.cache.json.get(`tiles-${k}-data`) as TilesetData;
+    // Teich: unteres Gelände ist Wasser, oberes die Wiese
+    new Terrain(this, 'tiles-village-water', data('village-water'), vertexGrid(COLS, ROWS, GRASS, [[11, 0, 15, 3, DIRT]]), { depth: -999, skip: GRASS });
+    this.block(11, 0, 14, 2);
+    // Marktplatz: unteres Gelände Wiese, oberes Pflaster
+    new Terrain(this, 'tiles-village-cobble', data('village-cobble'), vertexGrid(COLS, ROWS, 0, [[6, 15, 14, 19, 1]]), { depth: -998, skip: 0 });
+    if (getFlag('elle_splitter')) {
+      const patches: [number, number, number, number, number][] = [
+        [14, 9, 17, 11, 1], [22, 14, 25, 16, 1], [4, 0, 7, 2, 1], [9, 0, 11, 3, 1], [22, 17, 25, 20, 1], [30, 14, 34, 17, 1],
+      ];
+      new Terrain(this, 'tiles-village-flowers', data('village-flowers'), vertexGrid(COLS, ROWS, 0, patches), { depth: -997, skip: 0 });
+    }
   }
 
   // ---------- Weg ins Riesental (Norden) ----------
@@ -470,7 +502,13 @@ export class VillageScene extends WorldScene {
         const [x0, y0, x1, y1] = v.prop.block;
         this.block(x0, y0, x1, y1);
       }
-      if (getFlag(v.after)) this.spawnVillager(v);
+      if (!getFlag(v.after)) continue;
+      if (v.house) {
+        this.placeObject(v.house.key, v.house.x, v.house.y);
+        const [x0, y0, x1, y1] = v.house.block;
+        this.block(x0, y0, x1, y1);
+      }
+      this.spawnVillager(v);
     }
   }
 
@@ -507,8 +545,8 @@ export class VillageScene extends WorldScene {
 
   /** Anschlagbrett mit Vagors Plakaten (gefälschte Statistiken, aufgedeckt erst in Klasse 6) */
   private buildBoard(): void {
-    const board = this.placeObject('notice-board', 14.8, 8.1, 0.8);
-    this.block(14, 7, 15, 7);
+    const board = this.placeObject('notice-board', 12.6, 7.9, 0.8);
+    this.block(12, 7, 12, 7);
     const g = this.add.graphics().setDepth(board.depth + 1);
     const posters: [number, number, number][] = [
       [-18, -38, 0xe8dcc0],
@@ -680,22 +718,7 @@ export class VillageScene extends WorldScene {
         return {
           area: [18, 16, 21, 18],
           stand: { x: 19, y: 15 },
-          build: (appear) => {
-            const g = this.add.graphics().setDepth(16 * TILE);
-            const x0 = 18 * TILE + 4;
-            const y0 = 16 * TILE + 4;
-            const w = 4 * TILE - 8;
-            const h = 3 * TILE - 8;
-            g.fillStyle(0x5a3a1e, 1).fillRect(x0, y0, w, h);
-            // Gemüsereihen
-            for (let r = 0; r < 4; r++) for (let c = 0; c < 7; c++) g.fillStyle(c % 2 ? 0x5fa83a : 0x7cc24a, 1).fillCircle(x0 + 10 + c * 17, y0 + 12 + r * 21, 5);
-            // Zaun: Pfosten und zwei Latten rundherum
-            g.lineStyle(2, 0xc9a15a, 1).strokeRect(x0, y0, w, h).strokeRect(x0 + 3, y0 + 3, w - 6, h - 6);
-            g.fillStyle(0x6b4520, 1);
-            for (let x = x0; x <= x0 + w; x += 16) g.fillRect(x - 2, y0 - 4, 4, 8).fillRect(x - 2, y0 + h - 4, 4, 8);
-            for (let y = y0; y <= y0 + h; y += 16) g.fillRect(x0 - 2, y - 4, 4, 8).fillRect(x0 + w - 2, y - 4, 4, 8);
-            pop(g, appear);
-          },
+          build: (appear) => pop(this.placeObject('deco-garden', 20, 19, 1.8), appear),
         };
       case 'laternen':
         return {
@@ -716,7 +739,7 @@ export class VillageScene extends WorldScene {
           stand: { x: 27, y: 7 },
           build: (appear) => {
             ([[28, 5], [28, 7], [28, 11]] as [number, number][]).forEach(([x, y], i) => {
-              pop(this.placeObject('tree-oak', x + 0.5, y + 1, 0.5), appear, i * 200);
+              pop(this.placeObject('tree-apple', x + 0.5, y + 1, 0.6), appear, i * 200);
               this.block(x, y, x, y);
             });
           },
@@ -867,7 +890,7 @@ export class VillageScene extends WorldScene {
       this.say(
         [
           { speaker: 'Meisterin Elle', text: 'Da bist du ja. Heute Nacht ist der Nebel wieder näher gekommen.' },
-          { speaker: 'Meisterin Elle', text: 'Vagor hat die sieben Urmaße zerbrochen. Seitdem verliert alles sein Maß: Wege, Brücken, sogar die Zahlen.' },
+          { speaker: 'Meisterin Elle', text: 'Vagor hat die fünf Urmaße zerbrochen. Seitdem verliert alles sein Maß: Wege, Brücken, sogar die Zahlen.' },
           { speaker: 'Meisterin Elle', text: 'Der erste Splitter, das Urmaß der Zahl, liegt bei den Zwergen in den Stellenstollen.' },
           { speaker: 'Meisterin Elle', text: 'Folge dem Weg nach Osten zur Mine. Vorarbeiter Brom braucht Hilfe. Hilf ihm, dann hilft er dir.' },
         ],

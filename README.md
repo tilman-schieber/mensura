@@ -1,4 +1,4 @@
-# Mensura – Die sieben Urmaße
+# Mensura – Die fünf Urmaße
 
 Ein Zelda-artiges 2D-Abenteuer im Browser, in dem Mathe das Werkzeug ist, mit dem man die Welt
 verändert. Gedacht für ein Kind am Anfang von Klasse 5 (Gymnasium Baden-Württemberg); das Spiel

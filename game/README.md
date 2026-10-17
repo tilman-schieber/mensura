@@ -1,4 +1,4 @@
-# Mensura – Die sieben Urmaße (Spiel)
+# Mensura – Die fünf Urmaße (Spiel)
 
 Web-Spiel zum [Spielkonzept](../konzept/spielkonzept.md). TypeScript + Phaser 4 + Vite.
 
@@ -24,9 +24,10 @@ Entwickler-Einstiege (nur im Entwicklungsmodus):
 Erster spielbarer Ausschnitt für Klasse 5, Herbst (Bildungsplan 3.1.1: Dezimalsystem, große Zahlen,
 Zahlenstrahl, Runden):
 
-0. **Titelbild** (`TitleScene`): Weiterspielen, neues Spiel, Spiel laden, Einstellungen. Die sieben
+0. **Titelbild** (`TitleScene`): Weiterspielen, neues Spiel, Spiel laden, Einstellungen. Die fünf
    Splitter kreisen um den Titel; geborgene leuchten. Vor dem ersten Spiel ein **Vorspann**
-   (`PrologueScene`, gesprochen von der Erzählerin, überspringbar).
+   (`PrologueScene`, gesprochen von der Erzählerin, überspringbar): die Urmaße steigen über dem Land
+   auf, Vagor zerbricht sie, der Nebel kommt, Meisterin Elle bleibt.
 1. **Avatar-Editor**: Frisur, Haarfarbe, Kleidung, Kleidungsfarbe, Name
 2. **Eichstadt**: Meisterin Elle schickt die Spielfigur zur Mine
 3. **Stellenstollen, äußere Ebene**: Vorarbeiter Brom und drei Stationen
@@ -207,7 +208,8 @@ gespeicherten Können pro Skill (`src/learn/progress.ts`). Stationen lassen sich
 | `src/scenes/AvatarScene.ts` | Avatar-Editor |
 | `src/scenes/HudScene.ts` | Ziel-Anzeige und Dialoge über der Welt (ohne Kamera-Zoom) |
 | `src/world/WorldScene.ts` | Grundlage aller Orte: Laufen per Tippen mit Wegsuche oder Pfeiltasten, Figuren/Objekte antippen, Ausgänge, Rätsel starten |
-| `src/world/terrain.ts` | Gelände aus PixelLab-Wang-Kachelsets (auch Felswände mit Vorderseite) |
+| `src/world/terrain.ts` | Gelände aus PixelLab-Wang-Kachelsets (auch Felswände mit Vorderseite); weitere Sets als Auflagen darüber (Wasser, Pflaster, Blumen, Klippen) |
+| `src/world/deco.ts` | Dekoration je Ort: Büsche, Blumen, Tiere, Säulen, Stalagmiten … (Bild, Zelle, gesperrt, Größe) |
 | `src/world/pathfind.ts` | A*-Wegsuche |
 | `src/world/VillageScene.ts`, `MineScene.ts`, `TempleScene.ts`, `ValleyScene.ts`, `FortressScene.ts` | die Orte mit ihrer Handlung: Eichstadt, Stellenstollen, Spiegeltempel, Riesental, Würfelfestung |
 | `src/puzzles/PuzzleScene.ts` | Grundgerüst der Rätsel: Runden, Hinweis-Leiter, Lernfortschritt |
@@ -245,6 +247,21 @@ wieder genau (`music.setFog`). In Eichstadt bleibt sie immer sauber.
 
 Alles Pixelart von PixelLab, außer den Stellenwert-Blöcken und der Schiene (im Code gezeichnet).
 Die Schrift ist **Andika**, gemacht für Leseanfänger, mit eindeutigen Ziffern (2 ≠ Z).
+
+### Gelände
+
+Jeder Ort hat ein Grund-Kachelset mit zwei Geländearten (Wiese/Weg, Boden/Wand). Mehr Abwechslung
+kommt durch **gestapelte Sets**: Teich, Pflasterplatz und Blumenwiese in Eichstadt, Fluss und Klippen
+im Riesental, Spiegelbecken im Tempel, Grundwasser im tiefen Stollen sind eigene `Terrain`-Auflagen
+mit eigenem Eckpunkt-Raster (`depth` über -1000, `skip` lässt Kacheln frei, die ganz aus dem
+Grundgelände bestehen). Damit die Naht unsichtbar bleibt, sind die Sets bei PixelLab über
+`base_tile_id` verkettet, das gemeinsame Gelände ist also pixelgleich. Die IDs der Grundkacheln stehen
+in [`../konzept/grafik-ideen.md`](../konzept/grafik-ideen.md). Auflagen sperren ihre Zellen selbst
+per `block()`, die Wegsuche kennt nur das Grundgelände.
+
+Dekoration steht in `src/world/deco.ts`: je Ort eine Liste (Bild, Zelle, gesperrt, Größe), dazu
+`DECO_ANIM` (Flackern, Picken, Atmen) und `SHADOW_KEYS` (welche Dinge einen Bodenschatten bekommen).
+`WorldScene.ambient()` streut je Ort Partikel (Blätter, Pollen, Staub, Lichtstäubchen, Sand).
 
 ### Avatar
 

@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { buildAvatarTexture, type Direction } from '../avatar/avatar';
 import { music } from '../audio/music';
-import { DECO, DECO_SCALE } from './deco';
+import { DECO, DECO_ANIM, DECO_SCALE, SHADOW_KEYS } from './deco';
 import { PAGES, pageById } from '../messbuch';
 import { getFlag, loadSave, setFlag, writeSave } from '../save';
 import { addFunken, askText, clearSpot, funken, giverState, isPending, markAsked, pendingSpots, spotById, todaysReview, turnIn } from '../learn/review';
@@ -93,6 +93,7 @@ export abstract class WorldScene extends Phaser.Scene {
   private keys!: Phaser.Types.Input.Keyboard.CursorKeys;
   private lastCell = { x: -1, y: -1 };
   private fog?: Phaser.Filters.ColorMatrix;
+  private playerShadow?: Phaser.GameObjects.Ellipse;
   /**
    * schwebende „!“ und „?“ über Figuren und Stationen. Sie liegen in der Hud-Szene (nicht in der
    * Welt), damit der Nebel-Farbfilter sie nicht grau färbt; ihre Lage wird jedes Bild umgerechnet.
@@ -138,10 +139,13 @@ export abstract class WorldScene extends Phaser.Scene {
     const start = this.buildWorld(data.entry);
     const decoScale = DECO_SCALE[this.scene.key] ?? 1;
     for (const [key, x, y, block, scale] of DECO[this.scene.key] ?? []) {
-      this.placeObject(key, x + 0.5, y + 1, (scale ?? 1) * decoScale);
+      const img = this.placeObject(key, x + 0.5, y + 1, (scale ?? 1) * decoScale);
       if (block) this.block(x, y, x, y);
+      this.animateDeco(img, DECO_ANIM[key]);
     }
+    this.ambient();
 
+    this.playerShadow = this.groundShadow(0, 0, 24);
     this.player = this.add.sprite(0, 0, PLAYER_KEY, 'south-0').setOrigin(0.5, 0.78);
     this.placePlayer(start);
     this.rememberPlace();
@@ -325,11 +329,94 @@ export abstract class WorldScene extends Phaser.Scene {
     for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) this.blocked.delete(`${x},${y}`);
   }
 
-  /** Objektbild mit Fußpunkt auf einer Zellkante; Tiefe nach y sortiert. */
+  /** Objektbild mit Fußpunkt auf einer Zellkante; Tiefe nach y sortiert. Stehende Dinge bekommen einen Schatten. */
   protected placeObject(key: string, cellX: number, cellY: number, scale = 1): Phaser.GameObjects.Image {
     const img = this.add.image(cellX * TILE, cellY * TILE, key).setOrigin(0.5, 1).setScale(scale);
     img.setDepth(img.y);
+    if (SHADOW_KEYS.has(key)) this.groundShadow(img.x, img.y - 2, Math.min(img.displayWidth * 0.6, 64));
     return img;
+  }
+
+  /** Weicher Schatten am Boden, knapp unter dem Ding, das ihn wirft */
+  protected groundShadow(x: number, y: number, width: number): Phaser.GameObjects.Ellipse {
+    const e = this.add.ellipse(x, y, width, Math.max(6, width * 0.3), 0x000000, 0.2);
+    e.setDepth(y - 1);
+    return e;
+  }
+
+  /** Kleine Dauerbewegung für Dekoration */
+  private animateDeco(img: Phaser.GameObjects.Image, kind?: 'flicker' | 'peck' | 'breathe' | 'bob'): void {
+    if (!kind) return;
+    const sx = img.scaleX;
+    const sy = img.scaleY;
+    switch (kind) {
+      case 'flicker':
+        this.tweens.add({ targets: img, alpha: { from: 1, to: 0.8 }, scaleY: { from: sy, to: sy * 1.04 }, duration: 140 + Math.random() * 120, yoyo: true, repeat: -1 });
+        break;
+      case 'peck':
+        this.tweens.add({ targets: img, scaleY: { from: sy, to: sy * 0.88 }, duration: 160, yoyo: true, repeat: -1, repeatDelay: 1200 + Math.random() * 2000, ease: 'sine.inout' });
+        break;
+      case 'breathe':
+        this.tweens.add({ targets: img, scaleY: { from: sy, to: sy * 1.03 }, scaleX: { from: sx, to: sx * 0.99 }, duration: 1300, yoyo: true, repeat: -1, ease: 'sine.inout' });
+        break;
+      case 'bob':
+        this.tweens.add({ targets: img, y: img.y - 3, duration: 1200, yoyo: true, repeat: -1, ease: 'sine.inout' });
+        break;
+    }
+  }
+
+  /**
+   * Stimmung je Ort: Blätter treiben durchs Dorf, Pollen über das Tal, Staub durch den Stollen,
+   * goldene Stäubchen und Lichtbahnen durch den Tempel, Sand durch die Festung.
+   */
+  private ambient(): void {
+    const w = this.terrain.cols * TILE;
+    const h = this.terrain.rows * TILE;
+    if (!this.textures.exists('ambient-mote')) {
+      const g = this.make.graphics({ x: 0, y: 0 }, false);
+      g.fillStyle(0xffffff, 1).fillCircle(2, 2, 2).generateTexture('ambient-mote', 4, 4);
+      g.clear().fillStyle(0xffffff, 1).fillRect(0, 0, 5, 3).generateTexture('ambient-leaf', 5, 3);
+      g.destroy();
+    }
+    const zone = { type: 'random', source: new Phaser.Geom.Rectangle(0, -20, w, h + 20) } as unknown as Phaser.Types.GameObjects.Particles.ParticleEmitterRandomZoneConfig;
+    const base: Phaser.Types.GameObjects.Particles.ParticleEmitterConfig = { emitZone: zone, lifespan: 7000, alpha: { start: 0, end: 0 }, blendMode: 'NORMAL' };
+    let cfg: Phaser.Types.GameObjects.Particles.ParticleEmitterConfig | null = null;
+    let texture = 'ambient-mote';
+    switch (this.scene.key) {
+      case 'Village':
+        texture = 'ambient-leaf';
+        cfg = { ...base, speedX: { min: -12, max: 14 }, speedY: { min: 8, max: 20 }, rotate: { start: 0, end: 360 }, tint: [0x7cc24a, 0xe0a030, 0xc85a2a], alpha: { start: 0.9, end: 0 }, frequency: 500 };
+        break;
+      case 'Valley':
+        cfg = { ...base, speedX: { min: -8, max: 8 }, speedY: { min: -10, max: 4 }, tint: 0xfff3a0, alpha: { start: 0, end: 0.9, ease: 'sine.inout' }, scale: { min: 0.6, max: 1.2 }, frequency: 350 };
+        break;
+      case 'Mine':
+      case 'MineDeep':
+        cfg = { ...base, speedX: { min: -4, max: 4 }, speedY: { min: -6, max: 2 }, tint: 0x9fb0c0, alpha: { start: 0, end: 0.35, ease: 'sine.inout' }, scale: { min: 0.5, max: 1 }, frequency: 300 };
+        break;
+      case 'Temple':
+        cfg = { ...base, speedX: { min: -3, max: 3 }, speedY: { min: -8, max: -2 }, tint: 0xffe9a0, alpha: { start: 0, end: 0.8, ease: 'sine.inout' }, scale: { min: 0.5, max: 1 }, frequency: 250 };
+        this.lightShafts();
+        break;
+      case 'Fortress':
+        cfg = { ...base, speedX: { min: 6, max: 16 }, speedY: { min: -2, max: 2 }, tint: 0xe0c898, alpha: { start: 0, end: 0.3, ease: 'sine.inout' }, scale: { min: 0.5, max: 1 }, frequency: 400 };
+        break;
+    }
+    if (!cfg) return;
+    const emitter = this.add.particles(0, 0, texture, cfg).setDepth(9000);
+    emitter.fastForward(6000);
+  }
+
+  /** Schräge Lichtbahnen von oben, wie durch hohe Fenster */
+  private lightShafts(): void {
+    const g = this.add.graphics().setDepth(8990).setBlendMode(Phaser.BlendModes.ADD).setAlpha(0.5);
+    const h = this.terrain.rows * TILE;
+    for (const x of [5, 10, 15, 20]) {
+      const x0 = x * TILE;
+      g.fillGradientStyle(0xfff2c0, 0xfff2c0, 0xfff2c0, 0xfff2c0, 0.16, 0.16, 0, 0);
+      g.fillPoints([new Phaser.Math.Vector2(x0, 0), new Phaser.Math.Vector2(x0 + 40, 0), new Phaser.Math.Vector2(x0 + 120, h), new Phaser.Math.Vector2(x0 + 60, h)], true);
+    }
+    this.tweens.add({ targets: g, alpha: 0.8, duration: 4000, yoyo: true, repeat: -1, ease: 'sine.inout' });
   }
 
   protected addNpc(key: string, cell: Cell, facing: Direction = 'south'): Phaser.GameObjects.Sprite {
@@ -337,6 +424,7 @@ export abstract class WorldScene extends Phaser.Scene {
       .sprite((cell.x + 0.5) * TILE, (cell.y + 1) * TILE, key, NPC_FRAME[facing])
       .setOrigin(0.5, 0.78);
     s.setDepth(s.y);
+    this.groundShadow(s.x, s.y + 9, 22);
     this.block(cell.x, cell.y, cell.x, cell.y);
     return s;
   }
@@ -746,6 +834,7 @@ export abstract class WorldScene extends Phaser.Scene {
   update(time: number, delta: number): void {
     if (!this.player) return;
     this.placeMarkers(time);
+    this.playerShadow?.setPosition(this.player.x, this.player.y + 11).setDepth(this.player.y - 1).setVisible(this.player.visible);
     const step = (SPEED * delta) / 1000;
     let dx = 0;
     let dy = 0;

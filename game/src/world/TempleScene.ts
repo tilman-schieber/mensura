@@ -55,8 +55,10 @@ export class TempleScene extends WorldScene {
   }
 
   preload(): void {
-    this.load.image('tiles-temple', 'assets/tiles/temple.png');
-    this.load.json('tiles-temple-data', 'assets/tiles/temple.json');
+    for (const k of ['temple', 'temple-pool']) {
+      this.load.image(`tiles-${k}`, `assets/tiles/${k}.png`);
+      this.load.json(`tiles-${k}-data`, `assets/tiles/${k}.json`);
+    }
     this.load.image('mirror', 'assets/objects/mirror.png');
     this.load.image('prism', 'assets/objects/prism.png');
     this.load.image('temple-gate', 'assets/objects/temple-gate.png');
@@ -72,6 +74,14 @@ export class TempleScene extends WorldScene {
     this.terrain = new Terrain(this, 'tiles-temple', this.cache.json.get('tiles-temple-data') as TilesetData, v);
     this.cameras.main.setBackgroundColor(0x1a1c24);
     this.addExit(12, 16, 13, 17, () => this.goTo('Village', 'temple'));
+    // der Marmor ist sehr hell: ein Hauch Lavendel darüber (Multiplizieren)
+    this.add.rectangle(0, 0, COLS * TILE, ROWS * TILE, 0xe6e2f4, 1).setOrigin(0).setDepth(-950).setBlendMode(Phaser.BlendModes.MULTIPLY);
+
+    // Zwei Spiegelbecken, spiegelsymmetrisch zur Mittelachse (Auflage: unten Wasser, oben der Boden)
+    const pool = this.cache.json.get('tiles-temple-pool-data') as TilesetData;
+    new Terrain(this, 'tiles-temple-pool', pool, vertexGrid(COLS, ROWS, 1, [[8, 8, 11, 11, 0], [15, 8, 18, 11, 0]]), { depth: -999, skip: 1 }); // 0 = Wasser, 1 = Boden
+    this.block(8, 8, 10, 10);
+    this.block(15, 8, 17, 10);
 
     // Läufer als Mittelachse des Tempels (der ganze Raum ist spiegelsymmetrisch)
     const carpet = this.add.graphics().setDepth(-500);
@@ -100,7 +110,7 @@ export class TempleScene extends WorldScene {
     if (this.mirrorsDone() === TOTAL && !getFlag('temple_boss')) this.spawnShadow(false);
 
     this.addGoblin(GOBLIN, { x: 21, y: 14 }, 'west');
-    this.addPage('page_temple', 3, 13);
+    this.addPage('page_temple', 3, 14);
     this.addPlaque(6.5, 3.95, 'Spiegeltempel');
 
     // Hüterin Lumen am Eingang
