@@ -79,7 +79,8 @@ export class PrologueScene extends Phaser.Scene {
     showDialog(
       this,
       [
-        { speaker: 'Erzählerin', text: `Vor langer Zeit schmiedeten die Alten ${URMASSE.length === 5 ? 'fünf' : String(URMASSE.length)} Urmaße: ${listNames()}.` },
+        // fester Text, damit die Zeile aufgenommen wird (Vorlagen-Strings überspringt der Rekorder)
+        { speaker: 'Erzählerin', text: 'Vor langer Zeit schmiedeten die Alten fünf Urmaße: Zahl, Form, Größe, Raum und Teil.' },
         { speaker: 'Erzählerin', text: 'Solange sie in der Halle der Alten ruhten, hatte alles in Mensura sein Maß: Flüsse, Wege, Brücken und Versprechen.' },
       ],
       () => this.vagorBreaksThem(shards, light),
@@ -194,10 +195,4 @@ export class PrologueScene extends Phaser.Scene {
     this.cameras.main.fadeOut(500);
     this.cameras.main.once('camerafadeoutcomplete', () => this.scene.start('Avatar', { returnTo: 'Village' }));
   }
-}
-
-/** „Zahl, Form, Größe, Raum und Teil“ */
-function listNames(): string {
-  const names = URMASSE.map((u) => u.name);
-  return `${names.slice(0, -1).join(', ')} und ${names[names.length - 1]}`;
 }
