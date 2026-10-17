@@ -333,14 +333,19 @@ export abstract class WorldScene extends Phaser.Scene {
   protected placeObject(key: string, cellX: number, cellY: number, scale = 1): Phaser.GameObjects.Image {
     const img = this.add.image(cellX * TILE, cellY * TILE, key).setOrigin(0.5, 1).setScale(scale);
     img.setDepth(img.y);
-    if (SHADOW_KEYS.has(key)) this.groundShadow(img.x, img.y - 2, Math.min(img.displayWidth * 0.6, 64));
+    if (SHADOW_KEYS.has(key)) this.groundShadow(img.x, this.footY(img), Math.min(img.displayWidth * 0.6, 64));
     return img;
   }
 
+  /** y der untersten sichtbaren Pixelreihe eines Bildes (Bilder haben oft leeren Rand unten) */
+  protected footY(img: Phaser.GameObjects.Image | Phaser.GameObjects.Sprite): number {
+    return img.y + (1 - img.originY) * img.displayHeight - baseline(this, img.texture.key, img.frame.name) * img.scaleY;
+  }
+
   /** Weicher Schatten am Boden, knapp unter dem Ding, das ihn wirft */
-  protected groundShadow(x: number, y: number, width: number): Phaser.GameObjects.Ellipse {
+  protected groundShadow(x: number, y: number, width: number, depth = y - 1): Phaser.GameObjects.Ellipse {
     const e = this.add.ellipse(x, y, width, Math.max(6, width * 0.3), 0x000000, 0.2);
-    e.setDepth(y - 1);
+    e.setDepth(depth);
     return e;
   }
 
@@ -423,7 +428,7 @@ export abstract class WorldScene extends Phaser.Scene {
       .sprite((cell.x + 0.5) * TILE, (cell.y + 1) * TILE, key, NPC_FRAME[facing])
       .setOrigin(0.5, 0.78);
     s.setDepth(s.y);
-    this.groundShadow(s.x, s.y + 9, 22);
+    this.groundShadow(s.x, this.footY(s), 22, s.y - 1);
     this.block(cell.x, cell.y, cell.x, cell.y);
     return s;
   }
@@ -833,7 +838,7 @@ export abstract class WorldScene extends Phaser.Scene {
   update(time: number, delta: number): void {
     if (!this.player) return;
     this.placeMarkers(time);
-    this.playerShadow?.setPosition(this.player.x, this.player.y + 11).setDepth(this.player.y - 1).setVisible(this.player.visible);
+    this.playerShadow?.setPosition(this.player.x, this.footY(this.player)).setDepth(this.player.y - 1).setVisible(this.player.visible);
     const step = (SPEED * delta) / 1000;
     let dx = 0;
     let dy = 0;
@@ -914,4 +919,35 @@ export abstract class WorldScene extends Phaser.Scene {
     save.playtime += seconds;
     writeSave(save);
   }
+}
+
+/** Leerer Rand unter dem sichtbaren Inhalt eines Frames, in Pixeln (einmal je Frame ausgemessen) */
+const BASELINES = new Map<string, number>();
+function baseline(scene: Phaser.Scene, key: string, frame: string | number): number {
+  const id = `${key}#${frame}`;
+  let b = BASELINES.get(id);
+  if (b !== undefined) return b;
+  b = 0;
+  const f = scene.textures.getFrame(key, frame);
+  const src = f?.source.image as CanvasImageSource | undefined;
+  if (f && src) {
+    const c = document.createElement('canvas');
+    c.width = f.cutWidth;
+    c.height = f.cutHeight;
+    const ctx = c.getContext('2d');
+    if (ctx) {
+      ctx.drawImage(src, f.cutX, f.cutY, f.cutWidth, f.cutHeight, 0, 0, f.cutWidth, f.cutHeight);
+      const d = ctx.getImageData(0, 0, c.width, c.height).data;
+      scan: for (let y = f.cutHeight - 1; y >= 0; y--) {
+        for (let x = 0; x < f.cutWidth; x++) {
+          if (d[(y * f.cutWidth + x) * 4 + 3] > 40) {
+            b = f.cutHeight - 1 - y;
+            break scan;
+          }
+        }
+      }
+    }
+  }
+  BASELINES.set(id, b);
+  return b;
 }

@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { getFlag, loadSave, setFlag } from '../save';
-import { funken, isPending, markTold, spendFunken, spotById, todaysReview } from '../learn/review';
+import { addFunken, funken, isPending, markTold, spendFunken, spotById, todaysReview } from '../learn/review';
 import { PROJECTS, type BuildProject } from '../puzzles/BuildPuzzle';
 import { TILE, WorldScene } from './WorldScene';
 import { FONT, smooth } from '../ui/theme';
@@ -192,6 +192,9 @@ const VILLAGERS: Villager[] = [
     again: [{ speaker: 'Schmied Harald', text: 'Zweimal messen, einmal schmieden. So macht man das.' }],
   },
 ];
+
+/** Lichtfunken für das geöffnete Tor der Alten */
+const RUIN_REWARD = 5;
 
 /** Nebelwesen im Dorf und was aus ihnen wird, wenn man sie erlöst */
 const WISPS: { cell: Cell; count: number; becomes: string; freed: DialogLine[]; greet: DialogLine[] }[] = [
@@ -447,8 +450,8 @@ export class VillageScene extends WorldScene {
   /** Das erlöste Wesen bleibt im Dorf; antippen = ein freundlicher Satz, kein Kampf mehr */
   private placeFreed(index: number, appear = false): void {
     const w = WISPS[index];
+    // kein Hindernis: Tiere und Laterne stehen am Wegrand, man geht an ihnen vorbei
     const img = this.placeObject(w.becomes, w.cell.x + 0.5, w.cell.y + 1, w.becomes === 'lantern' ? 0.75 : 0.7);
-    this.block(w.cell.x, w.cell.y, w.cell.x, w.cell.y);
     if (appear) {
       img.setAlpha(0).setScale(0.2);
       this.tweens.add({ targets: img, alpha: 1, scale: 0.7, duration: 900, ease: 'back.out' });
@@ -729,7 +732,6 @@ export class VillageScene extends WorldScene {
             const spots: [number, number][] = [[11, 11], [13, 11], [21, 11], [23, 11], [11, 15], [13, 15], [21, 15], [23, 15]];
             spots.forEach(([x, y], i) => {
               pop(this.placeObject('lantern', x + 0.5, y + 1, 0.55), appear, i * 120);
-              this.block(x, y, x, y);
             });
           },
         };
@@ -880,8 +882,15 @@ export class VillageScene extends WorldScene {
         { speaker: 'Stimme der Alten', text: 'Mit Zeichen, die überall gleich viel galten. Mit Steinen, die wir immer zu zweit bündelten.' },
         { speaker: 'Stimme der Alten', text: 'Dann schmiedeten wir das Urmaß der Zahl: zehn Ziffern, und jede Stelle zehnmal so viel wert wie ihre rechte Nachbarin.' },
         { speaker: 'Stimme der Alten', text: 'Vagor war der Einzige, der unsere Zeichen noch lesen konnte. Er hat sie gelesen und trotzdem zerbrochen, was allen gehörte.' },
+        { speaker: 'Stimme der Alten', text: 'Das Siegel ist gebrochen. Nimm, was er hier zurückgelassen hat.' },
       ],
-      () => setFlag('ruin_open'),
+      () => {
+        // Lohn: Lichtfunken und eine Messbuch-Seite, die Vagor hinter dem Siegel versteckt hat
+        setFlag('ruin_open');
+        addFunken(RUIN_REWARD);
+        this.hud().gainFunken(RUIN_REWARD, funken(), 'Das Tor der Alten ist offen!');
+        this.time.delayedCall(900, () => this.findPage('page_ruin'));
+      },
     );
   }
 

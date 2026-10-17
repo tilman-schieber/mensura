@@ -122,12 +122,11 @@ export class MineScene extends WorldScene {
     this.addPage('page_mine', 4, 5);
     this.addPlaque(6.5, 3.95, 'Stellenstollen');
 
-    // --- Bergmann Olaf, ein alter Zwerg mit ein, zwei Sätzen
+    // --- Bergmann Olaf, ein alter Zwerg mit ein, zwei Sätzen; keine Aufgabe, darum kein „!“
     const olaf = this.addNpc('npc-olaf', { x: 9, y: 8 }, 'south');
     this.addInteractable({
       target: olaf,
       stand: { x: 9, y: 9 },
-      marker: () => (getFlag('met_olaf') ? null : '!'),
       onInteract: () => {
         this.faceToPlayer(olaf);
         this.say(

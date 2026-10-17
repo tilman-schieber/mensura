@@ -22,6 +22,15 @@ export interface MessbuchPage {
 
 export const PAGES: MessbuchPage[] = [
   {
+    id: 'page_ruin',
+    place: 'Ruine der Alten',
+    title: 'Die Zeichen der Alten',
+    lines: ['Inschrift am Tor: MDCCC Schritte bis zum Fluss', 'MDCCC = 1000 + 500 + 300 = 1800', 'Breite der Furt: XC Schritte = 110'],
+    error: 2,
+    explain: 'XC heißt 100 − 10 = 90, nicht 110. Ein kleineres Zeichen vor einem größeren wird abgezogen.',
+    note: { speaker: 'Vagor', text: 'Nur ich kann die Zeichen der Alten noch lesen. Und Elle will meine Zahlen prüfen? Sie kann sie nicht einmal lesen.' },
+  },
+  {
     id: 'page_village',
     place: 'Eichstadt',
     title: 'Tag 1: Der Fluss',

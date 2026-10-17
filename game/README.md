@@ -56,7 +56,7 @@ Tüftlerin Grete, vier Stationen:
 **Nebenaufgabe Ruine der Alten** (Eichstadt, Westweg; Z1: anderes Zahlsystem):
 - **Tafel der Alten** (`RomanPuzzle`): römische Zahlen lesen und meißeln, bis 20 → 100 → 3 999
 - **Leuchtsteine** (`BinaryPuzzle`): Zweiersystem mit Steinen 1, 2, 4, 8 …, erst mit, dann ohne Wertangabe
-- Sind beide gelöst, erzählt die Stimme der Alten, wie das Urmaß der Zahl entstand.
+- Sind beide gelöst, öffnet sich das **Tor der Alten**: Die Stimme der Alten erzählt, wie das Urmaß der Zahl entstand, es gibt Lichtfunken und eine Messbuch-Seite, die Vagor hinter dem Siegel gelassen hat (mit einem Fehler beim Lesen römischer Zahlen).
 
 **Nebelwesen** (Eichstadt, Ostweg; Z11 Kopfrechnen, `FogBattleScene`): Kommt man ihnen nahe,
 beginnt ein kurzer Kampf. Jede Aufgabe hat vier Antworten, die falschen sind typische Fehler.

@@ -112,14 +112,22 @@ export class OreCartPuzzle extends PuzzleScene {
 
     // Lager rechts
     if (t.mode !== 'buendeln') {
-      r.add(text(this, 790, 130, 'Lager', 20, COLORS.muted));
+      r.add(text(this, 790, 130, 'Lager: Tipp auf einen Block', 20, COLORS.muted));
       BLOCK_VALUES.forEach((v, i) => {
         const y = 175 + i * 62;
-        const icon = this.add.image(690, y, blockKey(v)).setScale(v === 1 ? 3 : 1);
-        const b = button(this, 810, y, `+ ${BLOCK_NAMES[v]}`, () => this.take(v), { width: 170, height: 50, size: 18 });
+        // Der Block selbst ist der Knopf: antippen lädt ihn in die Lore
+        const icon = this.add.image(700, y, blockKey(v)).setScale(v === 1 ? 3 : 1);
+        const name = text(this, 745, y, BLOCK_NAMES[v], 18, COLORS.text).setOrigin(0, 0.5);
         const lbl = text(this, 910, y, '', 16, COLORS.muted);
+        const hit = this.add.zone(790, y, 300, 56).setInteractive({ useHandCursor: true });
+        hit.on('pointerover', () => icon.setTint(0xfff0b0));
+        hit.on('pointerout', () => icon.clearTint());
+        hit.on('pointerup', () => {
+          this.tweens.add({ targets: icon, scale: icon.scale * 1.25, duration: 90, yoyo: true });
+          this.take(v);
+        });
         this.stockLabels[v] = lbl;
-        r.add([icon, b, lbl]);
+        r.add([icon, name, lbl, hit]);
       });
       if (t.mode === 'entbuendeln') {
         this.hammerButton = button(this, 790, 425, 'Spalthammer', () => this.toggleHammer(), { width: 200, height: 50, size: 20 });
