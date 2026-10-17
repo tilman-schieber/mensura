@@ -95,7 +95,7 @@ const REGIONS: Region[] = [
       { speaker: 'Meisterin Elle', text: 'Ich habe ihm vertraut und die Probe weggelassen. Bei der Einweihung brach die Brücke. Alle fielen in den Fluss, und das ganze Land lachte über Vagor.' },
       { speaker: 'Meisterin Elle', text: 'Seitdem gehe ich am Stock. Und seitdem glaubt Vagor, die Urmaße hätten ihn belogen.' },
       { speaker: 'Meisterin Elle', text: 'Aber die Wahrheit ist: Ich hätte den Fehler finden können. Ich habe es nur nicht versucht.' },
-      { speaker: 'Meisterin Elle', text: 'Die letzten drei Urmaße liegen weiter weg. Die Wege dorthin öffnen sich im nächsten Schuljahr. Dann finden wir heraus, was an der Brücke wirklich geschah.' },
+      { speaker: 'Meisterin Elle', text: 'Das fünfte Urmaß, der Teil, liegt weiter weg, und von jedem fehlt noch die zweite Hälfte. Die Wege dorthin öffnen sich im nächsten Schuljahr. Dann finden wir heraus, was an der Brücke wirklich geschah.' },
     ],
   },
 ];

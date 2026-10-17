@@ -8,7 +8,7 @@ import { music } from '../audio/music';
 /**
  * Titelbild: gemalte Landschaft mit Eichstadt, der zerbrochenen Brücke und Vagors Zitadelle,
  * ziehender Nebel, Glühwürmchen, Sternschnuppen. Der Titel fällt Buchstabe für Buchstabe herein
- * und schimmert; die sieben Splitter kreisen um ihn, geborgene leuchten.
+ * und schimmert; die fünf Splitter kreisen um ihn, geborgene leuchten.
  */
 export class TitleScene extends Phaser.Scene {
   private shards: { img: Phaser.GameObjects.Image; glow: Phaser.GameObjects.Arc; angle: number }[] = [];
