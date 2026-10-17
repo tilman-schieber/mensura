@@ -372,12 +372,11 @@ export abstract class WorldScene extends Phaser.Scene {
   private ambient(): void {
     const w = this.terrain.cols * TILE;
     const h = this.terrain.rows * TILE;
-    if (!this.textures.exists('ambient-mote')) {
-      const g = this.make.graphics({ x: 0, y: 0 }, false);
-      g.fillStyle(0xffffff, 1).fillCircle(2, 2, 2).generateTexture('ambient-mote', 4, 4);
-      g.clear().fillStyle(0xffffff, 1).fillRect(0, 0, 5, 3).generateTexture('ambient-leaf', 5, 3);
-      g.destroy();
-    }
+    // Jede Textur einzeln prüfen: der Prolog legt nur 'ambient-mote' an
+    const g = this.make.graphics({ x: 0, y: 0 }, false);
+    if (!this.textures.exists('ambient-mote')) g.fillStyle(0xffffff, 1).fillCircle(2, 2, 2).generateTexture('ambient-mote', 4, 4);
+    if (!this.textures.exists('ambient-leaf')) g.clear().fillStyle(0xffffff, 1).fillRect(0, 0, 5, 3).generateTexture('ambient-leaf', 5, 3);
+    g.destroy();
     const zone = { type: 'random', source: new Phaser.Geom.Rectangle(0, -20, w, h + 20) } as unknown as Phaser.Types.GameObjects.Particles.ParticleEmitterRandomZoneConfig;
     const base: Phaser.Types.GameObjects.Particles.ParticleEmitterConfig = { emitZone: zone, lifespan: 7000, alpha: { start: 0, end: 0 }, blendMode: 'NORMAL' };
     let cfg: Phaser.Types.GameObjects.Particles.ParticleEmitterConfig | null = null;

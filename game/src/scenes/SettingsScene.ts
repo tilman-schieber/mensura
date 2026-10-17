@@ -46,12 +46,13 @@ export class SettingsScene extends Phaser.Scene {
     row += 54;
     label('Lautstärke Stimmen');
     const bars = this.add.graphics();
+    const vrow = row; // row wandert weiter; die Balken müssen in ihrer Zeile bleiben
     const drawBars = () => {
       const steps = Math.round(loadPrefs().volume * 5);
       bars.clear();
       for (let i = 0; i < 5; i++) {
         const h = 10 + i * 5;
-        bars.fillStyle(i < steps ? COLORS.gold : 0x2a3844, 1).fillRoundedRect(ctrlX - 42 + i * 18, row + 14 - h, 12, h, 3);
+        bars.fillStyle(i < steps ? COLORS.gold : 0x2a3844, 1).fillRoundedRect(ctrlX - 42 + i * 18, vrow + 14 - h, 12, h, 3);
       }
     };
     const change = (d: number) => {
